@@ -13,6 +13,20 @@ const NAV = [
   { href: '/for-attorneys/', label: 'For Attorneys' },
 ];
 
+const joinClass = 'inline-flex min-h-11 items-center justify-center rounded-full bg-pink px-4 py-2 font-display text-sm font-semibold text-white';
+
+export function AnnouncementBar() {
+  return (
+    <Link
+      href="/join/"
+      data-testid="attorney-announcement"
+      className="block bg-gradient-to-r from-purple via-pink to-orange px-4 py-2 text-center font-display text-sm font-semibold text-white"
+    >
+      California attorney? Join free as a Founding Member →
+    </Link>
+  );
+}
+
 export function Header() {
   const [open, setOpen] = useState(false);
   const path = usePathname();
@@ -28,7 +42,7 @@ export function Header() {
           {NAV.map((item) => (
             <Link key={item.href} href={item.href} className="font-display text-sm font-semibold text-navy/80 hover:text-navy">{item.label}</Link>
           ))}
-          <Link href="/for-attorneys/" className="font-display text-sm font-semibold text-navy">Join free</Link>
+          <Link href="/join/" data-testid="nav-join" className={joinClass}>Attorneys: Join free</Link>
           <span className="inline-flex items-center gap-2 rounded-full bg-[#F3E9FF] px-4 py-2 font-display text-sm font-semibold text-purple">
             <Rocket /> Launching soon
           </span>
@@ -49,7 +63,7 @@ export function Header() {
           {NAV.map((item) => (
             <Link key={item.href} href={item.href} className="block rounded-2xl px-3 py-3 font-display font-semibold">{item.label}</Link>
           ))}
-          <Link href="/for-attorneys/" className="block rounded-2xl px-3 py-3 font-display font-semibold">Join free</Link>
+          <Link href="/join/" className={`${joinClass} mt-2 w-full`}>Attorneys: Join free</Link>
           <Link href="/specialties/" className="block rounded-2xl px-3 py-3 font-display font-semibold">Practice Areas</Link>
         </nav>
       ) : null}

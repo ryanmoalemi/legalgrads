@@ -61,14 +61,14 @@ export function HomeView() {
           {error ? <p role="alert" className="mt-2 text-sm text-pink">{error}</p> : null}
           {done ? <p role="status" data-testid="waitlist-status" className="mt-2 text-sm font-medium">{done}</p> : null}
           {mailto ? <p className="mt-2 text-sm"><a data-testid="waitlist-mailto" className="font-semibold text-purple" href={mailto}>Email this signup to ryan@legalgrads.com</a></p> : null}
+          <Link href="/join/" data-testid="home-attorney-cta" className="mt-3 inline-flex min-h-11 items-center justify-center rounded-full bg-white px-5 py-3 font-display text-sm font-semibold text-navy shadow-pill ring-1 ring-navy/10">
+            I&apos;m an attorney — apply free
+          </Link>
           <p className="mt-3 text-sm text-ink sm:text-base">
             Be the first to know when attorneys are published. No <span className="hand-underline font-semibold text-navy">spam.
               <svg viewBox="0 0 80 10" aria-hidden="true"><path d="M2 7 C 20 2, 50 2, 78 6" stroke="#7A00FF" strokeWidth="3" fill="none" strokeLinecap="round" /></svg>
             </span>
           </p>
-          <Link href="/for-attorneys/" data-testid="home-attorney-cta" className="mt-4 inline-flex min-h-11 items-center font-display font-semibold text-purple">
-            California attorney? Join free as a Founding Member →
-          </Link>
           <div className="mt-5 grid grid-cols-2 gap-2 sm:grid-cols-4">
             {SHORTCUTS.map((slug) => {
               const spec = SPECIALTIES.find((s) => s.slug === slug)!;
@@ -91,6 +91,31 @@ export function HomeView() {
           <Benefit testid="benefit-verified" icon="/icons/benefits/verified_attorneys.svg" title="Verified Attorneys" body="A listing goes live only after a manual California State Bar check." />
           <Benefit testid="benefit-wide-range" icon="/icons/benefits/wide_range.svg" title="Wide Range of Help" body="Contracts, business, real estate, employment, and more." />
         </ul>
+      </section>
+
+      <section className="mx-auto max-w-6xl px-4 pb-4" aria-labelledby="for-attorneys-heading" data-testid="home-for-attorneys">
+        <div className="rounded-[32px] bg-white p-6 shadow-card sm:p-8">
+          <p className="inline-flex items-center gap-1 rounded-full bg-[#F3E9FF] px-3 py-1 font-display text-xs font-bold text-purple">
+            <Cap /> Founding Member
+          </p>
+          <h2 id="for-attorneys-heading" className="mt-3 font-display text-3xl font-extrabold tracking-tight text-navy sm:text-4xl">For attorneys</h2>
+          <p className="mt-2 max-w-2xl text-ink">A free California listing. You set the rate. Legalgrads does not take a cut.</p>
+          <ul className="mt-6 grid gap-3 sm:grid-cols-3">
+            {[
+              ['Free listing', 'Founding Members are not charged to appear in the directory.'],
+              ['Set your own rate', 'Publish a flat fee or an hourly amount that you choose.'],
+              ['No referral fee', 'Legalgrads takes no referral fee and no share of legal fees.'],
+            ].map(([title, body]) => (
+              <li key={title} className="rounded-3xl bg-cream px-4 py-4">
+                <h3 className="font-display text-lg font-extrabold">{title}</h3>
+                <p className="mt-1 text-sm text-ink">{body}</p>
+              </li>
+            ))}
+          </ul>
+          <Link href="/join/" data-testid="home-apply" className="mt-6 inline-flex min-h-12 items-center justify-center rounded-full bg-pink px-8 py-3 font-display text-base font-semibold text-white">
+            Apply
+          </Link>
+        </div>
       </section>
     </div>
   );

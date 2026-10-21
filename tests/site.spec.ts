@@ -4,7 +4,19 @@ import { boot, noOverflow } from './helpers';
 test('home is a real directory pitch with no fictional attorneys', async ({ page }) => {
   await boot(page);
   await expect(page.getByRole('heading', { level: 1 })).toContainText('Fresh out of law school.');
-  await expect(page.getByTestId('home-attorney-cta')).toBeVisible();
+  const bar = page.getByTestId('attorney-announcement');
+  await expect(bar).toHaveText('California attorney? Join free as a Founding Member →');
+  await expect(bar).toHaveAttribute('href', '/join/');
+  await expect(page.getByTestId('nav-join')).toHaveText('Attorneys: Join free');
+  await expect(page.getByTestId('nav-join')).toHaveAttribute('href', '/join/');
+  await expect(page.getByTestId('home-attorney-cta')).toHaveText("I'm an attorney — apply free");
+  await expect(page.getByTestId('home-attorney-cta')).toHaveAttribute('href', '/join/');
+  const forAttorneys = page.getByTestId('home-for-attorneys');
+  await expect(forAttorneys).toContainText('Founding Member');
+  await expect(forAttorneys).toContainText('Free listing');
+  await expect(forAttorneys).toContainText('Set your own rate');
+  await expect(forAttorneys).toContainText('No referral fee');
+  await expect(page.getByTestId('home-apply')).toHaveAttribute('href', '/join/');
   await expect(page.getByTestId('benefit-verified')).toBeVisible();
   await expect(page.getByTestId('benefit-more-affordable')).toBeVisible();
   await expect(page.getByTestId('benefit-newly-licensed')).toBeVisible();
@@ -20,6 +32,7 @@ test('home is a real directory pitch with no fictional attorneys', async ({ page
 
 test('directory explains that founding attorneys are still joining', async ({ page }) => {
   await boot(page, '/find-lawyer/?specialty=contracts');
+  await expect(page.getByTestId('attorney-announcement')).toHaveAttribute('href', '/join/');
   await expect(page.getByTestId('directory-empty')).toContainText('Founding attorneys joining now — launching soon');
   await expect(page.getByLabel('Practice area')).toHaveValue('contracts');
   await page.getByTestId('directory-email').fill('casey@example.com');
