@@ -9,11 +9,12 @@ export function ForAttorneysView() {
     <div className="mx-auto max-w-5xl px-4 py-10">
       <PageIntro
         kicker="For attorneys"
-        title="Get your free listing"
-        body="California attorneys can apply now. The listing is free. Legalgrads takes no referral fee and no share of legal fees. Nothing goes live until we manually check your State Bar record."
+        title="Join free"
+        body="California attorneys can apply now and get the Early Attorney badge. The listing is free. Legalgrads takes no referral fee and no share of legal fees. Nothing goes live until we manually check your State Bar record."
       />
+      <p className="mt-4 inline-flex rounded-full bg-[#F3E9FF] px-3 py-1 text-xs font-bold text-purple">Early Attorney</p>
       <Link href="/join/" data-testid="founding-cta" className="mt-6 inline-flex min-h-11 items-center rounded-full bg-pink px-6 py-3 font-display text-base font-semibold text-white">
-        Get your free listing
+        Join free
       </Link>
       <ul className="mt-10 grid gap-4 sm:grid-cols-3">
         {[

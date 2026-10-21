@@ -125,6 +125,7 @@ export function DirectoryView() {
                 <p className="font-display font-extrabold">{row.rate_starting_at ? 'Starting at ' : ''}{money(Number(row.rate_amount))}{row.rate_type === 'hourly' ? '/hr' : ' flat'}{row.rate_for ? ` for ${row.rate_for}` : ''}</p>
               </div>
               <div className="mt-2 flex flex-wrap gap-2">
+                {row.founding_member ? <p className="inline-flex rounded-full bg-[#F3E9FF] px-3 py-1 text-xs font-bold text-purple">Early Attorney</p> : null}
                 {row.insured ? <p className="inline-flex rounded-full bg-mint/20 px-3 py-1 text-xs font-bold text-navy">Insured</p> : null}
               </div>
               <p className="mt-3 text-sm text-ink">{row.bio}</p>

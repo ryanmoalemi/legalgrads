@@ -5,18 +5,19 @@ test('home is a real directory pitch with no fictional attorneys', async ({ page
   await boot(page);
   await expect(page.getByRole('heading', { level: 1 })).toContainText('Fresh out of law school.');
   const bar = page.getByTestId('attorney-announcement');
-  await expect(bar).toHaveText('California attorney? Get a free listing →');
+  await expect(bar).toHaveText('California attorney? Join free and get the Early Attorney badge →');
   await expect(bar).toHaveAttribute('href', '/join/');
-  await expect(page.getByTestId('nav-join')).toHaveText('Attorneys: Free listing');
+  await expect(page.getByTestId('nav-join')).toHaveText('Attorneys: Join free');
   await expect(page.getByTestId('nav-join')).toHaveAttribute('href', '/join/');
-  await expect(page.getByTestId('home-attorney-cta')).toHaveText('Get your free listing');
+  await expect(page.getByTestId('home-attorney-cta')).toHaveText('Join free');
   await expect(page.getByTestId('home-attorney-cta')).toHaveAttribute('href', '/join/');
   const forAttorneys = page.getByTestId('home-for-attorneys');
-  await expect(forAttorneys).toContainText('Free listing');
+  await expect(forAttorneys).toContainText('Early Attorney');
   await expect(forAttorneys).not.toContainText('Founding Member');
   await expect(forAttorneys).toContainText('Free listing');
   await expect(forAttorneys).toContainText('Set your own rate');
   await expect(forAttorneys).toContainText('No referral fee');
+  await expect(page.getByTestId('home-apply')).toHaveText('Join free');
   await expect(page.getByTestId('home-apply')).toHaveAttribute('href', '/join/');
   await expect(page.getByTestId('benefit-verified')).toBeVisible();
   await expect(page.getByTestId('benefit-more-affordable')).toBeVisible();
@@ -46,6 +47,8 @@ test('directory explains that attorneys are still joining', async ({ page }) => 
 
 test('free listing application keeps every field in the email fallback', async ({ page }) => {
   await boot(page, '/for-attorneys/');
+  await expect(page.getByTestId('founding-cta')).toHaveText('Join free');
+  await expect(page.getByTestId('sample-listing')).toContainText('Early Attorney');
   await expect(page.getByTestId('sample-listing')).not.toContainText('Founding Member');
   await expect(page.getByTestId('sample-listing')).toContainText('Find an attorney');
   await expect(page.getByRole('heading', { name: 'Is Legalgrads a referral service?' })).toBeVisible();
@@ -122,8 +125,10 @@ test('free listing application keeps every field in the email fallback', async (
   expect(decoded).toContain('I carry professional liability insurance');
   expect(decoded).not.toMatch(/supabase|PGRST|row level/i);
   const confirmation = await page.locator('body').innerText();
+  expect(confirmation).toContain('Early Attorney');
   expect(confirmation).not.toMatch(/Founding Member|first year|forever/i);
   await expect(page.getByRole('button', { name: "Download “I'm on Legalgrads”" })).toBeVisible();
+  await expect(page.getByTestId('share-panel')).toContainText('Early Attorney');
   await expect(page.getByTestId('share-panel')).not.toContainText('Founding Member');
 });
 
@@ -148,6 +153,7 @@ test('policies name Legalgrads and do not charge a referral fee', async ({ page 
   expect(terms).toMatch(/no share of (your )?legal fees/i);
   expect(terms).toContain('ryan@legalgrads.com');
   expect(terms).toMatch(/flat fee for extra visibility/i);
+  expect(terms).toContain('Early Attorney');
   expect(terms).not.toMatch(/Founding Member|first year|forever/i);
   await page.goto('/privacy/');
   await expect(page.getByRole('heading', { level: 1 })).toHaveText('Privacy Policy');
