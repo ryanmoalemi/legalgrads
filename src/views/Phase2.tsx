@@ -4,6 +4,7 @@ import { FormEvent, useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { specialtyName } from '@/lib/catalog';
 import { money } from '@/lib/format';
+import { joinedLabel } from '@/lib/joined';
 import { downloadShareCard } from '@/lib/share';
 import { getSupabase } from '@/lib/supabase';
 import { PHASE2, supabaseConfigured } from '@/lib/site';
@@ -64,10 +65,11 @@ interface ProfileRow {
   rate_amount: number;
   contact_link: string;
   practice_areas: string[];
-  founding_member: boolean;
   bar_number: string;
   admission_date: string;
   published: boolean;
+  published_at?: string | null;
+  created_at?: string | null;
 }
 
 export function PublicProfileView() {
@@ -101,7 +103,7 @@ export function PublicProfileView() {
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-10">
-      {profile.founding_member ? <p className="inline-flex rounded-full bg-[#F3E9FF] px-3 py-1 text-xs font-bold text-purple">Early Attorney</p> : null}
+      <p className="inline-flex rounded-full bg-[#F3E9FF] px-3 py-1 text-xs font-bold text-purple">{joinedLabel(profile.published_at || profile.created_at)}</p>
       <h1 className="mt-3 font-display text-4xl font-extrabold">{profile.full_name}</h1>
       <p className="mt-2 text-ink">{profile.cities_served} · California State Bar {profile.bar_number} · admitted {profile.admission_date}</p>
       <p className="mt-4 font-display text-2xl font-extrabold">{money(Number(profile.rate_amount))}{profile.rate_type === 'hourly' ? '/hr' : ' flat'}</p>
@@ -111,7 +113,7 @@ export function PublicProfileView() {
       </div>
       <p className="mt-3 text-sm">Languages: {profile.languages}</p>
       <p className="mt-3"><a className="font-semibold text-purple" href={profile.contact_link}>Contact or book</a></p>
-      <button type="button" className="mt-6 min-h-11 rounded-full bg-navy px-5 font-display text-sm font-semibold text-white" onClick={() => downloadShareCard(profile.full_name)}>Download “I’m on Legalgrads”</button>
+      <button type="button" className="mt-6 min-h-11 rounded-full bg-navy px-5 font-display text-sm font-semibold text-white" onClick={() => downloadShareCard(profile.full_name, profile.published_at || profile.created_at)}>Download “I’m on Legalgrads”</button>
     </div>
   );
 }

@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react';
 import type { SubmitResult } from '@/lib/applications';
 import { SharePanel } from '@/components/SharePanel';
 import { PageIntro } from '@/components/ui';
+import { joinedLabel } from '@/lib/joined';
 import { CONTACT_EMAIL } from '@/lib/site';
 
 export function ConfirmationView() {
@@ -38,10 +39,11 @@ export function ConfirmationView() {
         {result?.channel === 'supabase' ? <p>We have the application. You do not need to send a second copy unless we ask.</p> : null}
         <p>To change details or remove your listing, email <a className="font-semibold text-purple" href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a> until attorney login is available.</p>
         {result?.insured ? <p className="inline-flex rounded-full bg-mint/20 px-3 py-1 text-xs font-bold text-navy">Insured</p> : null}
-        <p className="inline-flex rounded-full bg-[#F3E9FF] px-3 py-1 text-xs font-bold text-purple">Early Attorney</p>
+        <p className="inline-flex rounded-full bg-[#F3E9FF] px-3 py-1 text-xs font-bold text-purple">{joinedLabel(result?.joinedYear)}</p>
+        <p>{joinedLabel(result?.joinedYear)} is only the year you joined Legalgrads. It is not a rating and not a benefit to clients.</p>
       </div>
       <div className="mt-6">
-        <SharePanel name={result?.name || 'Your name'} />
+        <SharePanel name={result?.name || 'Your name'} joined={result?.joinedYear} />
       </div>
       <Link href="/" className="mt-6 inline-flex min-h-11 items-center font-display font-semibold text-purple">Back to the homepage</Link>
     </div>

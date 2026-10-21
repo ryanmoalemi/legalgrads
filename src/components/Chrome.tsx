@@ -22,7 +22,7 @@ export function AnnouncementBar() {
       data-testid="attorney-announcement"
       className="block bg-gradient-to-r from-purple via-pink to-orange px-4 py-2 text-center font-display text-sm font-semibold text-white"
     >
-      California attorney? Join free and get the Early Attorney badge →
+      California attorney? Join free →
     </Link>
   );
 }

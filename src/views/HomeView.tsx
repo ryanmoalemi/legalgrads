@@ -5,6 +5,7 @@ import { FormEvent, useState } from 'react';
 import { SPECIALTIES } from '@/lib/catalog';
 import { submitWaitlist } from '@/lib/applications';
 import { validEmail } from '@/lib/format';
+import { joinedLabel } from '@/lib/joined';
 
 const SHORTCUTS = ['contracts', 'start-a-business', 'real-estate', 'employment'];
 
@@ -95,8 +96,8 @@ export function HomeView() {
 
       <section className="mx-auto max-w-6xl px-4 pb-4" aria-labelledby="for-attorneys-heading" data-testid="home-for-attorneys">
         <div className="rounded-[32px] bg-white p-6 shadow-card sm:p-8">
-          <p className="inline-flex items-center gap-1 rounded-full bg-[#F3E9FF] px-3 py-1 font-display text-xs font-bold text-purple">
-            <Cap /> Early Attorney
+          <p className="inline-flex items-center rounded-full bg-[#F3E9FF] px-3 py-1 font-display text-xs font-bold text-purple">
+            {joinedLabel()}
           </p>
           <h2 id="for-attorneys-heading" className="mt-3 font-display text-3xl font-extrabold tracking-tight text-navy sm:text-4xl">For attorneys</h2>
           <p className="mt-2 max-w-2xl text-ink">A free California listing. You set the rate. Legalgrads does not take a cut.</p>
@@ -148,7 +149,7 @@ function HeroArt() {
         <div className="flex h-44 items-center justify-center rounded-2xl bg-gradient-to-br from-[#F4EEFF] to-[#FFF1F8] sm:h-56">
           <img src="/logos/legalgrads_mark.svg" alt="" className="h-24 w-24" />
         </div>
-        <span className="absolute left-6 top-6 inline-flex items-center gap-1 rounded-full bg-white/95 px-2 py-1 text-xs font-semibold text-navy shadow"><Cap /> Early Attorney</span>
+        <span className="absolute left-6 top-6 inline-flex items-center rounded-full bg-white/95 px-2 py-1 text-xs font-semibold text-navy shadow">{joinedLabel()}</span>
         <div className="px-1 pt-3">
           <h2 className="font-display text-lg font-extrabold">Your listing</h2>
           <p className="text-xs text-ink">California · after a State Bar check</p>
@@ -172,13 +173,5 @@ function HeroArt() {
       </article>
       <p className="absolute bottom-0 right-6 z-30 -rotate-2 rounded-2xl bg-[#FFE14A] px-3 py-2 font-display text-sm font-extrabold shadow">Real lawyers.</p>
     </div>
-  );
-}
-
-function Cap() {
-  return (
-    <svg width="14" height="14" viewBox="0 0 24 24" aria-hidden="true">
-      <path d="M2 10 12 5l10 5-10 5L2 10Z" fill="#7A00FF" />
-    </svg>
   );
 }

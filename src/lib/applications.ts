@@ -212,6 +212,7 @@ export interface SubmitResult {
   name: string;
   insured: boolean;
   message: string;
+  joinedYear?: number;
 }
 
 export function makeReference(): string {
@@ -232,7 +233,8 @@ export async function dataUrlToFile(dataUrl: string, name: string): Promise<File
 export async function submitApplication(input: ApplicationInput, photo: File | null): Promise<SubmitResult> {
   const reference = makeReference();
   const mailto = applicationMailto(input, reference);
-  const base = { mailto, reference, name: input.fullName.trim(), insured: input.insurance === 'insured' };
+  const joinedYear = new Date().getFullYear();
+  const base = { mailto, reference, name: input.fullName.trim(), insured: input.insurance === 'insured', joinedYear };
   if (!supabaseConfigured()) {
     return { ...base, channel: 'mailto', message: STORED_OFFLINE };
   }
