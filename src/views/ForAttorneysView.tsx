@@ -9,15 +9,15 @@ export function ForAttorneysView() {
     <div className="mx-auto max-w-5xl px-4 py-10">
       <PageIntro
         kicker="For attorneys"
-        title="Join free as a Founding Member"
+        title="Get your free listing"
         body="California attorneys can apply now. The listing is free. Legalgrads takes no referral fee and no share of legal fees. Nothing goes live until we manually check your State Bar record."
       />
       <Link href="/join/" data-testid="founding-cta" className="mt-6 inline-flex min-h-11 items-center rounded-full bg-pink px-6 py-3 font-display text-base font-semibold text-white">
-        Join free as a Founding Member
+        Get your free listing
       </Link>
       <ul className="mt-10 grid gap-4 sm:grid-cols-3">
         {[
-          ['Free listing', 'Founding Members are not charged to be in the directory.'],
+          ['Free listing', 'You are not charged to be in the directory.'],
           ['Your rate', 'You choose a flat fee or an hourly amount. Clients contact you directly.'],
           ['Bar check first', 'We publish a profile only after a person checks the California State Bar record.'],
         ].map(([title, body]) => (

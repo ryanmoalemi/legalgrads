@@ -101,7 +101,7 @@ export function ApplyView() {
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-8">
-      <PageIntro kicker="Founding Member" title="Apply for a listing" body="Six short steps. Your listing is not public until Legalgrads manually verifies your California State Bar record. Clients contact you directly." />
+      <PageIntro kicker="Attorneys" title="Apply for a free listing" body="Six short steps. Your listing is not public until Legalgrads manually verifies your California State Bar record. Clients contact you directly." />
       <p className="mt-4 font-display text-sm font-bold md:hidden" data-testid="step-count">Step {step + 1} of 6</p>
       <ol className="mt-3 flex flex-wrap gap-2 text-sm font-semibold" aria-label="Progress">
         {STEPS.map((label, index) => (

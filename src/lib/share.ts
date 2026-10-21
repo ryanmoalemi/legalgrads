@@ -16,15 +16,12 @@ export function downloadShareCard(name: string): void {
   ctx.fillRect(80, 150, 420, 14);
   ctx.fillStyle = '#0B0B3B';
   ctx.font = '800 72px sans-serif';
-  ctx.fillText("I'm on Legalgrads", 80, 280);
+  ctx.fillText("I'm on Legalgrads", 80, 300);
   ctx.font = '600 40px sans-serif';
-  ctx.fillText(name, 80, 360);
-  ctx.fillStyle = '#7A00FF';
-  ctx.font = '700 32px sans-serif';
-  ctx.fillText('Founding Member · California', 80, 440);
+  ctx.fillText(name, 80, 380);
   ctx.fillStyle = '#4A4E72';
   ctx.font = '400 28px sans-serif';
-  ctx.fillText('legalgrads.com', 80, 520);
+  ctx.fillText('legalgrads.com', 80, 480);
   const link = document.createElement('a');
   link.href = canvas.toDataURL('image/png');
   link.download = 'im-on-legalgrads.png';
