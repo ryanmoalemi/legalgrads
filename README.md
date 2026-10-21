@@ -28,20 +28,20 @@ npm run build
 npm test
 ```
 
-CI builds without Supabase secrets, so the tests cover the email fallback. The GitHub Pages workflow bakes secrets in at build time.
+CI builds without Supabase secrets, so the tests cover the email fallback and do not write real rows. `.github/workflows/pages.yml` passes `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY` into `npm run build` on every deploy. The publishable key (`sb_publishable_…`) is the value of `NEXT_PUBLIC_SUPABASE_ANON_KEY`. It is not committed.
 
 ## Supabase
 
-1. Create a Supabase project.
-2. In the SQL editor, run `supabase/migrations/20261021120000_init.sql`.
+1. Project URL: `https://qlhwojjdsonjxfeoiqww.supabase.co`.
+2. In the SQL editor, paste the whole file `supabase/migrations/20261021120000_init.sql` and run it once. That file is the full schema: tables, row level security, `review_application`, and the private `attorney-photos` bucket policies.
 3. Authentication → URL configuration:
    - Site URL: `https://legalgrads.com`
    - Redirect URLs: `https://legalgrads.com/attorney/profile/` and `http://localhost:3000/attorney/profile/`
-4. Add repository secrets (Settings → Secrets and variables → Actions):
-   - `NEXT_PUBLIC_SUPABASE_URL` — project URL
-   - `NEXT_PUBLIC_SUPABASE_ANON_KEY` — anon public key only
-   - `NEXT_PUBLIC_PHASE2` — leave unset until login, profile editing, admin review, and public profile pages should be linked. Set it to `1` when you want those routes active.
-5. Do not add the service-role key to the website or to a `NEXT_PUBLIC_` secret. Row Level Security is what keeps applications private.
+4. Repository secrets already used by the Pages workflow:
+   - `NEXT_PUBLIC_SUPABASE_URL`
+   - `NEXT_PUBLIC_SUPABASE_ANON_KEY` — the publishable key, not a secret key
+   - `NEXT_PUBLIC_PHASE2` — leave unset until login, profile editing, admin review, and public profile pages should turn on. Set it to `1` when you want those routes active.
+5. Do not add a secret or service-role key to the website or to a `NEXT_PUBLIC_` secret. Row Level Security is what keeps applications private.
 6. After you sign in once with ryan@legalgrads.com (phase 2), promote that user in the SQL editor:
 
 ```sql
@@ -57,9 +57,9 @@ Photos upload to the private `attorney-photos` bucket under `pending/`. They are
 
 ## GitHub Pages
 
-`.github/workflows/pages.yml` builds `out/` and deploys it on every push to `main`. The custom domain file is `legalgrads.com`.
+`.github/workflows/pages.yml` builds `out/` and deploys it on every push to `main`. The build fails if `NEXT_PUBLIC_SUPABASE_URL` or `NEXT_PUBLIC_SUPABASE_ANON_KEY` is empty, and it refuses a `sb_secret_` key. The custom domain file is `legalgrads.com`.
 
-Pages has to be set to **GitHub Actions** in the repository settings before that workflow can publish. Until the two Supabase secrets exist, the live build uses the email fallback.
+Pages has to be set to **GitHub Actions** in the repository settings before that workflow can publish.
 
 ## Phase 2
 
