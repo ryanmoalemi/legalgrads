@@ -23,17 +23,30 @@ create table public.attorney_applications (
   full_name text not null check (char_length(full_name) between 2 and 120),
   email text not null check (email ~* '^[^@[:space:]]+@[^@[:space:]]+\.[^@[:space:]]+$'),
   phone text not null check (char_length(phone) between 7 and 40),
-  bar_number text not null check (bar_number ~ '^[0-9]{4,8}$'),
-  admission_date date not null,
+  bar_number text not null check (bar_number ~ '^[0-9]{1,6}$'),
+  admission_date date not null check (admission_date <= current_date),
   practice_areas text[] not null check (cardinality(practice_areas) > 0),
   cities_served text not null,
-  bio text not null check (char_length(bio) between 40 and 2000),
+  bio text not null check (char_length(bio) between 40 and 600),
   rate_type text not null check (rate_type in ('flat', 'hourly')),
-  rate_amount numeric not null check (rate_amount > 0),
+  rate_amount numeric not null check (rate_amount >= 25),
+  rate_for text not null check (char_length(rate_for) between 2 and 160),
+  rate_starting_at boolean not null default false,
+  free_consultation boolean not null default false,
   languages text not null,
-  contact_link text not null check (contact_link ~* '^https://'),
+  contact_link text not null check (
+    contact_link !~* '^(javascript|data|vbscript):'
+    and (
+      contact_link ~* '^https://[^[:space:]]+\.[^[:space:]]+'
+      or contact_link ~* '^[^@[:space:]]+@[^@[:space:]]+\.[^@[:space:]]+$'
+      or contact_link ~ '^[0-9+().[:space:]-]{10,40}$'
+    )
+  ),
   photo_path text,
-  malpractice_insurance boolean not null,
+  insurance_choice text not null check (insurance_choice in ('insured', 'will_disclose')),
+  phone_public boolean not null default false,
+  email_public boolean not null default false,
+  reference text,
   attorney_terms_accepted_at timestamptz not null,
   user_id uuid references auth.users (id)
 );
@@ -53,6 +66,12 @@ create table public.attorney_profiles (
   languages text not null,
   contact_link text not null,
   photo_path text,
+  insured boolean not null default false,
+  phone text,
+  email text,
+  rate_for text,
+  rate_starting_at boolean not null default false,
+  free_consultation boolean not null default false,
   founding_member boolean not null default true,
   created_at timestamptz not null default now(),
   published_at timestamptz
@@ -93,7 +112,7 @@ with check (
   status = 'pending'
   and bar_verified_at is null
   and verified_by is null
-  and malpractice_insurance = true
+  and insurance_choice in ('insured', 'will_disclose')
   and attorney_terms_accepted_at is not null
 );
 
@@ -271,12 +290,15 @@ begin
   if decision = 'verified' then
     insert into public.attorney_profiles (
       application_id, published, full_name, bar_number, admission_date, practice_areas,
-      cities_served, bio, rate_type, rate_amount, languages, contact_link, photo_path,
-      founding_member, published_at
+      cities_served, bio, rate_type, rate_amount, rate_for, rate_starting_at, free_consultation,
+      languages, contact_link, photo_path, insured, phone, email, founding_member, published_at
     ) values (
       app.id, true, app.full_name, app.bar_number, app.admission_date, app.practice_areas,
-      app.cities_served, app.bio, app.rate_type, app.rate_amount, app.languages, app.contact_link,
-      app.photo_path, true, now()
+      app.cities_served, app.bio, app.rate_type, app.rate_amount, app.rate_for, app.rate_starting_at, app.free_consultation,
+      app.languages, app.contact_link, app.photo_path, app.insurance_choice = 'insured',
+      case when app.phone_public then app.phone else null end,
+      case when app.email_public then app.email else null end,
+      true, now()
     )
     on conflict (application_id) do update set
       published = true,
@@ -288,9 +310,15 @@ begin
       bio = excluded.bio,
       rate_type = excluded.rate_type,
       rate_amount = excluded.rate_amount,
+      rate_for = excluded.rate_for,
+      rate_starting_at = excluded.rate_starting_at,
+      free_consultation = excluded.free_consultation,
       languages = excluded.languages,
       contact_link = excluded.contact_link,
       photo_path = excluded.photo_path,
+      insured = excluded.insured,
+      phone = excluded.phone,
+      email = excluded.email,
       founding_member = true,
       published_at = now()
     returning id into profile_id;

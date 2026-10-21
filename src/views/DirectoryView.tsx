@@ -4,6 +4,7 @@ import { FormEvent, useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { SPECIALTIES, specialtyName } from '@/lib/catalog';
 import { submitWaitlist } from '@/lib/applications';
+import { contactHref } from '@/lib/applications';
 import { money, validEmail } from '@/lib/format';
 import { getSupabase } from '@/lib/supabase';
 import { PHASE2, supabaseConfigured } from '@/lib/site';
@@ -22,6 +23,9 @@ interface PublicProfile {
   contact_link: string;
   founding_member: boolean;
   admission_date: string;
+  insured?: boolean;
+  rate_for?: string;
+  rate_starting_at?: boolean;
 }
 
 export function DirectoryView() {
@@ -49,9 +53,12 @@ export function DirectoryView() {
     }
     void supabase
       .from('attorney_profiles')
-      .select('id, full_name, practice_areas, cities_served, bio, rate_type, rate_amount, languages, contact_link, founding_member, admission_date')
+      .select('id, full_name, practice_areas, cities_served, bio, rate_type, rate_amount, rate_for, rate_starting_at, languages, contact_link, founding_member, admission_date, insured')
       .eq('published', true)
-      .then(({ data }) => setRows((data as PublicProfile[] | null) ?? []));
+      .then(({ data, error }) => {
+        if (error || !data) setRows([]);
+        else setRows(data as PublicProfile[]);
+      });
   }, []);
 
   const filtered = (rows ?? []).filter((row) => {
@@ -115,16 +122,19 @@ export function DirectoryView() {
                   <h2 className="font-display text-2xl font-extrabold">{row.full_name}</h2>
                   <p className="text-sm text-ink">{row.cities_served} · Admitted {row.admission_date}</p>
                 </div>
-                <p className="font-display font-extrabold">{money(Number(row.rate_amount))}{row.rate_type === 'hourly' ? '/hr' : ' flat'}</p>
+                <p className="font-display font-extrabold">{row.rate_starting_at ? 'Starting at ' : ''}{money(Number(row.rate_amount))}{row.rate_type === 'hourly' ? '/hr' : ' flat'}{row.rate_for ? ` for ${row.rate_for}` : ''}</p>
               </div>
-              {row.founding_member ? <p className="mt-2 inline-flex rounded-full bg-[#F3E9FF] px-3 py-1 text-xs font-bold text-purple">Founding Member</p> : null}
+              <div className="mt-2 flex flex-wrap gap-2">
+                {row.founding_member ? <p className="inline-flex rounded-full bg-[#F3E9FF] px-3 py-1 text-xs font-bold text-purple">Founding Member</p> : null}
+                {row.insured ? <p className="inline-flex rounded-full bg-mint/20 px-3 py-1 text-xs font-bold text-navy">Insured</p> : null}
+              </div>
               <p className="mt-3 text-sm text-ink">{row.bio}</p>
               <div className="mt-3 flex flex-wrap gap-1">
                 {row.practice_areas.map((slug) => <span key={slug} className="rounded-full bg-[#F4EEFF] px-2 py-1 text-xs font-semibold text-purple">{specialtyName(slug)}</span>)}
               </div>
               <p className="mt-2 text-sm">Languages: {row.languages}</p>
               {PHASE2 ? <Link className="mt-3 inline-flex font-semibold text-purple" href={`/attorneys/profile/?id=${row.id}`}>View profile</Link> : null}
-              <p className="mt-2 text-sm"><a className="font-semibold text-purple" href={row.contact_link}>Contact this attorney</a></p>
+              <p className="mt-2 text-sm"><a className="font-semibold text-purple" href={contactHref(row.contact_link)}>Contact this attorney</a></p>
             </li>
           ))}
         </ul>

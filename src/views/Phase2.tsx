@@ -4,6 +4,7 @@ import { FormEvent, useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { specialtyName } from '@/lib/catalog';
 import { money } from '@/lib/format';
+import { downloadShareCard } from '@/lib/share';
 import { getSupabase } from '@/lib/supabase';
 import { PHASE2, supabaseConfigured } from '@/lib/site';
 import { PageIntro } from '@/components/ui';
@@ -113,37 +114,6 @@ export function PublicProfileView() {
       <button type="button" className="mt-6 min-h-11 rounded-full bg-navy px-5 font-display text-sm font-semibold text-white" onClick={() => downloadShareCard(profile.full_name)}>Download “I’m on Legalgrads”</button>
     </div>
   );
-}
-
-export function downloadShareCard(name: string): void {
-  const canvas = document.createElement('canvas');
-  canvas.width = 1200;
-  canvas.height = 630;
-  const ctx = canvas.getContext('2d');
-  if (!ctx) return;
-  ctx.fillStyle = '#FFF8F1';
-  ctx.fillRect(0, 0, 1200, 630);
-  const gradient = ctx.createLinearGradient(80, 180, 900, 180);
-  gradient.addColorStop(0, '#7A00FF');
-  gradient.addColorStop(0.6, '#FF008A');
-  gradient.addColorStop(1, '#FF6B22');
-  ctx.fillStyle = gradient;
-  ctx.fillRect(80, 150, 420, 14);
-  ctx.fillStyle = '#0B0B3B';
-  ctx.font = '800 84px sans-serif';
-  ctx.fillText("I'm on Legalgrads", 80, 280);
-  ctx.font = '600 42px sans-serif';
-  ctx.fillText(name, 80, 360);
-  ctx.fillStyle = '#7A00FF';
-  ctx.font = '700 32px sans-serif';
-  ctx.fillText('Founding Member · California', 80, 430);
-  ctx.fillStyle = '#4A4E72';
-  ctx.font = '400 28px sans-serif';
-  ctx.fillText('legalgrads.com', 80, 520);
-  const link = document.createElement('a');
-  link.href = canvas.toDataURL('image/png');
-  link.download = 'im-on-legalgrads.png';
-  link.click();
 }
 
 export function ProfileEditorView() {

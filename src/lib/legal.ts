@@ -69,7 +69,7 @@ export const DOCS: Record<string, LegalDoc> = {
         heading: 'Information we collect',
         paragraphs: [
           'If you join the consumer waitlist, we collect your email address and the page you signed up from.',
-          'If you apply as an attorney, we collect your name, email, phone, California State Bar number, admission date, practice areas, cities served, bio, rate type and amount, languages, contact or booking link, optional photo, your confirmation of malpractice insurance, and the time you agreed to the Attorney Terms.',
+          'If you apply as an attorney, we collect your name, email, phone, whether you want email or phone on the public listing, California State Bar number, admission date, practice areas, cities served, bio, rate type, amount, what the rate covers, languages, contact method, optional photo, your professional-liability insurance choice, and the time you agreed to the Attorney Terms.',
           'We store a cookie preference on your device. If you opt in, a local analytics note stays in that browser. We do not load third-party advertising trackers.',
         ],
       },
@@ -83,7 +83,7 @@ export const DOCS: Record<string, LegalDoc> = {
       {
         heading: 'What the public can see',
         paragraphs: [
-          'The public can read a profile only after it is published. A published profile can show name, bar number, admission date, practice areas, cities, bio, rate, languages, contact link, and a Founding Member badge. Phone numbers and application emails are not part of the public profile.',
+          'The public can read a profile only after it is published. A published profile can show name, bar number, admission date, practice areas, cities, bio, rate, languages, the contact method you provided, a Founding Member badge, and an Insured badge only if you said you carry professional liability insurance. Your phone and email appear only if you chose to show them.',
         ],
       },
       {
@@ -98,7 +98,7 @@ export const DOCS: Record<string, LegalDoc> = {
   'attorney-terms': {
     slug: 'attorney-terms',
     title: 'Attorney Terms',
-    description: 'Terms for California attorneys who apply for a Legalgrads listing.',
+    description: 'In short: Legalgrads is a directory, not a referral service. We do not take a referral fee or a share of your legal fees. You write the listing and you are responsible for it. We publish it only after a person checks your California State Bar record. Email ryan@legalgrads.com to change or remove it. Attorney login is not available yet.',
     updated,
     sections: [
       {
@@ -111,7 +111,7 @@ export const DOCS: Record<string, LegalDoc> = {
       {
         heading: 'Your license and insurance',
         paragraphs: [
-          'You must be admitted to the State Bar of California. You submit your bar number and admission date so Legalgrads can check them. You confirm that you maintain professional liability insurance. Legalgrads does not provide that insurance.',
+          'You must be admitted to the State Bar of California. You submit your bar number and admission date so Legalgrads can check them. You tell us whether you carry professional liability insurance. If you do not, you agree to disclose that to clients in writing, as California Rule of Professional Conduct 1.4.2 requires. An Insured badge is shown only when you say you carry insurance. Legalgrads does not provide that insurance.',
         ],
       },
       {

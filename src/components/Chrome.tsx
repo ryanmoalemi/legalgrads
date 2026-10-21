@@ -135,7 +135,7 @@ export function Footer() {
           </div>
         ))}
       </div>
-      <p className="border-t border-white/10 px-4 py-4 text-center text-xs text-white/60">© 2026 Legalgrads. Draft — pending legal review.</p>
+      <p className="border-t border-white/10 px-4 py-4 text-center text-xs text-white/60">© 2026 Legalgrads. Draft — pending legal review. October 21, 2026.</p>
     </footer>
   );
 }
