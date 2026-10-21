@@ -1,7 +1,6 @@
 import type { Metadata } from 'next';
 import localFont from 'next/font/local';
-import { CookieBanner, DemoBar, Footer, Header } from '@/components/Chrome';
-import { DemoProvider } from '@/components/DemoProvider';
+import { CookieBanner, Footer, Header } from '@/components/Chrome';
 import './globals.css';
 
 const jakarta = localFont({
@@ -37,7 +36,7 @@ const caveat = localFont({
 export const metadata: Metadata = {
   metadataBase: new URL('https://legalgrads.com'),
   title: { default: 'Legalgrads | Fresh out of law school. Ready to work for you.', template: '%s | Legalgrads' },
-  description: 'Hire newly licensed attorneys who are ready to build their practices. Interactive pitch demo with fictional data.',
+  description: 'A directory of newly licensed California attorneys. Listings go live only after a manual State Bar check.',
   icons: {
     icon: [
       { url: '/favicon.svg', type: 'image/svg+xml' },
@@ -68,13 +67,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en" className={`${jakarta.variable} ${inter.variable} ${caveat.variable}`}>
       <body className="font-sans antialiased">
         <a className="skip-link" href="#main">Skip to content</a>
-        <DemoProvider>
-          <DemoBar />
-          <Header />
-          <main id="main">{children}</main>
-          <Footer />
-          <CookieBanner />
-        </DemoProvider>
+        <Header />
+        <main id="main">{children}</main>
+        <Footer />
+        <CookieBanner />
       </body>
     </html>
   );

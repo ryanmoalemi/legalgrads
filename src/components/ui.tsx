@@ -1,13 +1,5 @@
 import Link from 'next/link';
-import { STATUS_LABEL, cx } from '@/lib/format';
-
-export function DemoMark({ children = 'DEMO' }: { children?: string }) {
-  return <span className="demo-pill">{children}</span>;
-}
-
-export function StatusPill({ status }: { status: string }) {
-  return <span className="rounded-full bg-cream px-2 py-1 text-xs font-semibold text-navy">{STATUS_LABEL[status] ?? status}</span>;
-}
+import { cx } from '@/lib/format';
 
 export function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
