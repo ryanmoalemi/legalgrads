@@ -7,6 +7,7 @@ export function ListingPreview({
   areas,
   bio,
   insured,
+  earlyAttorney = true,
   photoUrl,
   contact,
   sample = false,
@@ -17,6 +18,7 @@ export function ListingPreview({
   areas: string[];
   bio: string;
   insured: boolean;
+  earlyAttorney?: boolean;
   photoUrl?: string;
   contact?: string;
   sample?: boolean;
@@ -31,7 +33,10 @@ export function ListingPreview({
           <p className="text-sm text-ink">{cities || 'Your cities'}</p>
         </div>
       </div>
-      {insured ? <p className="mt-3"><span className="rounded-full bg-mint/20 px-3 py-1 text-xs font-bold text-navy">Insured</span></p> : null}
+      <div className="mt-3 flex flex-wrap gap-2">
+        {earlyAttorney ? <span className="rounded-full bg-[#F3E9FF] px-3 py-1 text-xs font-bold text-purple">Early Attorney</span> : null}
+        {insured ? <span className="rounded-full bg-mint/20 px-3 py-1 text-xs font-bold text-navy">Insured</span> : null}
+      </div>
       <p className="mt-3 font-display font-extrabold">{rate}</p>
       <p className="mt-2 text-sm text-ink">{bio || 'Your short bio appears here.'}</p>
       <div className="mt-3 flex flex-wrap gap-1">

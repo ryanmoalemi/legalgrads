@@ -22,7 +22,7 @@ export function AnnouncementBar() {
       data-testid="attorney-announcement"
       className="block bg-gradient-to-r from-purple via-pink to-orange px-4 py-2 text-center font-display text-sm font-semibold text-white"
     >
-      California attorney? Get a free listing →
+      California attorney? Join free and get the Early Attorney badge →
     </Link>
   );
 }
@@ -42,7 +42,7 @@ export function Header() {
           {NAV.map((item) => (
             <Link key={item.href} href={item.href} className="font-display text-sm font-semibold text-navy/80 hover:text-navy">{item.label}</Link>
           ))}
-          <Link href="/join/" data-testid="nav-join" className={joinClass}>Attorneys: Free listing</Link>
+          <Link href="/join/" data-testid="nav-join" className={joinClass}>Attorneys: Join free</Link>
           <span className="inline-flex items-center gap-2 rounded-full bg-[#F3E9FF] px-4 py-2 font-display text-sm font-semibold text-purple">
             <Rocket /> Launching soon
           </span>
@@ -63,7 +63,7 @@ export function Header() {
           {NAV.map((item) => (
             <Link key={item.href} href={item.href} className="block rounded-2xl px-3 py-3 font-display font-semibold">{item.label}</Link>
           ))}
-          <Link href="/join/" className={`${joinClass} mt-2 w-full`}>Attorneys: Free listing</Link>
+          <Link href="/join/" className={`${joinClass} mt-2 w-full`}>Attorneys: Join free</Link>
           <Link href="/specialties/" className="block rounded-2xl px-3 py-3 font-display font-semibold">Practice Areas</Link>
         </nav>
       ) : null}
@@ -92,7 +92,7 @@ const FOOTER = [
   ]],
   ['Attorneys', [
     ['/for-attorneys/', 'For Attorneys'],
-    ['/join/', 'Get a free listing'],
+    ['/join/', 'Join free'],
     ['/attorney-terms/', 'Attorney Terms'],
     ['/attorney-advertising/', 'Attorney advertising'],
     ['/referral-disclosure/', 'Referral disclosure'],

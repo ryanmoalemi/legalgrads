@@ -2,7 +2,7 @@
 
 Directory for newly licensed California attorneys. The public site is a static Next.js export. Attorney applications and the consumer waitlist are stored in Supabase when the project is configured. If it is not, the forms open an email to ryan@legalgrads.com with every field filled in, so a submission is never discarded in the browser.
 
-Legalgrads is not a law firm. Listings go live only after a manual California State Bar check. The listing is free. Legalgrads takes no referral fee and no share of legal fees. A later premium, if offered, would be a flat fee for extra visibility only.
+Legalgrads is not a law firm. Listings go live only after a manual California State Bar check. The listing is free and shows an Early Attorney badge. Legalgrads takes no referral fee and no share of legal fees. A later premium, if offered, would be a flat fee for extra visibility only.
 
 Policies are marked “Draft — pending legal review” in the footer.
 
@@ -68,6 +68,6 @@ These routes exist and are not in the header or footer. They render “Not publi
 - `/attorney/login/` — magic link
 - `/attorney/profile/` — edit bio, cities, languages, rate, and contact link
 - `/admin/review/` — approve after the State Bar check, or reject
-- `/attorneys/profile/?id=` — public profile and a downloadable “I’m on Legalgrads” image
+- `/attorneys/profile/?id=` — public profile, an Early Attorney badge, and a downloadable “I’m on Legalgrads” image
 
 The find page already lists published profiles when the database has them. It shows “Attorneys joining now — launching soon” when it does not.

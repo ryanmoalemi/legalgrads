@@ -101,7 +101,8 @@ export function PublicProfileView() {
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-10">
-      <h1 className="font-display text-4xl font-extrabold">{profile.full_name}</h1>
+      {profile.founding_member ? <p className="inline-flex rounded-full bg-[#F3E9FF] px-3 py-1 text-xs font-bold text-purple">Early Attorney</p> : null}
+      <h1 className="mt-3 font-display text-4xl font-extrabold">{profile.full_name}</h1>
       <p className="mt-2 text-ink">{profile.cities_served} · California State Bar {profile.bar_number} · admitted {profile.admission_date}</p>
       <p className="mt-4 font-display text-2xl font-extrabold">{money(Number(profile.rate_amount))}{profile.rate_type === 'hourly' ? '/hr' : ' flat'}</p>
       <p className="mt-4 leading-7 text-ink">{profile.bio}</p>

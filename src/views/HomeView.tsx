@@ -62,7 +62,7 @@ export function HomeView() {
           {done ? <p role="status" data-testid="waitlist-status" className="mt-2 text-sm font-medium">{done}</p> : null}
           {mailto ? <p className="mt-2 text-sm"><a data-testid="waitlist-mailto" className="font-semibold text-purple" href={mailto}>Email this signup to ryan@legalgrads.com</a></p> : null}
           <Link href="/join/" data-testid="home-attorney-cta" className="mt-3 inline-flex min-h-11 items-center justify-center rounded-full bg-white px-5 py-3 font-display text-sm font-semibold text-navy shadow-pill ring-1 ring-navy/10">
-            Get your free listing
+            Join free
           </Link>
           <p className="mt-3 text-sm text-ink sm:text-base">
             Be the first to know when attorneys are published. No <span className="hand-underline font-semibold text-navy">spam.
@@ -95,7 +95,10 @@ export function HomeView() {
 
       <section className="mx-auto max-w-6xl px-4 pb-4" aria-labelledby="for-attorneys-heading" data-testid="home-for-attorneys">
         <div className="rounded-[32px] bg-white p-6 shadow-card sm:p-8">
-          <h2 id="for-attorneys-heading" className="font-display text-3xl font-extrabold tracking-tight text-navy sm:text-4xl">For attorneys</h2>
+          <p className="inline-flex items-center gap-1 rounded-full bg-[#F3E9FF] px-3 py-1 font-display text-xs font-bold text-purple">
+            <Cap /> Early Attorney
+          </p>
+          <h2 id="for-attorneys-heading" className="mt-3 font-display text-3xl font-extrabold tracking-tight text-navy sm:text-4xl">For attorneys</h2>
           <p className="mt-2 max-w-2xl text-ink">A free California listing. You set the rate. Legalgrads does not take a cut.</p>
           <ul className="mt-6 grid gap-3 sm:grid-cols-3">
             {[
@@ -110,7 +113,7 @@ export function HomeView() {
             ))}
           </ul>
           <Link href="/join/" data-testid="home-apply" className="mt-6 inline-flex min-h-12 items-center justify-center rounded-full bg-pink px-8 py-3 font-display text-base font-semibold text-white">
-            Get your free listing
+            Join free
           </Link>
         </div>
       </section>
@@ -145,7 +148,7 @@ function HeroArt() {
         <div className="flex h-44 items-center justify-center rounded-2xl bg-gradient-to-br from-[#F4EEFF] to-[#FFF1F8] sm:h-56">
           <img src="/logos/legalgrads_mark.svg" alt="" className="h-24 w-24" />
         </div>
-        <span className="absolute left-6 top-6 inline-flex items-center gap-1 rounded-full bg-white/95 px-2 py-1 text-xs font-semibold text-navy shadow"><Cap /> Free listing</span>
+        <span className="absolute left-6 top-6 inline-flex items-center gap-1 rounded-full bg-white/95 px-2 py-1 text-xs font-semibold text-navy shadow"><Cap /> Early Attorney</span>
         <div className="px-1 pt-3">
           <h2 className="font-display text-lg font-extrabold">Your listing</h2>
           <p className="text-xs text-ink">California · after a State Bar check</p>
