@@ -1,0 +1,252 @@
+// Prisma schema for a future server. The pitch demo does not run Prisma.
+// The IndexedDB document in the browser mirrors these models.
+// Switch provider to "postgresql" and set DATABASE_URL when leaving the demo.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id              String   @id
+  role            String
+  name            String
+  email           String   @unique
+  passwordHash    String
+  createdAt       DateTime
+  emailVerified   Boolean  @default(false)
+  adultConfirmed  Boolean  @default(false)
+  deletedAt       DateTime?
+  clientProfile   ClientProfile?
+  attorneyProfile AttorneyProfile?
+}
+
+model ClientProfile {
+  userId      String @id
+  location    String
+  state       String
+  preferences String
+  user        User   @relation(fields: [userId], references: [id])
+}
+
+model AttorneyProfile {
+  userId                String   @id
+  slug                  String   @unique
+  displayName           String
+  bio                   String
+  lawSchool             String
+  graduationYear        Int
+  admissionDate         String?
+  licenseJurisdictions  String
+  licenseStatus         String
+  verificationStatus    String
+  verificationDate      String?
+  hourlyRate            Int
+  photoUrl              String
+  languages             String
+  remoteAllowed         Boolean
+  inPersonAllowed       Boolean
+  isPublished           Boolean
+  city                  String
+  timezone              String
+  responseTimeHours     Int
+  user                  User     @relation(fields: [userId], references: [id])
+}
+
+model Specialty {
+  id          String @id
+  slug        String @unique
+  name        String
+  description String
+  icon        String
+}
+
+model AttorneySpecialty {
+  attorneyId  String
+  specialtyId String
+  @@id([attorneyId, specialtyId])
+}
+
+model Service {
+  id                    String  @id
+  attorneyId            String
+  title                 String
+  scope                 String
+  exclusions            String
+  fixedPrice            Int
+  turnaroundDays        Int
+  active                Boolean
+  consultationIncluded  Boolean
+}
+
+model AvailabilitySlot {
+  id          String   @id
+  attorneyId  String
+  startAtUtc  DateTime
+  endAtUtc    DateTime
+  status      String
+}
+
+model Favorite {
+  id         String   @id
+  clientId   String
+  attorneyId String
+  createdAt  DateTime
+  @@unique([clientId, attorneyId])
+}
+
+model Inquiry {
+  id                 String   @id
+  clientId           String
+  attorneyId         String
+  specialtyId        String
+  description        String
+  budget             String
+  urgency            String
+  jurisdiction       String
+  status             String
+  createdAt          DateTime
+}
+
+model Conversation {
+  id        String  @id
+  inquiryId String
+  matterId  String?
+}
+
+model ConversationMember {
+  conversationId String
+  userId         String
+  @@id([conversationId, userId])
+}
+
+model Message {
+  id             String    @id
+  conversationId String
+  senderId       String
+  body           String
+  createdAt      DateTime
+  readAt         DateTime?
+}
+
+model Appointment {
+  id          String @id
+  inquiryId   String
+  attorneyId  String
+  clientId    String
+  slotId      String
+  status      String
+  meetingMode String
+}
+
+model ConflictCheck {
+  id        String    @id
+  inquiryId String
+  attorneyId String
+  status    String
+  checkedAt DateTime?
+}
+
+model Proposal {
+  id         String   @id
+  inquiryId  String
+  attorneyId String
+  scope      String
+  priceType  String
+  price      Int
+  deadline   String
+  expiresAt  String
+  status     String
+}
+
+model Engagement {
+  id                 String    @id
+  proposalId         String    @unique
+  clientAcceptedAt   DateTime?
+  attorneyAcceptedAt DateTime?
+  status             String
+}
+
+model Matter {
+  id           String    @id
+  engagementId String
+  clientId     String
+  attorneyId   String
+  status       String
+  startedAt    DateTime
+  completedAt  DateTime?
+}
+
+model MatterMilestone {
+  id       String @id
+  matterId String
+  title    String
+  dueAt    String
+  status   String
+}
+
+model DemoPayment {
+  id        String   @id
+  matterId  String
+  amount    Int
+  status    String
+  simulated Boolean  @default(true)
+  createdAt DateTime
+}
+
+model Review {
+  id         String   @id
+  matterId   String   @unique
+  clientId   String
+  attorneyId String
+  rating     Int
+  text       String
+  isDemo     Boolean  @default(true)
+  createdAt  DateTime
+}
+
+model Notification {
+  id        String    @id
+  userId    String
+  type      String
+  body      String
+  readAt    DateTime?
+  createdAt DateTime
+}
+
+model ActivityEvent {
+  id         String   @id
+  actorId    String
+  objectType String
+  objectId   String
+  action     String
+  createdAt  DateTime
+}
+
+model WaitlistEntry {
+  id        String   @id
+  email     String
+  role      String
+  createdAt DateTime
+}
+
+model PrivacyRequest {
+  id         String   @id
+  email      String
+  type       String
+  details    String
+  status     String
+  resolution String
+  createdAt  DateTime
+}
+
+model TermsAcceptance {
+  id         String   @id
+  userId     String
+  version    String
+  acceptedAt DateTime
+}
