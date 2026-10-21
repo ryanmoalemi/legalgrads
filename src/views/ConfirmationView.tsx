@@ -38,7 +38,6 @@ export function ConfirmationView() {
         {result?.channel === 'supabase' ? <p>We have the application. You do not need to send a second copy unless we ask.</p> : null}
         <p>To change details or remove your listing, email <a className="font-semibold text-purple" href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a> until attorney login is available.</p>
         {result?.insured ? <p className="inline-flex rounded-full bg-mint/20 px-3 py-1 text-xs font-bold text-navy">Insured</p> : null}
-        <p className="inline-flex rounded-full bg-[#F3E9FF] px-3 py-1 text-xs font-bold text-purple">Founding Member</p>
       </div>
       <div className="mt-6">
         <SharePanel name={result?.name || 'Your name'} />

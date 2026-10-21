@@ -22,7 +22,7 @@ export function HowItWorksView() {
           </li>
         ))}
       </ol>
-      <p className="mt-6 text-sm"><Link className="font-semibold text-purple" href="/for-attorneys/">Attorneys: apply as a Founding Member</Link></p>
+      <p className="mt-6 text-sm"><Link className="font-semibold text-purple" href="/for-attorneys/">Attorneys: get a free listing</Link></p>
     </div>
   );
 }
@@ -30,9 +30,9 @@ export function HowItWorksView() {
 export function PricingView() {
   return (
     <div className="mx-auto max-w-3xl px-4 py-10">
-      <PageIntro kicker="Pricing" title="Founding listings are free" body="Legalgrads does not charge per lead and does not take a percentage of legal fees." />
+      <PageIntro kicker="Pricing" title="The listing is free" body="Legalgrads does not charge per lead and does not take a percentage of legal fees." />
       <div className="mt-8 rounded-3xl bg-white p-6">
-        <h2 className="font-display text-2xl font-extrabold">Founding Member</h2>
+        <h2 className="font-display text-2xl font-extrabold">Free listing</h2>
         <p className="mt-2 text-4xl font-display font-extrabold">$0</p>
         <p className="mt-3 text-ink">A free directory listing after your California State Bar record is checked. You set a flat fee or an hourly rate for your own clients.</p>
       </div>
@@ -57,7 +57,7 @@ export function AboutView() {
 export function FaqView() {
   const items = [
     ['When will I see attorneys?', 'The find page lists only published profiles. Until the first State Bar checks are finished, it shows a waitlist. California bar results are expected around October 30, 2026, and applications are open now.'],
-    ['Does Legalgrads take a cut?', 'No. Founding listings are free. Legalgrads takes no referral fee and no share of legal fees.'],
+    ['Does Legalgrads take a cut?', 'No. The listing is free. Legalgrads takes no referral fee and no share of legal fees.'],
     ['What does verification mean?', 'A person checks the California State Bar record before a listing is published. It is not an instant badge and it is not a background-check product.'],
     ['Who writes the listing?', 'The attorney does. They are responsible for their advertising, rate, and photo.'],
   ];
@@ -79,7 +79,7 @@ export function FaqView() {
 export function SpecialtiesView() {
   return (
     <div className="mx-auto max-w-5xl px-4 py-10">
-      <PageIntro kicker="Practice areas" title="What founding attorneys can list" body="These are the eight areas on the application. Published attorneys will show up here after verification." />
+      <PageIntro kicker="Practice areas" title="What attorneys can list" body="These are the eight areas on the application. Published attorneys will show up here after verification." />
       <ul className="mt-8 grid gap-3 sm:grid-cols-2">
         {SPECIALTIES.map((spec) => (
           <li key={spec.slug}>

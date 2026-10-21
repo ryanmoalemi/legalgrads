@@ -53,4 +53,10 @@ test('capture launch screenshots', async ({ page }) => {
     await page.waitForTimeout(200);
     await page.screenshot({ path: `${dir}/${name}-mobile.png`, fullPage: true });
   }
+  await page.getByTestId('apply-insured').check();
+  await page.getByTestId('apply-terms').check();
+  await page.getByTestId('application-submit').click();
+  await page.waitForURL(/confirmation/);
+  await page.waitForTimeout(300);
+  await page.screenshot({ path: `${dir}/confirmation-mobile.png`, fullPage: true });
 });

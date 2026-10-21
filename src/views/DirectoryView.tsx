@@ -78,7 +78,7 @@ export function DirectoryView() {
     const result = await submitWaitlist(email, `directory:${specialty || 'any'}`);
     setMailto(result.channel === 'mailto' ? result.mailto : '');
     setNotice(result.channel === 'supabase'
-      ? 'You’re on the list. We’ll email you when founding attorneys are published.'
+      ? 'You’re on the list. We’ll email you when attorneys are published.'
       : 'We did not store this on a server. Send the email so your address is not lost.');
   }
 
@@ -87,7 +87,7 @@ export function DirectoryView() {
       <PageIntro
         kicker="Find an attorney"
         title="California attorneys, after a State Bar check"
-        body="Browse published listings, or leave your email and we’ll tell you when the first founding attorneys are live."
+        body="Browse published listings, or leave your email and we’ll tell you when the first attorneys are live."
       />
       <form className="mt-6 grid gap-3 rounded-3xl bg-white p-4 sm:grid-cols-2" aria-label="Filters" onSubmit={(event) => event.preventDefault()}>
         <label className="text-sm font-medium">Practice area
@@ -105,7 +105,7 @@ export function DirectoryView() {
       {rows && rows.length === 0 ? (
         <div className="mt-6" data-testid="directory-empty">
           <Empty
-            title="Founding attorneys joining now — launching soon"
+            title="Attorneys joining now — launching soon"
             body="No listing is public until Legalgrads manually verifies a California State Bar record. Leave your email and we’ll write when the directory opens."
           />
         </div>
@@ -125,7 +125,6 @@ export function DirectoryView() {
                 <p className="font-display font-extrabold">{row.rate_starting_at ? 'Starting at ' : ''}{money(Number(row.rate_amount))}{row.rate_type === 'hourly' ? '/hr' : ' flat'}{row.rate_for ? ` for ${row.rate_for}` : ''}</p>
               </div>
               <div className="mt-2 flex flex-wrap gap-2">
-                {row.founding_member ? <p className="inline-flex rounded-full bg-[#F3E9FF] px-3 py-1 text-xs font-bold text-purple">Founding Member</p> : null}
                 {row.insured ? <p className="inline-flex rounded-full bg-mint/20 px-3 py-1 text-xs font-bold text-navy">Insured</p> : null}
               </div>
               <p className="mt-3 text-sm text-ink">{row.bio}</p>

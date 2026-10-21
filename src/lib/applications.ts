@@ -174,7 +174,7 @@ export function insuranceLabel(choice: InsuranceChoice): string {
 export function applicationBody(input: ApplicationInput, reference: string): string {
   const areas = input.practiceAreas.map(specialtyName).join(', ');
   return [
-    'Founding Member application for Legalgrads.',
+    'Free listing application for Legalgrads.',
     `Reference: ${reference}`,
     '',
     `Name: ${input.fullName.trim()}`,
@@ -202,7 +202,7 @@ export function applicationBody(input: ApplicationInput, reference: string): str
 }
 
 export function applicationMailto(input: ApplicationInput, reference: string): string {
-  return mailtoHref(`Legalgrads founding member application ${reference}`, applicationBody(input, reference));
+  return mailtoHref(`Legalgrads free listing application ${reference}`, applicationBody(input, reference));
 }
 
 export interface SubmitResult {
