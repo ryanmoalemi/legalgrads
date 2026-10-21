@@ -1,5 +1,7 @@
 import Link from 'next/link';
 import { SPECIALTIES } from '@/lib/catalog';
+import { ListingPreview } from '@/components/ListingPreview';
+import { SharePanel } from '@/components/SharePanel';
 import { PageIntro } from '@/components/ui';
 
 export function ForAttorneysView() {
@@ -37,6 +39,43 @@ export function ForAttorneysView() {
           </li>
         ))}
       </ul>
+      <h2 className="mt-10 font-display text-2xl font-extrabold">What clients will see</h2>
+      <p className="mt-2 text-sm text-ink">This sample uses your future listing, not a real attorney. Clients find the live card on Find an attorney after your State Bar record is verified.</p>
+      <div className="mt-4 max-w-xl">
+        <ListingPreview
+          sample
+          name="Your name"
+          cities="Oakland"
+          rate="Starting at $225/hr for a consult"
+          areas={['Contracts', 'Real Estate']}
+          bio="A short bio you write. Clients read it on Find an attorney."
+          insured={false}
+        />
+      </div>
+      <div className="mt-8">
+        <SharePanel name="Your name" />
+      </div>
+      <section className="mt-10" aria-labelledby="attorney-faq">
+        <h2 id="attorney-faq" className="font-display text-2xl font-extrabold">Attorney questions</h2>
+        <div className="mt-4 space-y-4">
+          <article className="rounded-3xl bg-white p-5">
+            <h3 className="font-display text-lg font-extrabold">Is Legalgrads a referral service?</h3>
+            <p className="mt-2 text-sm text-ink">No. Legalgrads is not a referral service. Clients contact you directly. We do not send you a matter for a fee.</p>
+          </article>
+          <article className="rounded-3xl bg-white p-5">
+            <h3 className="font-display text-lg font-extrabold">Does Legalgrads share fees?</h3>
+            <p className="mt-2 text-sm text-ink">No. Legalgrads takes no referral fee and no share of legal fees.</p>
+          </article>
+          <article className="rounded-3xl bg-white p-5">
+            <h3 className="font-display text-lg font-extrabold">Who is responsible for ethics and advertising?</h3>
+            <p className="mt-2 text-sm text-ink">You are. Your bio, rate, photo, and contact details are your own advertising and must follow the California Rules of Professional Conduct.</p>
+          </article>
+          <article className="rounded-3xl bg-white p-5">
+            <h3 className="font-display text-lg font-extrabold">How is my information used?</h3>
+            <p className="mt-2 text-sm text-ink">We use it to check your State Bar record and, if that passes, to show the listing you wrote. Phone and email are public only if you choose that. Email ryan@legalgrads.com to change or remove a listing.</p>
+          </article>
+        </div>
+      </section>
       <p className="mt-8 text-sm text-ink">
         Read the <Link className="font-semibold text-purple" href="/attorney-terms/">Attorney Terms</Link> before you apply. You are responsible for your own advertising. A future premium, if we offer one, will be a flat fee for visibility only.
       </p>
