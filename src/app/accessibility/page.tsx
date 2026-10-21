@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { LegalArticle } from '@/components/LegalArticle';
 import { DOCS } from '@/lib/legal';
-export const metadata: Metadata = { title: 'Accessibility' };
-export default function Page() { return <LegalArticle doc={DOCS['accessibility']} />; }
+const doc = DOCS['accessibility'];
+export const metadata: Metadata = { title: doc.title };
+export default function Page() { return <LegalArticle doc={doc} />; }

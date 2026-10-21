@@ -43,7 +43,7 @@ export function track(channel: 'analytics' | 'marketing', name: string): { permi
   const log = JSON.parse(window.localStorage.getItem(LOG_KEY) || '[]') as { channel: string; name: string; at: string }[];
   log.push({ channel, name, at: new Date().toISOString() });
   window.localStorage.setItem(LOG_KEY, JSON.stringify(log));
-  return { permitted: true, reason: `Recorded a local demo ${channel} event “${name}”. Nothing left this browser.` };
+  return { permitted: true, reason: `Recorded a local ${channel} event “${name}”. Nothing left this browser.` };
 }
 
 export function analyticsLog(): { channel: string; name: string; at: string }[] {
