@@ -1,9 +1,13 @@
--- Legalgrads directory. Apply in the Supabase SQL editor or with the Supabase CLI.
--- The anon key can insert applications and waitlist rows only.
--- Published attorney profiles are the only records the public can read.
--- Do not put the service-role key in the website.
+-- Legalgrads directory. Paste this entire file once into the Supabase SQL editor
+-- (project qlhwojjdsonjxfeoiqww). It creates the tables, row level security,
+-- the review function, and the private attorney-photos bucket policies.
+-- The publishable key may insert applications and waitlist rows only.
+-- It may read attorney_profiles only when published is true.
+-- Do not put a secret or service-role key in the website.
 
 create extension if not exists pgcrypto;
+
+grant usage on schema public to anon, authenticated;
 
 create table public.admin_users (
   user_id uuid primary key references auth.users (id) on delete cascade,
@@ -337,3 +341,5 @@ using (
   bucket_id = 'attorney-photos'
   and name like 'published/%'
 );
+
+notify pgrst, 'reload schema';
