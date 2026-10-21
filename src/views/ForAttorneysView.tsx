@@ -3,6 +3,7 @@ import { SPECIALTIES } from '@/lib/catalog';
 import { ListingPreview } from '@/components/ListingPreview';
 import { SharePanel } from '@/components/SharePanel';
 import { PageIntro } from '@/components/ui';
+import { joinedLabel } from '@/lib/joined';
 
 export function ForAttorneysView() {
   return (
@@ -10,9 +11,10 @@ export function ForAttorneysView() {
       <PageIntro
         kicker="For attorneys"
         title="Join free"
-        body="California attorneys can apply now and get the Early Attorney badge. The listing is free. Legalgrads takes no referral fee and no share of legal fees. Nothing goes live until we manually check your State Bar record."
+        body="California attorneys can apply now. The listing is free. Legalgrads takes no referral fee and no share of legal fees. Nothing goes live until we manually check your State Bar record."
       />
-      <p className="mt-4 inline-flex rounded-full bg-[#F3E9FF] px-3 py-1 text-xs font-bold text-purple">Early Attorney</p>
+      <p className="mt-4 inline-flex rounded-full bg-[#F3E9FF] px-3 py-1 text-xs font-bold text-purple">{joinedLabel()}</p>
+      <p className="mt-2 max-w-3xl text-sm text-ink">{joinedLabel()} is only the year you join Legalgrads. It is not a rating and not a benefit to clients.</p>
       <Link href="/join/" data-testid="founding-cta" className="mt-6 inline-flex min-h-11 items-center rounded-full bg-pink px-6 py-3 font-display text-base font-semibold text-white">
         Join free
       </Link>

@@ -1,6 +1,8 @@
+import { joinedLabel } from '@/lib/joined';
+
 export const INVITE_URL = 'https://legalgrads.com/join/';
 
-export function downloadShareCard(name: string): void {
+export function downloadShareCard(name: string, joined?: string | number | Date | null): void {
   const canvas = document.createElement('canvas');
   canvas.width = 1200;
   canvas.height = 630;
@@ -21,7 +23,7 @@ export function downloadShareCard(name: string): void {
   ctx.fillText(name, 80, 360);
   ctx.fillStyle = '#7A00FF';
   ctx.font = '700 32px sans-serif';
-  ctx.fillText('Early Attorney', 80, 440);
+  ctx.fillText(joinedLabel(joined), 80, 440);
   ctx.fillStyle = '#4A4E72';
   ctx.font = '400 28px sans-serif';
   ctx.fillText('legalgrads.com', 80, 520);

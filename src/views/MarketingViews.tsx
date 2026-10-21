@@ -34,7 +34,7 @@ export function PricingView() {
       <div className="mt-8 rounded-3xl bg-white p-6">
         <h2 className="font-display text-2xl font-extrabold">Free listing</h2>
         <p className="mt-2 text-4xl font-display font-extrabold">$0</p>
-        <p className="mt-3 text-ink">A free directory listing after your California State Bar record is checked. You set a flat fee or an hourly rate for your own clients. The listing shows an Early Attorney badge.</p>
+        <p className="mt-3 text-ink">A free directory listing after your California State Bar record is checked. You set a flat fee or an hourly rate for your own clients. The listing can show the year the attorney joined Legalgrads. That is not a rating and not a benefit to clients.</p>
       </div>
       <div className="mt-4 rounded-3xl bg-white p-6">
         <h2 className="font-display text-2xl font-extrabold">Later, if we offer it</h2>
@@ -57,7 +57,8 @@ export function AboutView() {
 export function FaqView() {
   const items = [
     ['When will I see attorneys?', 'The find page lists only published profiles. Until the first State Bar checks are finished, it shows a waitlist. California bar results are expected around October 30, 2026, and applications are open now.'],
-    ['Does Legalgrads take a cut?', 'No. The listing is free and can show an Early Attorney badge. Legalgrads takes no referral fee and no share of legal fees.'],
+    ['Does Legalgrads take a cut?', 'No. The listing is free. Legalgrads takes no referral fee and no share of legal fees.'],
+    ['What does the Joined year mean?', 'It is the calendar year that attorney joined Legalgrads. It is not a quality rating and not a benefit to clients.'],
     ['What does verification mean?', 'A person checks the California State Bar record before a listing is published. It is not an instant badge and it is not a background-check product.'],
     ['Who writes the listing?', 'The attorney does. They are responsible for their advertising, rate, and photo.'],
   ];

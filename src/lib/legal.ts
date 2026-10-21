@@ -83,7 +83,7 @@ export const DOCS: Record<string, LegalDoc> = {
       {
         heading: 'What the public can see',
         paragraphs: [
-          'The public can read a profile only after it is published. A published profile can show name, bar number, admission date, practice areas, cities, bio, rate, languages, the contact method you provided, an Early Attorney badge, and an Insured badge only if you said you carry professional liability insurance. Your phone and email appear only if you chose to show them.',
+          'The public can read a profile only after it is published. A published profile can show name, bar number, admission date, practice areas, cities, bio, rate, languages, the contact method you provided, the year the attorney joined Legalgrads, and an Insured badge only if you said you carry professional liability insurance. Your phone and email appear only if you chose to show them. The Joined year is only that calendar year. It is not a quality rating and not a benefit to clients.',
         ],
       },
       {
@@ -104,7 +104,7 @@ export const DOCS: Record<string, LegalDoc> = {
       {
         heading: 'Free listing',
         paragraphs: [
-          'The listing is free, and it shows an Early Attorney badge. Legalgrads takes no referral fee and no share of your legal fees. You set your own flat fee or hourly rate. Clients contact you directly.',
+          'The listing is free, and it shows the year you joined Legalgrads. That mark is not a quality rating and not a benefit to clients. Legalgrads takes no referral fee and no share of your legal fees. You set your own flat fee or hourly rate. Clients contact you directly.',
           'A later premium product, if Legalgrads offers one, will be a flat fee for extra visibility only. It will not be priced per lead and it will not be a percentage of legal fees.',
         ],
       },
@@ -188,7 +188,7 @@ export const DOCS: Record<string, LegalDoc> = {
       {
         heading: 'No referral fee',
         paragraphs: [
-          'Legalgrads does not charge attorneys or consumers a referral fee. Legalgrads does not take a share of legal fees. The listing is free and can show an Early Attorney badge. Any future charge would be a flat fee for visibility, not a price per lead.',
+          'Legalgrads does not charge attorneys or consumers a referral fee. Legalgrads does not take a share of legal fees. The listing is free. A Joined year on a listing is only the year the attorney joined Legalgrads. It is not a quality rating and not a benefit to clients. Any future charge would be a flat fee for visibility, not a price per lead.',
           'Choosing a lawyer from the directory is your decision. ' + contact,
         ],
       },
