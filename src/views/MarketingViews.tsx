@@ -7,7 +7,7 @@ import { PageIntro } from '@/components/ui';
 export function HowItWorksView() {
   const steps = [
     ['Tell us you want a lawyer', 'Join the waitlist, or come back when published California listings are on the find page.'],
-    ['Read a verified listing', 'A profile appears only after Legalgrads manually checks the California State Bar record. The attorney wrote the bio and set the rate.'],
+    ['Read a verified listing', 'A profile appears only after Legalgrads manually checks the California State Bar record. The attorney wrote the bio.'],
     ['Contact the attorney directly', 'Use the booking link on the listing. Legalgrads is not in the middle of the representation and does not take a fee.'],
   ];
   return (
@@ -34,7 +34,7 @@ export function PricingView() {
       <div className="mt-8 rounded-3xl bg-white p-6">
         <h2 className="font-display text-2xl font-extrabold">Free listing</h2>
         <p className="mt-2 text-4xl font-display font-extrabold">$0</p>
-        <p className="mt-3 text-ink">A free directory listing after your California State Bar record is checked. You set a flat fee or an hourly rate for your own clients. The listing can show the year the attorney joined Legalgrads. That is not a rating and not a benefit to clients.</p>
+        <p className="mt-3 text-ink">A free directory listing after your California State Bar record is checked. The listing can show the year the attorney joined Legalgrads. That is not a rating and not a benefit to clients.</p>
       </div>
       <div className="mt-4 rounded-3xl bg-white p-6">
         <h2 className="font-display text-2xl font-extrabold">Later, if we offer it</h2>

@@ -46,7 +46,7 @@ export function HomeView() {
             <span className="gradient-text mt-1 block">Ready to work for you.</span>
           </h1>
           <p className="mt-4 max-w-xl text-lg text-ink sm:text-xl">
-            Hire newly licensed California attorneys who set their own rates. Listings go live only after a manual State Bar check.
+            Hire newly licensed California attorneys. Listings go live only after a manual State Bar check.
           </p>
           <form onSubmit={onWaitlist} className="relative mt-6 flex max-w-xl items-center rounded-full bg-white p-1.5 shadow-pill">
             <span className="pl-3 text-navy" aria-hidden="true">
@@ -87,7 +87,7 @@ export function HomeView() {
 
       <section className="mx-auto max-w-6xl px-4 py-8" aria-label="Benefits">
         <ul className="grid grid-cols-2 gap-x-3 gap-y-6 md:grid-cols-4 md:divide-x md:divide-[#eadfce]">
-          <Benefit testid="benefit-more-affordable" icon="/icons/benefits/more_affordable.svg" title="More Affordable" body="Attorneys publish the flat or hourly rate they choose." />
+          <Benefit testid="benefit-more-affordable" icon="/icons/benefits/more_affordable.svg" title="More Affordable" body="A free directory. No referral fee and no per-lead charge." />
           <Benefit testid="benefit-newly-licensed" icon="/icons/benefits/newly_licensed.svg" title="Newly Licensed" body="Built for California lawyers opening a practice after the bar." />
           <Benefit testid="benefit-verified" icon="/icons/benefits/verified_attorneys.svg" title="Verified Attorneys" body="A listing goes live only after a manual California State Bar check." />
           <Benefit testid="benefit-wide-range" icon="/icons/benefits/wide_range.svg" title="Wide Range of Help" body="Contracts, business, real estate, employment, and more." />
@@ -100,11 +100,11 @@ export function HomeView() {
             {joinedLabel()}
           </p>
           <h2 id="for-attorneys-heading" className="mt-3 font-display text-3xl font-extrabold tracking-tight text-navy sm:text-4xl">For attorneys</h2>
-          <p className="mt-2 max-w-2xl text-ink">A free California listing. You set the rate. Legalgrads does not take a cut.</p>
+          <p className="mt-2 max-w-2xl text-ink">A free California listing. Legalgrads does not take a cut.</p>
           <ul className="mt-6 grid gap-3 sm:grid-cols-3">
             {[
               ['Free listing', 'You are not charged to appear in the directory.'],
-              ['Set your own rate', 'Publish a flat fee or an hourly amount that you choose.'],
+              ['Checked by hand', 'Your listing goes live only after a manual State Bar check.'],
               ['No referral fee', 'Legalgrads takes no referral fee and no share of legal fees.'],
             ].map(([title, body]) => (
               <li key={title} className="rounded-3xl bg-cream px-4 py-4">
@@ -167,8 +167,8 @@ function HeroArt() {
           ))}
         </div>
         <div className="px-1 pt-3">
-          <h2 className="font-display text-lg font-extrabold">You set the rate</h2>
-          <p className="text-xs text-ink">Flat or hourly. No referral fee.</p>
+          <h2 className="font-display text-lg font-extrabold">Verified with the State Bar</h2>
+          <p className="text-xs text-ink">Every listing checked by hand.</p>
         </div>
       </article>
       <p className="absolute bottom-0 right-6 z-30 -rotate-2 rounded-2xl bg-[#FFE14A] px-3 py-2 font-display text-sm font-extrabold shadow">Real lawyers.</p>

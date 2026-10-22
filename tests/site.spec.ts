@@ -17,7 +17,7 @@ test('home is a real directory pitch with no fictional attorneys', async ({ page
   await expect(forAttorneys).not.toContainText('Early Attorney');
   await expect(forAttorneys).not.toContainText('Founding Member');
   await expect(forAttorneys).toContainText('Free listing');
-  await expect(forAttorneys).toContainText('Set your own rate');
+  await expect(forAttorneys).toContainText('Checked by hand');
   await expect(forAttorneys).toContainText('No referral fee');
   await expect(page.getByTestId('home-apply')).toHaveText('Join free');
   await expect(page.getByTestId('home-apply')).toHaveAttribute('href', '/join/');
