@@ -49,7 +49,7 @@ export function HomeView() {
           <p className="mt-4 max-w-xl text-lg text-ink sm:text-xl">
             Browse newly licensed attorneys near you, free. Every listing goes live only after a manual check with the attorney’s state bar.
           </p>
-          <form onSubmit={onWaitlist} className="relative mt-6 flex max-w-xl items-center rounded-full bg-white p-1.5 shadow-pill">
+          <form onSubmit={onWaitlist} className="waitlist-pill relative mt-6 flex max-w-xl items-center rounded-full bg-white p-1.5 shadow-pill focus-within:ring-[3px] focus-within:ring-purple">
             <span className="pl-3 text-navy" aria-hidden="true">
               <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#0B0B3B" strokeWidth="1.7">
                 <rect x="3" y="5" width="18" height="14" rx="2" />
@@ -57,7 +57,7 @@ export function HomeView() {
               </svg>
             </span>
             <label className="sr-only" htmlFor="waitlist-email">Email address</label>
-            <input id="waitlist-email" data-testid="waitlist-email" name="email" type="email" required placeholder="Drop your email for early access" className="min-w-0 flex-1 bg-transparent px-3 py-3 outline-none" />
+            <input id="waitlist-email" data-testid="waitlist-email" name="email" type="email" required placeholder="Your email" className="waitlist-input min-w-0 flex-1 bg-transparent px-2 py-3 text-base outline-none focus:outline-none focus-visible:outline-none sm:px-3" />
             <button type="submit" data-testid="waitlist-submit" className="shrink-0 rounded-full bg-pink px-4 py-3 font-display text-sm font-semibold text-white sm:px-5 sm:text-base">Join the list ✨</button>
           </form>
           {error ? <p role="alert" className="mt-2 text-sm text-pink">{error}</p> : null}
