@@ -4,7 +4,8 @@ import { FormEvent, useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { SPECIALTIES, specialtyName } from '@/lib/catalog';
 import { submitWaitlist } from '@/lib/applications';
-import { contactHref } from '@/lib/applications';
+import { publicContactHref } from '@/lib/applications';
+import { MessageAttorneyForm } from '@/components/MessageAttorneyForm';
 import { money, validEmail } from '@/lib/format';
 import { getSupabase } from '@/lib/supabase';
 import { joinedLabel } from '@/lib/joined';
@@ -136,7 +137,8 @@ export function DirectoryView() {
               </div>
               <p className="mt-2 text-sm">Languages: {row.languages}</p>
               {PHASE2 ? <Link className="mt-3 inline-flex font-semibold text-purple" href={`/attorneys/profile/?id=${row.id}`}>View profile</Link> : null}
-              <p className="mt-2 text-sm"><a className="font-semibold text-purple" href={contactHref(row.contact_link)}>Contact this attorney</a></p>
+              {publicContactHref(row.contact_link) ? <p className="mt-2 text-sm"><a className="font-semibold text-purple" href={publicContactHref(row.contact_link) ?? undefined}>Booking link</a></p> : null}
+              <MessageAttorneyForm profileId={row.id} />
             </li>
           ))}
         </ul>

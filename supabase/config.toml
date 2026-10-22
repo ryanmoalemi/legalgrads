@@ -1,0 +1,5 @@
+[functions.relay-attorney-message]
+verify_jwt = false
+
+[functions.inbound-attorney-reply]
+verify_jwt = false

@@ -146,7 +146,7 @@ export function ApplyView() {
       {step === 0 ? (
         <div className="mt-6 grid gap-5">
           <Field label="Full name" id="apply-name" why="This is the name clients see on your listing." error={errors.fullName} value={input.fullName} autoComplete="name" onChange={(value) => patch({ fullName: value })} />
-          <Field label="Email" id="apply-email" type="email" why="We email you about the State Bar check. You choose on the last step whether clients see this address." error={errors.email} value={input.email} autoComplete="email" onChange={(value) => patch({ email: value })} />
+          <Field label="Email" id="apply-email" type="email" why="We email you about the State Bar check. This address is never shown on your listing." error={errors.email} value={input.email} autoComplete="email" onChange={(value) => patch({ email: value })} />
           <Field label="Phone" id="apply-phone" type="tel" why="We use this to reach you about the application. You choose on the last step whether clients see it." error={errors.phone} value={input.phone} autoComplete="tel" onChange={(value) => patch({ phone: value })} />
         </div>
       ) : null}
@@ -258,10 +258,9 @@ export function ApplyView() {
             photoUrl={photoDataUrl}
             contact={input.contactLink}
           />
-          <p className="text-sm text-ink">Nothing goes live until Legalgrads manually checks your California State Bar record.</p>
-          <Choice name="emailPublic" legend="Show your email on the public listing?" why="Clients see it only if you choose show on listing." error={errors.emailPublic} value={input.emailPublic} onChange={(value) => patch({ emailPublic: value })} />
-          <Choice name="phonePublic" legend="Show your phone number on the public listing?" why="Clients see it only if you choose show on listing." error={errors.phonePublic} value={input.phonePublic} onChange={(value) => patch({ phonePublic: value })} />
-          <Field label="How clients contact you" id="apply-contact" hint="Use an https link, an email address, or a phone number." error={errors.contactLink} value={input.contactLink} onChange={(value) => patch({ contactLink: value })} placeholder="https:// or you@firm.com" />
+          <p className="text-sm text-ink">Nothing goes live until Legalgrads manually checks your California State Bar record. Your email stays private. Clients reach you through our secure contact form.</p>
+          <Choice name="phonePublic" legend="Show your phone number on the public listing?" why="Clients see it only if you choose show on listing. Your email is never shown." error={errors.phonePublic} value={input.phonePublic} onChange={(value) => patch({ phonePublic: value })} />
+          <Field label="How else clients reach you" id="apply-contact" hint="An https booking link or a phone number. Your email stays private." error={errors.contactLink} value={input.contactLink} onChange={(value) => patch({ contactLink: value })} placeholder="https:// or a phone number" />
           <fieldset aria-invalid={errors.insurance ? true : undefined} aria-describedby="err-insurance">
             <legend className="flex flex-wrap items-center gap-1 text-base font-semibold text-navy">
               Professional liability insurance
@@ -389,7 +388,7 @@ function Choice({
   value,
   onChange,
 }: {
-  name: 'emailPublic' | 'phonePublic';
+  name: 'phonePublic';
   legend: string;
   why: string;
   error?: string;
@@ -404,11 +403,11 @@ function Choice({
       </legend>
       <div className="mt-3 grid gap-2">
         <label className="flex min-h-14 items-center gap-3 rounded-2xl bg-white px-4 text-base ring-1 ring-navy/10">
-          <input data-testid={`apply-${name === 'emailPublic' ? 'email' : 'phone'}-public`} className="h-5 w-5" type="radio" name={name} checked={value === 'public'} aria-invalid={error ? true : undefined} onChange={() => onChange('public')} />
+          <input data-testid="apply-phone-public" className="h-5 w-5" type="radio" name={name} checked={value === 'public'} aria-invalid={error ? true : undefined} onChange={() => onChange('public')} />
           Show on listing
         </label>
         <label className="flex min-h-14 items-center gap-3 rounded-2xl bg-white px-4 text-base ring-1 ring-navy/10">
-          <input data-testid={`apply-${name === 'emailPublic' ? 'email' : 'phone'}-private`} className="h-5 w-5" type="radio" name={name} checked={value === 'private'} onChange={() => onChange('private')} />
+          <input data-testid="apply-phone-private" className="h-5 w-5" type="radio" name={name} checked={value === 'private'} onChange={() => onChange('private')} />
           Keep private
         </label>
       </div>

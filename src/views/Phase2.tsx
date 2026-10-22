@@ -4,6 +4,8 @@ import { FormEvent, useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { specialtyName } from '@/lib/catalog';
 import { money } from '@/lib/format';
+import { publicContactHref } from '@/lib/applications';
+import { MessageAttorneyForm } from '@/components/MessageAttorneyForm';
 import { joinedLabel } from '@/lib/joined';
 import { downloadShareCard } from '@/lib/share';
 import { getSupabase } from '@/lib/supabase';
@@ -85,7 +87,7 @@ export function PublicProfileView() {
       setMissing(true);
       return;
     }
-    void supabase.from('attorney_profiles').select('*').eq('id', id).eq('published', true).maybeSingle().then(({ data }) => {
+    void supabase.from('attorney_profiles').select('id, full_name, bio, cities_served, languages, rate_type, rate_amount, contact_link, practice_areas, bar_number, admission_date, published, published_at, created_at').eq('id', id).eq('published', true).maybeSingle().then(({ data }) => {
       setProfile((data as ProfileRow | null) ?? null);
       setMissing(!data);
     });
@@ -112,7 +114,8 @@ export function PublicProfileView() {
         {profile.practice_areas.map((slug) => <span key={slug} className="rounded-full bg-[#F4EEFF] px-2 py-1 text-xs font-semibold text-purple">{specialtyName(slug)}</span>)}
       </div>
       <p className="mt-3 text-sm">Languages: {profile.languages}</p>
-      <p className="mt-3"><a className="font-semibold text-purple" href={profile.contact_link}>Contact or book</a></p>
+      {publicContactHref(profile.contact_link) ? <p className="mt-3"><a className="font-semibold text-purple" href={publicContactHref(profile.contact_link) ?? undefined}>Booking link</a></p> : null}
+      <MessageAttorneyForm profileId={profile.id} />
       <button type="button" className="mt-6 min-h-11 rounded-full bg-navy px-5 font-display text-sm font-semibold text-white" onClick={() => downloadShareCard(profile.full_name, profile.published_at || profile.created_at)}>Download “I’m on Legalgrads”</button>
     </div>
   );

@@ -53,7 +53,6 @@ test('capture launch screenshots', async ({ page }) => {
     await page.waitForTimeout(200);
     await page.screenshot({ path: `${dir}/${name}-mobile.png`, fullPage: true });
   }
-  await page.getByTestId('apply-email-private').check();
   await page.getByTestId('apply-phone-private').check();
   await page.getByTestId('apply-contact').fill('https://example.com/book');
   await page.getByTestId('apply-insured').check();
@@ -62,4 +61,13 @@ test('capture launch screenshots', async ({ page }) => {
   await page.waitForURL(/confirmation/);
   await page.waitForTimeout(300);
   await page.screenshot({ path: `${dir}/confirmation-mobile.png`, fullPage: true });
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto('/for-attorneys/');
+  await page.getByTestId('message-attorney').scrollIntoViewIfNeeded();
+  await page.waitForTimeout(200);
+  await page.screenshot({ path: `${dir}/message-attorney-mobile.png` });
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.getByTestId('message-attorney').scrollIntoViewIfNeeded();
+  await page.waitForTimeout(200);
+  await page.screenshot({ path: `${dir}/message-attorney-desktop.png` });
 });

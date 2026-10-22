@@ -100,26 +100,43 @@ export function isFutureDate(iso: string): boolean {
 
 export function contactProblem(value: string): string | null {
   const trimmed = value.trim();
-  if (!trimmed) return 'Enter an https link, an email address, or a phone number.';
+  if (!trimmed) return 'Enter an https link or a phone number.';
   if (/^(javascript|data|vbscript):/i.test(trimmed)) return 'That contact method is not allowed.';
-  if (validEmail(trimmed)) return null;
+  if (validEmail(trimmed)) return 'Use an https link or a phone number. Your email stays private.';
   if (/^[+\d().\-\s]+$/.test(trimmed) && trimmed.replace(/\D/g, '').length >= 10) return null;
   if (/^https:\/\/\S+$/i.test(trimmed)) {
     try {
       const url = new URL(trimmed);
       if (url.protocol === 'https:' && url.hostname.includes('.')) return null;
     } catch {
-      return 'Enter a full https link, an email address, or a phone number.';
+      return 'Enter a full https link or a phone number.';
     }
   }
-  return 'Enter a full https link, an email address, or a phone number. A single word is not enough.';
+  return 'Enter a full https link or a phone number. A single word is not enough.';
 }
 
 export function contactHref(value: string): string {
   const trimmed = value.trim();
-  if (validEmail(trimmed)) return `mailto:${trimmed}`;
   if (/^[+\d().\-\s]+$/.test(trimmed)) return `tel:${trimmed.replace(/[^\d+]/g, '')}`;
   return trimmed;
+}
+
+/** Public pages may link a booking URL or a phone number. Never an email address. */
+export function publicContactHref(value: string): string | null {
+  const trimmed = value.trim();
+  if (!trimmed || validEmail(trimmed) || /^(javascript|data|vbscript):/i.test(trimmed)) return null;
+  if (/^[+\d().\-\s]+$/.test(trimmed) && trimmed.replace(/\D/g, '').length >= 10) {
+    return `tel:${trimmed.replace(/[^\d+]/g, '')}`;
+  }
+  if (/^https:\/\/\S+$/i.test(trimmed)) {
+    try {
+      const url = new URL(trimmed);
+      if (url.protocol === 'https:' && url.hostname.includes('.')) return trimmed;
+    } catch {
+      return null;
+    }
+  }
+  return null;
 }
 
 export function errorsForStep(step: number, input: ApplicationInput): Record<string, string> {
@@ -148,7 +165,6 @@ export function errorsForStep(step: number, input: ApplicationInput): Record<str
     if (input.rateFor.trim().length < 2) errors.rateFor = 'Say what this rate covers.';
   }
   if (step === 5) {
-    if (input.emailPublic !== 'public' && input.emailPublic !== 'private') errors.emailPublic = 'Choose whether clients can see your email.';
     if (input.phonePublic !== 'public' && input.phonePublic !== 'private') errors.phonePublic = 'Choose whether clients can see your phone number.';
     const contact = contactProblem(input.contactLink);
     if (contact) errors.contactLink = contact;
@@ -179,7 +195,7 @@ export function applicationBody(input: ApplicationInput, reference: string): str
     '',
     `Name: ${input.fullName.trim()}`,
     `Email: ${input.email.trim()}`,
-    `Email on public listing: ${input.emailPublic === 'public' ? 'yes' : 'no'}`,
+    'Email on public listing: no',
     `Phone: ${input.phone.trim()}`,
     `Phone on public listing: ${input.phonePublic === 'public' ? 'yes' : 'no'}`,
     `California State Bar number: ${input.barNumber}`,
@@ -257,7 +273,7 @@ export async function submitApplication(input: ApplicationInput, photo: File | n
       status: 'pending',
       full_name: input.fullName.trim(),
       email: input.email.trim(),
-      email_public: input.emailPublic === 'public',
+      email_public: false,
       phone: input.phone.trim(),
       phone_public: input.phonePublic === 'public',
       bar_number: input.barNumber,

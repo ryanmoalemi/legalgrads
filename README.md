@@ -33,23 +33,30 @@ CI builds without Supabase secrets, so the tests cover the email fallback and do
 ## Supabase
 
 1. Project URL: `https://qlhwojjdsonjxfeoiqww.supabase.co`.
-2. In the SQL editor, paste the whole file `supabase/migrations/20261021120000_init.sql` and run it once. That file is the full schema: tables, row level security, `review_application`, and the private `attorney-photos` bucket policies.
-3. Authentication → URL configuration:
+2. In the SQL editor, paste the whole file `supabase/migrations/20261021120000_init.sql` and run it once. That file is the full schema: tables, row level security, `review_application`, message storage, and the private `attorney-photos` bucket policies.
+3. If that init file was already pasted before private messages existed, do not paste it again. Paste `supabase/migrations/20261022013000_private_messages.sql` once instead.
+4. Authentication → URL configuration:
    - Site URL: `https://legalgrads.com`
    - Redirect URLs: `https://legalgrads.com/attorney/profile/` and `http://localhost:3000/attorney/profile/`
-4. Repository secrets already used by the Pages workflow:
+5. Repository secrets already used by the Pages workflow:
    - `NEXT_PUBLIC_SUPABASE_URL`
    - `NEXT_PUBLIC_SUPABASE_ANON_KEY` — the publishable key, not a secret key
    - `NEXT_PUBLIC_PHASE2` — leave unset until login, profile editing, admin review, and public profile pages should turn on. Set it to `1` when you want those routes active.
-5. Do not add a secret or service-role key to the website or to a `NEXT_PUBLIC_` secret. Row Level Security is what keeps applications private.
-6. After you sign in once with ryan@legalgrads.com (phase 2), promote that user in the SQL editor:
+6. Do not add a secret or service-role key to the website or to a `NEXT_PUBLIC_` secret. Row Level Security is what keeps applications private.
+7. Message relay uses two Edge Functions, `relay-attorney-message` and `inbound-attorney-reply`. Deploy them from `supabase/functions`. The website never receives an attorney email. Set these as function secrets, not repository `NEXT_PUBLIC_` secrets:
+   - `RESEND_API_KEY` — required before a message is actually emailed. Create it in Resend.
+   - `MESSAGE_FROM` — a verified sender, for example `Legalgrads <messages@legalgrads.com>`.
+   - `INBOUND_EMAIL_DOMAIN` — the domain that receives `reply+<id>@` addresses, so a reply can be relayed without showing either address.
+   - `INBOUND_WEBHOOK_SECRET` — a random string. Resend (or the inbound hook) must send it as `x-legalgrads-inbound-secret`.
+   Without `RESEND_API_KEY`, the message is still stored and the attorney is not emailed yet. `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` are already available inside Edge Functions.
+8. After you sign in once with ryan@legalgrads.com (phase 2), promote that user in the SQL editor:
 
 ```sql
 insert into public.admin_users (user_id)
 select id from auth.users where email = 'ryan@legalgrads.com';
 ```
 
-There is no self-serve admin insert. The anon key can only insert a pending application or a waitlist email, and can only read profiles where `published` is true.
+There is no self-serve admin insert. The anon key can insert a pending application, a waitlist email, or a message to a published listing. It can read profiles where `published` is true. It cannot read attorney emails or stored messages.
 
 Photos upload to the private `attorney-photos` bucket under `pending/`. They are not public. Move a file to `published/` if a live profile should show it.
 

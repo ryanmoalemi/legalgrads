@@ -83,7 +83,7 @@ export const DOCS: Record<string, LegalDoc> = {
       {
         heading: 'What the public can see',
         paragraphs: [
-          'The public can read a profile only after it is published. A published profile can show name, bar number, admission date, practice areas, cities, bio, rate, languages, the contact method you provided, the year the attorney joined Legalgrads, and an Insured badge only if you said you carry professional liability insurance. Your phone and email appear only if you chose to show them. The Joined year is only that calendar year. It is not a quality rating and not a benefit to clients.',
+          'The public can read a profile only after it is published. A published profile can show name, bar number, admission date, practice areas, cities, bio, rate, languages, an https booking link or phone number if you provided one, the year the attorney joined Legalgrads, and an Insured badge only if you said you carry professional liability insurance. Your email is never shown. Clients use a secure contact form, and Legalgrads relays that message without showing either email address. Your phone appears only if you chose to show it. The Joined year is only that calendar year. It is not a quality rating and not a benefit to clients.',
         ],
       },
       {
@@ -104,7 +104,7 @@ export const DOCS: Record<string, LegalDoc> = {
       {
         heading: 'Free listing',
         paragraphs: [
-          'The listing is free, and it shows the year you joined Legalgrads. That mark is not a quality rating and not a benefit to clients. Legalgrads takes no referral fee and no share of your legal fees. You set your own flat fee or hourly rate. Clients contact you directly.',
+          'The listing is free, and it shows the year you joined Legalgrads. That mark is not a quality rating and not a benefit to clients. Legalgrads takes no referral fee and no share of your legal fees. You set your own flat fee or hourly rate. Your email stays private. Clients reach you through our secure contact form.',
           'A later premium product, if Legalgrads offers one, will be a flat fee for extra visibility only. It will not be priced per lead and it will not be a percentage of legal fees.',
         ],
       },
