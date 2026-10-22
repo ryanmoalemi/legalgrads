@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 
 const TYPES = ['image/jpeg', 'image/png', 'image/webp'];
 
@@ -17,6 +17,7 @@ export function PhotoField({
 }) {
   const [zoom, setZoom] = useState(1);
   const [image, setImage] = useState<HTMLImageElement | null>(null);
+  const fileRef = useRef<HTMLInputElement>(null);
 
   function publish(img: HTMLImageElement, nextZoom: number) {
     onPhoto(crop(img, nextZoom), img.dataset.name || 'photo.jpg');
@@ -52,29 +53,37 @@ export function PhotoField({
 
   return (
     <div>
-      <label className="text-sm font-medium text-navy" htmlFor="apply-photo">Photo, optional
-        <input
-          id="apply-photo"
-          data-testid="apply-photo"
-          className="mt-2 block min-h-12 w-full text-base"
-          type="file"
-          accept="image/jpeg,image/png,image/webp"
-          aria-invalid={error ? true : undefined}
-          aria-describedby="hint-photo err-photo"
-          onChange={(event) => onFile(event.target.files?.[0] ?? null)}
-        />
-      </label>
-      <p id="hint-photo" className="mt-1 text-sm text-ink">JPG, PNG, or WebP, under 5 MB. Drag the zoom to frame the circle.</p>
+      <p className="text-base font-semibold text-navy">Photo, optional</p>
+      <input
+        ref={fileRef}
+        id="apply-photo"
+        data-testid="apply-photo"
+        className="sr-only"
+        type="file"
+        accept="image/jpeg,image/png,image/webp"
+        aria-invalid={error ? true : undefined}
+        aria-describedby="hint-photo err-photo"
+        onChange={(event) => onFile(event.target.files?.[0] ?? null)}
+      />
+      <button
+        type="button"
+        className="mt-2 inline-flex min-h-12 items-center justify-center rounded-full bg-white px-5 font-display text-sm font-semibold text-navy ring-1 ring-navy/15"
+        onClick={() => fileRef.current?.click()}
+      >
+        Choose photo
+      </button>
+      <p id="hint-photo" className="mt-2 text-sm text-ink">JPG, PNG, or WebP, under 5 MB.</p>
       {error ? <p id="err-photo" role="alert" className="mt-1 text-sm font-medium text-[#6E123F]">{error}</p> : <p id="err-photo" className="sr-only" />}
       {preview ? (
         <div className="mt-3 flex items-center gap-4">
           <img src={preview} alt="Cropped photo preview" className="h-28 w-28 rounded-full object-cover ring-2 ring-purple/30" data-testid="photo-preview" />
           <label className="text-sm font-medium text-navy">Zoom
-            <input aria-label="Zoom photo" className="mt-1 block w-40" type="range" min={1} max={3} step={0.05} value={zoom} onChange={(event) => {
+            <input aria-label="Zoom photo" aria-describedby="hint-zoom" className="mt-1 block w-40" type="range" min={1} max={3} step={0.05} value={zoom} onChange={(event) => {
               const next = Number(event.target.value);
               setZoom(next);
               if (image) publish(image, next);
             }} />
+            <span id="hint-zoom" className="mt-1 block text-sm font-normal text-ink">Drag the zoom to frame the circle.</span>
           </label>
         </div>
       ) : null}

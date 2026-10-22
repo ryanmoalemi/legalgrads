@@ -88,16 +88,24 @@ test('free listing application keeps every field in the email fallback', async (
   await page.getByTestId('apply-next').click();
   await expect(page.getByText('Enter a 10-digit US phone number.')).toBeVisible();
   await expect(page).toHaveURL(/#you/);
-  await page.getByTestId('apply-phone').fill('(415) 555-1212');
+  await page.getByTestId('apply-phone').fill('4155551212');
+  await expect(page.getByTestId('apply-phone')).toHaveValue('(415) 555-1212');
   await page.getByTestId('apply-next').click();
   await expect(page).toHaveURL(/#license/);
+  const stepTop = await page.locator('#join-step').evaluate((el) => el.getBoundingClientRect().top);
+  expect(stepTop).toBeGreaterThanOrEqual(0);
+  expect(stepTop).toBeLessThan(48);
   await page.goBack();
   await expect(page).toHaveURL(/#you/);
   await expect(page.getByTestId('apply-name')).toHaveValue('Alex Rivera');
   await page.getByTestId('apply-next').click();
+  await expect(page.getByTestId('apply-bar')).toHaveAttribute('inputmode', 'numeric');
+  await expect(page.getByTestId('apply-bar')).toHaveAttribute('maxlength', '6');
   await page.getByTestId('apply-bar').fill('12ab');
+  await expect(page.getByTestId('apply-bar')).toHaveValue('12');
+  await page.getByTestId('apply-bar').fill('abcdef');
+  await expect(page.getByTestId('apply-bar')).toHaveValue('');
   await page.getByTestId('apply-next').click();
-  await expect(page.getByTestId('apply-bar')).toHaveValue('12ab');
   await expect(page.getByText('Use digits only, up to 6.')).toBeVisible();
   await page.getByTestId('apply-bar').fill('123456');
   await page.getByTestId('apply-admitted').fill('2099-01-01');
@@ -108,14 +116,21 @@ test('free listing application keeps every field in the email fallback', async (
   await page.getByTestId('apply-specialty-contracts').click();
   await page.getByTestId('apply-specialty-real-estate').click();
   await page.getByTestId('apply-next').click();
+  await expect(page.getByText('Separate cities with commas. Example: Oakland, San Francisco.')).toBeVisible();
+  await expect(page.getByText('Separate languages with commas. Example: English, Spanish.')).toBeVisible();
+  await expect(page.getByText(/admitted in California in 2025/)).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Choose photo' })).toBeVisible();
+  await expect(page.getByText('Drag the zoom to frame the circle.')).toHaveCount(0);
   await page.getByTestId('apply-cities').fill('Oakland');
   await page.getByTestId('apply-languages').fill('English, Spanish');
   await page.getByTestId('apply-bio').fill('I help East Bay clients with everyday contracts and residential paperwork.');
   await expect(page.getByTestId('bio-count')).toContainText('/ 600');
   await page.getByTestId('apply-next').click();
   await page.getByTestId('apply-rate-hourly').check();
-  await page.getByTestId('apply-rate-amount').fill('10');
   await page.getByTestId('apply-rate-for').fill('Lease review');
+  await page.getByTestId('apply-next').click();
+  await expect(page.getByText('Enter the amount.')).toBeVisible();
+  await page.getByTestId('apply-rate-amount').fill('10');
   await page.getByTestId('apply-next').click();
   await expect(page.getByText('Enter at least $25.')).toBeVisible();
   await page.getByTestId('apply-rate-amount').fill('225');
@@ -124,8 +139,16 @@ test('free listing application keeps every field in the email fallback', async (
   await expect(page.getByTestId('step-count')).toHaveText('Step 6 of 6 · Review');
   await expect(page.getByTestId('listing-preview')).toContainText('Alex Rivera');
   await expect(page.getByTestId('listing-preview')).toContainText('Find an attorney');
-  await expect(page.getByTestId('listing-preview')).toContainText('Message this attorney');
+  await expect(page.getByTestId('listing-message-preview')).toContainText('Preview');
+  await expect(page.getByTestId('listing-message-preview')).toContainText('Clients will see a private message form here.');
+  await expect(page.getByTestId('listing-preview').locator('input, textarea, select, button')).toHaveCount(0);
+  await expect(page.getByRole('heading', { name: 'Phone visibility' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Insurance' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Terms' })).toBeVisible();
+  await expect(page.getByText('Optional', { exact: true })).toBeVisible();
+  await expect(page.getByText("I don't. I'll tell clients in writing, as Rule 1.4.2 requires.")).toBeVisible();
   await expect(page.locator('main')).not.toContainText('Show your email on the public listing?');
+  await expect(page.locator('main')).not.toContainText('How else clients reach you');
   await expect(page.getByTestId('apply-phone-public')).not.toBeChecked();
   await expect(page.getByTestId('apply-phone-private')).not.toBeChecked();
   await page.getByTestId('apply-phone-private').check();
@@ -134,7 +157,10 @@ test('free listing application keeps every field in the email fallback', async (
   await expect(page.getByText('That contact method is not allowed.')).toBeVisible();
   await page.getByTestId('apply-contact').fill('alex.rivera@example.com');
   await page.getByTestId('application-submit').click();
-  await expect(page.getByText('Use an https link or a phone number. Your email stays private.')).toBeVisible();
+  await expect(page.getByText('Use an https link. Your email stays private.')).toBeVisible();
+  await page.getByTestId('apply-contact').fill('');
+  await page.getByTestId('application-submit').click();
+  await expect(page.getByText('Enter a full https link, or leave this blank.')).toHaveCount(0);
   await page.getByTestId('apply-contact').fill('https://example.com/book');
   await page.getByTestId('apply-insured').check();
   await expect(page.getByTestId('listing-preview')).toContainText('Insured');
@@ -162,14 +188,16 @@ test('free listing application keeps every field in the email fallback', async (
   expect(decoded).toContain('I carry professional liability insurance');
   expect(decoded).not.toMatch(/supabase|PGRST|row level/i);
   const confirmation = await page.locator('body').innerText();
-  expect(confirmation).toContain(`Joined ${new Date().getFullYear()}`);
+  const joined = `Joined ${new Date().getFullYear()}`;
+  expect(confirmation.match(new RegExp(joined, 'g'))).toHaveLength(1);
+  expect(confirmation.match(/within 2 business days/gi)).toHaveLength(1);
   expect(confirmation).toMatch(/not a rating/i);
   expect(confirmation).toMatch(/not a benefit to clients/i);
+  expect(confirmation).toMatch(/after approval/i);
+  expect(confirmation).not.toMatch(/\bInsured\b/);
   expect(confirmation).not.toMatch(/Early Attorney|Founding Member|first year|forever/i);
-  await expect(page.getByRole('button', { name: "Download “I'm on Legalgrads”" })).toBeVisible();
-  await expect(page.getByTestId('share-panel')).toContainText(`Joined ${new Date().getFullYear()}`);
-  await expect(page.getByTestId('share-panel')).not.toContainText('Early Attorney');
-  await expect(page.getByTestId('share-panel')).not.toContainText('Founding Member');
+  await expect(page.getByTestId('share-panel')).toHaveCount(0);
+  await expect(page.getByRole('button', { name: /Download/ })).toHaveCount(0);
 });
 
 test('join mobile pins the action bar and uses a one-line footer', async ({ page }) => {
@@ -244,6 +272,32 @@ test('phase 2 tools are not linked', async ({ page }) => {
   await expect(page.getByRole('heading', { level: 1 })).toHaveText('Not public yet');
   await page.goto('/attorney/login/');
   await expect(page.getByRole('heading', { level: 1 })).toHaveText('Not public yet');
+});
+
+test('cookie banner does not cover Continue', async ({ page }) => {
+  function overlaps(
+    a: { x: number; y: number; width: number; height: number },
+    b: { x: number; y: number; width: number; height: number },
+  ) {
+    return a.x < b.x + b.width - 1 && a.x + a.width > b.x + 1 && a.y < b.y + b.height - 1 && a.y + a.height > b.y + 1;
+  }
+  for (const size of [
+    { width: 390, height: 844 },
+    { width: 1024, height: 800 },
+    { width: 1440, height: 900 },
+  ]) {
+    await page.setViewportSize(size);
+    await page.goto('/join/#areas');
+    await expect(page.getByTestId('cookie-banner')).toBeVisible();
+    await expect(page.getByTestId('step-count')).toHaveText('Step 3 of 6 · Areas');
+    const cookie = await page.getByTestId('cookie-banner').boundingBox();
+    const bar = await page.getByTestId('apply-actions').boundingBox();
+    const next = await page.getByTestId('apply-next').boundingBox();
+    expect(cookie && bar && next).toBeTruthy();
+    expect(overlaps(cookie!, bar!)).toBe(false);
+    expect(overlaps(cookie!, next!)).toBe(false);
+    await page.getByTestId('apply-next').click({ trial: true });
+  }
 });
 
 test('cookie choice persists', async ({ page }) => {

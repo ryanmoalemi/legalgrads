@@ -38,11 +38,11 @@ create table public.attorney_applications (
   rate_starting_at boolean not null default false,
   free_consultation boolean not null default false,
   languages text not null,
-  contact_link text not null check (
-    contact_link !~* '^(javascript|data|vbscript):'
-    and (
-      contact_link ~* '^https://[^[:space:]]+\.[^[:space:]]+'
-      or contact_link ~ '^[0-9+().[:space:]-]{10,40}$'
+  contact_link text not null default '' check (
+    btrim(contact_link) = ''
+    or (
+      contact_link !~* '^(javascript|data|vbscript):'
+      and contact_link ~* '^https://[^[:space:]]+\.[^[:space:]]+'
     )
   ),
   photo_path text,
