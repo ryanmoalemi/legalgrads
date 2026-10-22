@@ -160,33 +160,52 @@ function HeroArt() {
         <path d="M70 10 C 40 10, 30 40, 18 58" stroke="currentColor" strokeWidth="4" strokeLinecap="round" />
         <path d="M18 58 l16 -2 l-6 14" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" />
       </svg>
-      <article className="absolute left-0 top-16 z-10 w-[74%] -rotate-6 rounded-[28px] bg-white p-3 shadow-card">
-        <div className="flex h-44 items-center justify-center rounded-2xl bg-gradient-to-br from-[#F4EEFF] to-[#FFF1F8] sm:h-56">
-          <img src="/logos/legalgrads_mark.svg" alt="" className="h-24 w-24" />
-        </div>
-        <span className="absolute left-6 top-6 inline-flex items-center rounded-full bg-white/95 px-2 py-1 text-xs font-semibold text-navy shadow">{joinedLabel()}</span>
-        <div className="px-1 pt-3">
-          <h2 className="font-display text-lg font-extrabold">Your listing</h2>
-          <p className="text-xs text-ink">All 50 states + DC · after a state bar check</p>
-        </div>
-        <div className="mt-2 flex flex-wrap gap-1 px-1 pb-2">
-          {['Contracts', 'Business', 'Real Estate'].map((tag) => (
-            <span key={tag} className="rounded-full bg-[#F4EEFF] px-2 py-1 text-[11px] font-semibold text-purple">{tag}</span>
-          ))}
-        </div>
-      </article>
-      <article className="absolute bottom-8 right-0 z-20 w-[72%] rotate-3 rounded-[28px] bg-white p-3 shadow-card">
-        <div className="grid h-40 grid-cols-4 gap-2 rounded-2xl bg-[#FFF8F1] p-3 sm:h-48">
-          {SPECIALTIES.slice(0, 8).map((spec) => (
-            <img key={spec.slug} src={spec.icon} alt="" className="h-10 w-10 justify-self-center" />
-          ))}
-        </div>
-        <div className="px-1 pt-3">
-          <h2 className="font-display text-lg font-extrabold">Verified with the state bar</h2>
-          <p className="text-xs text-ink">Every listing checked by hand.</p>
-        </div>
-      </article>
+      <SampleCard
+        className="absolute left-0 top-14 z-10 w-[60%] -rotate-6"
+        photo="sample-attorney-1"
+        alt="Sample listing photo: smiling attorney in a dark blazer"
+        title="Your listing"
+        place="California · Oakland"
+        tags={['Contracts', 'Business', 'Real Estate']}
+      />
+      <SampleCard
+        className="absolute bottom-10 right-0 z-20 w-[58%] rotate-3"
+        photo="sample-attorney-2"
+        alt="Sample listing photo: smiling attorney in a gray suit and tie"
+        title="Verified with the state bar"
+        place="New York · Brooklyn"
+        tags={['Start a Business', 'Employment']}
+      />
       <p className="absolute bottom-0 right-6 z-30 -rotate-2 rounded-2xl bg-[#FFE14A] px-3 py-2 font-display text-sm font-extrabold shadow">Real lawyers.</p>
     </div>
+  );
+}
+
+function SampleCard({ className, photo, alt, title, place, tags }: { className: string; photo: string; alt: string; title: string; place: string; tags: string[] }) {
+  return (
+    <article className={`${className} rounded-[28px] bg-white p-3 shadow-card`} data-testid="hero-sample-card">
+      <div className="relative overflow-hidden rounded-2xl">
+        <img
+          src={`/images/home/${photo}-480.webp`}
+          srcSet={`/images/home/${photo}-480.webp 480w, /images/home/${photo}-800.webp 800w`}
+          sizes="(min-width: 1024px) 380px, 72vw"
+          width={480}
+          height={338}
+          alt={alt}
+          className="h-44 w-full object-cover object-[center_30%] sm:h-52"
+        />
+        <span className="absolute left-3 top-3 inline-flex items-center rounded-full bg-white/95 px-2 py-1 text-[11px] font-bold uppercase tracking-wide text-purple shadow">Sample listing</span>
+        <span className="absolute bottom-3 left-3 inline-flex items-center rounded-full bg-white/95 px-2 py-1 text-xs font-semibold text-navy shadow">{joinedLabel()}</span>
+      </div>
+      <div className="px-1 pt-3">
+        <h2 className="font-display text-lg font-extrabold">{title}</h2>
+        <p className="text-xs text-ink">{place}</p>
+      </div>
+      <div className="mt-2 flex flex-wrap gap-1 px-1 pb-1">
+        {tags.map((tag) => (
+          <span key={tag} className="rounded-full bg-[#F4EEFF] px-2 py-1 text-[11px] font-semibold text-purple">{tag}</span>
+        ))}
+      </div>
+    </article>
   );
 }
