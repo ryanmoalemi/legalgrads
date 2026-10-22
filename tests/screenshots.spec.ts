@@ -1,4 +1,4 @@
-import { test } from '@playwright/test';
+import { expect, test } from '@playwright/test';
 import { boot } from './helpers';
 
 test('capture launch screenshots', async ({ page }) => {
@@ -56,6 +56,9 @@ test('capture launch screenshots', async ({ page }) => {
     await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
     await page.waitForTimeout(150);
     await page.screenshot({ path: `${dir}/${name}-mobile-bottom.png` });
+    if (name === 'apply-6-review') {
+      await page.getByTestId('listing-preview').screenshot({ path: `${dir}/apply-6-review-preview-mobile.png` });
+    }
     if (name === 'apply-1-you') {
       await page.evaluate(() => window.scrollTo(0, 0));
       await page.getByTestId('apply-name').fill('Alex Rivera');
@@ -101,4 +104,16 @@ test('capture launch screenshots', async ({ page }) => {
   await page.getByTestId('message-submit').click();
   await page.getByText('Please remove links; describe your situation in words').waitFor();
   await page.getByTestId('sample-listing').screenshot({ path: `${dir}/message-link-error-mobile.png` });
+});
+
+test('capture desktop step 3 with the cookie banner', async ({ page }) => {
+  test.skip(!process.env.SCREENSHOTS, 'set SCREENSHOTS=1');
+  const dir = '/opt/cursor/artifacts/screenshots';
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto('/join/#areas');
+  await expect(page.getByTestId('cookie-banner')).toBeVisible();
+  await expect(page.getByTestId('step-count')).toHaveText('Step 3 of 6 · Areas');
+  await expect(page.getByTestId('apply-next')).toBeVisible();
+  await page.waitForTimeout(300);
+  await page.screenshot({ path: `${dir}/apply-3-areas-desktop-cookie.png` });
 });

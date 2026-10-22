@@ -14,6 +14,7 @@ export function ListingPreview({
   contact,
   profileId,
   sample = false,
+  staticPreview = false,
 }: {
   name: string;
   cities: string;
@@ -26,6 +27,8 @@ export function ListingPreview({
   contact?: string;
   profileId?: string;
   sample?: boolean;
+  /** Review step only. No inputs — the live message form stays on public listings. */
+  staticPreview?: boolean;
 }) {
   const year = joinedYear(joined);
   const label = joinedLabel(year);
@@ -50,7 +53,20 @@ export function ListingPreview({
         {areas.map((area) => <span key={area} className="rounded-full bg-[#F4EEFF] px-2 py-1 text-xs font-semibold text-purple">{area}</span>)}
       </div>
       {booking ? <p className="mt-3 text-sm"><a className="font-semibold text-purple" href={booking}>Booking link</a></p> : null}
-      <MessageAttorneyForm profileId={profileId} />
+      {staticPreview ? (
+        <div className="mt-4 rounded-2xl bg-cream p-4" data-testid="listing-message-preview">
+          <p className="text-xs font-bold uppercase tracking-wide text-purple">Preview</p>
+          <p className="mt-1 font-display font-extrabold">Message this attorney</p>
+          <p className="mt-1 text-sm text-ink">Clients will see a private message form here.</p>
+          <div className="mt-3 grid gap-2" aria-hidden="true">
+            <div className="h-10 rounded-xl bg-white ring-1 ring-navy/10" />
+            <div className="h-10 rounded-xl bg-white ring-1 ring-navy/10" />
+            <div className="h-16 rounded-xl bg-white ring-1 ring-navy/10" />
+          </div>
+        </div>
+      ) : (
+        <MessageAttorneyForm profileId={profileId} />
+      )}
       <p className="mt-3 text-sm text-ink">Clients find this card on Find an attorney after your State Bar record is verified. {label} is only the year you joined Legalgrads. It is not a rating and not a benefit to clients. Your email is not on this card.</p>
     </article>
   );
