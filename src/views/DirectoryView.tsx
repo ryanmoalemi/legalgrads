@@ -12,6 +12,7 @@ import { joinedLabel } from '@/lib/joined';
 import { PHASE2, supabaseConfigured } from '@/lib/site';
 import { Empty, PageIntro } from '@/components/ui';
 import Link from 'next/link';
+import { US_STATES } from '@/lib/states';
 
 interface PublicProfile {
   id: string;
@@ -29,12 +30,14 @@ interface PublicProfile {
   insured?: boolean;
   rate_for?: string;
   rate_starting_at?: boolean;
+  licensed_state?: string | null;
 }
 
 export function DirectoryView() {
   const params = useSearchParams();
   const [specialty, setSpecialty] = useState(params.get('specialty') ?? '');
   const [city, setCity] = useState('');
+  const [state, setState] = useState(params.get('state') ?? '');
   const [rows, setRows] = useState<PublicProfile[] | null>(null);
   const [notice, setNotice] = useState('');
   const [mailto, setMailto] = useState('');
@@ -54,17 +57,18 @@ export function DirectoryView() {
       setRows([]);
       return;
     }
-    void supabase
-      .from('attorney_profiles')
-      .select('id, full_name, practice_areas, cities_served, bio, rate_type, rate_amount, rate_for, rate_starting_at, languages, contact_link, admission_date, insured, published_at, created_at')
-      .eq('published', true)
-      .then(({ data, error }) => {
-        if (error || !data) setRows([]);
-        else setRows(data as PublicProfile[]);
-      });
+    const base = 'id, full_name, practice_areas, cities_served, bio, rate_type, rate_amount, rate_for, rate_starting_at, languages, contact_link, admission_date, insured, published_at, created_at';
+    const load = (columns: string) => supabase.from('attorney_profiles').select(columns).eq('published', true);
+    void (async () => {
+      let result = await load(`${base}, licensed_state`);
+      if (result.error) result = await load(base);
+      if (result.error || !result.data) setRows([]);
+      else setRows(result.data as unknown as PublicProfile[]);
+    })();
   }, []);
 
   const filtered = (rows ?? []).filter((row) => {
+    if (state && row.licensed_state !== state) return false;
     if (specialty && !row.practice_areas.includes(specialty)) return false;
     if (city && !row.cities_served.toLowerCase().includes(city.trim().toLowerCase())) return false;
     return true;
@@ -89,10 +93,16 @@ export function DirectoryView() {
     <div className="mx-auto max-w-6xl px-4 py-8">
       <PageIntro
         kicker="Find an attorney"
-        title="California attorneys, after a State Bar check"
+        title="U.S. attorneys, after a state bar check"
         body="Browse published listings, or leave your email and we’ll tell you when the first attorneys are live."
       />
-      <form className="mt-6 grid gap-3 rounded-3xl bg-white p-4 sm:grid-cols-2" aria-label="Filters" onSubmit={(event) => event.preventDefault()}>
+      <form className="mt-6 grid gap-3 rounded-3xl bg-white p-4 sm:grid-cols-3" aria-label="Filters" onSubmit={(event) => event.preventDefault()}>
+        <label className="text-sm font-medium">State
+          <select aria-label="State" data-testid="filter-state" className="mt-1 w-full rounded-2xl border border-navy/10 px-3 py-3" value={state} onChange={(event) => setState(event.target.value)}>
+            <option value="">Any state</option>
+            {US_STATES.map((item) => <option key={item.code} value={item.code}>{item.name}</option>)}
+          </select>
+        </label>
         <label className="text-sm font-medium">Practice area
           <select aria-label="Practice area" className="mt-1 w-full rounded-2xl border border-navy/10 px-3 py-3" value={specialty} onChange={(event) => setSpecialty(event.target.value)}>
             <option value="">Any</option>
@@ -109,7 +119,7 @@ export function DirectoryView() {
         <div className="mt-6" data-testid="directory-empty">
           <Empty
             title="Attorneys joining now — launching soon"
-            body="No listing is public until Legalgrads manually verifies a California State Bar record. Leave your email and we’ll write when the directory opens."
+            body="No listing is public until Legalgrads manually verifies the attorney’s state bar record. Leave your email and we’ll write when the directory opens."
           />
         </div>
       ) : null}
@@ -123,7 +133,7 @@ export function DirectoryView() {
               <div className="flex flex-wrap items-start justify-between gap-2">
                 <div>
                   <h2 className="font-display text-2xl font-extrabold">{row.full_name}</h2>
-                  <p className="text-sm text-ink">{row.cities_served} · Admitted {row.admission_date}</p>
+                  <p className="text-sm text-ink">{row.cities_served}{row.licensed_state ? `, ${row.licensed_state}` : ''} · Admitted {row.admission_date}</p>
                 </div>
                 <p className="font-display font-extrabold">{row.rate_starting_at ? 'Starting at ' : ''}{money(Number(row.rate_amount))}{row.rate_type === 'hourly' ? '/hr' : ' flat'}{row.rate_for ? ` for ${row.rate_for}` : ''}</p>
               </div>
@@ -137,7 +147,7 @@ export function DirectoryView() {
               </div>
               <p className="mt-2 text-sm">Languages: {row.languages}</p>
               {PHASE2 ? <Link className="mt-3 inline-flex font-semibold text-purple" href={`/attorneys/profile/?id=${row.id}`}>View profile</Link> : null}
-              {publicContactHref(row.contact_link) ? <p className="mt-2 text-sm"><a className="font-semibold text-purple" href={publicContactHref(row.contact_link) ?? undefined}>Booking link</a></p> : null}
+              {publicContactHref(row.contact_link) ? <p className="mt-2 text-sm"><a className="font-semibold text-purple" href={publicContactHref(row.contact_link) ?? undefined}>Website</a></p> : null}
               <MessageAttorneyForm profileId={row.id} />
             </li>
           ))}

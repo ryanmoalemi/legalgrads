@@ -4,10 +4,9 @@ import { boot, noOverflow } from './helpers';
 test('home is a real directory pitch with no fictional attorneys', async ({ page }) => {
   await boot(page);
   await expect(page.getByRole('heading', { level: 1 })).toContainText('Fresh out of law school.');
-  const bar = page.getByTestId('attorney-announcement');
+  await expect(page.getByTestId('attorney-announcement')).toHaveCount(0);
+  await expect(page.getByTestId('home-how')).toContainText('Browse attorneys near you');
   const joined = `Joined ${new Date().getFullYear()}`;
-  await expect(bar).toHaveText('California attorney? Join free →');
-  await expect(bar).toHaveAttribute('href', '/join/');
   await expect(page.getByTestId('nav-join')).toHaveText('Attorneys: Join free');
   await expect(page.getByTestId('nav-join')).toHaveAttribute('href', '/join/');
   await expect(page.getByTestId('home-attorney-cta')).toHaveText('Join free');
@@ -37,7 +36,7 @@ test('home is a real directory pitch with no fictional attorneys', async ({ page
 
 test('directory explains that attorneys are still joining', async ({ page }) => {
   await boot(page, '/find-lawyer/?specialty=contracts');
-  await expect(page.getByTestId('attorney-announcement')).toHaveAttribute('href', '/join/');
+  await expect(page.getByTestId('filter-state')).toBeVisible();
   await expect(page.getByTestId('directory-empty')).toContainText('Attorneys joining now — launching soon');
   await expect(page.getByLabel('Practice area')).toHaveValue('contracts');
   await page.getByTestId('directory-email').fill('casey@example.com');
@@ -79,7 +78,7 @@ test('free listing application keeps every field in the email fallback', async (
   await expect(page.getByTestId('apply-phone')).toHaveAttribute('type', 'tel');
   await expect(page.getByTestId('apply-phone')).toHaveAttribute('autocomplete', 'tel');
   await expect(page.getByTestId('apply-phone')).toHaveAttribute('aria-required', 'true');
-  await expect(page.getByText('Required so we can reach you about your application and State Bar check. Private unless you choose to show it on your listing.')).toBeVisible();
+  await expect(page.getByText('Required so we can reach you about your application and state bar check. Private unless you choose to show it on your listing.')).toBeVisible();
   await page.getByTestId('apply-name').fill('Alex Rivera');
   await page.reload();
   await expect(page.getByTestId('apply-name')).toHaveValue('Alex Rivera');
@@ -99,14 +98,14 @@ test('free listing application keeps every field in the email fallback', async (
   await expect(page).toHaveURL(/#you/);
   await expect(page.getByTestId('apply-name')).toHaveValue('Alex Rivera');
   await page.getByTestId('apply-next').click();
-  await expect(page.getByTestId('apply-bar')).toHaveAttribute('inputmode', 'numeric');
-  await expect(page.getByTestId('apply-bar')).toHaveAttribute('maxlength', '6');
-  await page.getByTestId('apply-bar').fill('12ab');
-  await expect(page.getByTestId('apply-bar')).toHaveValue('12');
-  await page.getByTestId('apply-bar').fill('abcdef');
-  await expect(page.getByTestId('apply-bar')).toHaveValue('');
+  await expect(page.getByTestId('apply-bar')).toHaveAttribute('maxlength', '12');
   await page.getByTestId('apply-next').click();
-  await expect(page.getByText('Use digits only, up to 6.')).toBeVisible();
+  await expect(page.getByText('Choose the state where you are licensed.')).toBeVisible();
+  await expect(page.getByText('Use letters and digits only, up to 12.')).toBeVisible();
+  await expect(page.getByTestId('apply-state').locator('option')).toHaveCount(52);
+  await page.getByTestId('apply-state').selectOption('CA');
+  await page.getByTestId('apply-bar').fill('12-ab');
+  await expect(page.getByTestId('apply-bar')).toHaveValue('12ab');
   await page.getByTestId('apply-bar').fill('123456');
   await page.getByTestId('apply-admitted').fill('2099-01-01');
   await page.getByTestId('apply-next').click();
@@ -118,7 +117,7 @@ test('free listing application keeps every field in the email fallback', async (
   await page.getByTestId('apply-next').click();
   await expect(page.getByText('Separate cities with commas. Example: Oakland, San Francisco.')).toBeVisible();
   await expect(page.getByText('Separate languages with commas. Example: English, Spanish.')).toBeVisible();
-  await expect(page.getByText(/admitted in California in 2025/)).toBeVisible();
+  await expect(page.getByText(/admitted to the bar in 2025/)).toBeVisible();
   await expect(page.getByRole('button', { name: 'Choose photo' })).toBeVisible();
   await expect(page.getByText('Drag the zoom to frame the circle.')).toHaveCount(0);
   await page.getByTestId('apply-cities').fill('Oakland');

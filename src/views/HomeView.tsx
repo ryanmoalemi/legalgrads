@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { FormEvent, useState } from 'react';
 import { SPECIALTIES } from '@/lib/catalog';
+import { HOW_STEPS, HOW_SUBTITLE } from '@/views/MarketingViews';
 import { submitWaitlist } from '@/lib/applications';
 import { validEmail } from '@/lib/format';
 import { joinedLabel } from '@/lib/joined';
@@ -27,7 +28,7 @@ export function HomeView() {
     const result = await submitWaitlist(email, 'homepage');
     setMailto(result.channel === 'mailto' ? result.mailto : '');
     setDone(result.channel === 'supabase'
-      ? 'You’re on the list. We’ll email you when California listings are published.'
+      ? 'You’re on the list. We’ll email you when listings are published.'
       : 'We did not store this on a server. Send the email so your address is not lost.');
   }
 
@@ -46,7 +47,7 @@ export function HomeView() {
             <span className="gradient-text mt-1 block">Ready to work for you.</span>
           </h1>
           <p className="mt-4 max-w-xl text-lg text-ink sm:text-xl">
-            Hire newly licensed California attorneys. Listings go live only after a manual State Bar check.
+            Hire newly licensed U.S. attorneys. Listings go live only after a manual check with the attorney’s state bar.
           </p>
           <form onSubmit={onWaitlist} className="relative mt-6 flex max-w-xl items-center rounded-full bg-white p-1.5 shadow-pill">
             <span className="pl-3 text-navy" aria-hidden="true">
@@ -88,10 +89,24 @@ export function HomeView() {
       <section className="mx-auto max-w-6xl px-4 py-8" aria-label="Benefits">
         <ul className="grid grid-cols-2 gap-x-3 gap-y-6 md:grid-cols-4 md:divide-x md:divide-[#eadfce]">
           <Benefit testid="benefit-more-affordable" icon="/icons/benefits/more_affordable.svg" title="More Affordable" body="A free directory. No referral fee and no per-lead charge." />
-          <Benefit testid="benefit-newly-licensed" icon="/icons/benefits/newly_licensed.svg" title="Newly Licensed" body="Built for California lawyers opening a practice after the bar." />
-          <Benefit testid="benefit-verified" icon="/icons/benefits/verified_attorneys.svg" title="Verified Attorneys" body="A listing goes live only after a manual California State Bar check." />
+          <Benefit testid="benefit-newly-licensed" icon="/icons/benefits/newly_licensed.svg" title="Newly Licensed" body="Built for lawyers in every state opening a practice after the bar." />
+          <Benefit testid="benefit-verified" icon="/icons/benefits/verified_attorneys.svg" title="Verified Attorneys" body="A listing goes live only after a manual state bar check." />
           <Benefit testid="benefit-wide-range" icon="/icons/benefits/wide_range.svg" title="Wide Range of Help" body="Contracts, business, real estate, employment, and more." />
         </ul>
+      </section>
+
+      <section className="mx-auto max-w-6xl px-4 pb-8" aria-labelledby="how-heading" data-testid="home-how">
+        <h2 id="how-heading" className="font-display text-3xl font-extrabold tracking-tight text-navy sm:text-4xl">A directory, not a law firm</h2>
+        <p className="mt-2 max-w-2xl text-ink">{HOW_SUBTITLE}</p>
+        <ol className="mt-6 grid gap-3 sm:grid-cols-3">
+          {HOW_STEPS.map(([title, body], index) => (
+            <li key={title} className="rounded-3xl bg-white px-4 py-4 shadow-card">
+              <p className="font-display text-sm font-bold text-purple">Step {index + 1}</p>
+              <h3 className="mt-1 font-display text-lg font-extrabold">{title}</h3>
+              <p className="mt-1 text-sm text-ink">{body}</p>
+            </li>
+          ))}
+        </ol>
       </section>
 
       <section className="mx-auto max-w-6xl px-4 pb-4" aria-labelledby="for-attorneys-heading" data-testid="home-for-attorneys">
@@ -100,11 +115,11 @@ export function HomeView() {
             {joinedLabel()}
           </p>
           <h2 id="for-attorneys-heading" className="mt-3 font-display text-3xl font-extrabold tracking-tight text-navy sm:text-4xl">For attorneys</h2>
-          <p className="mt-2 max-w-2xl text-ink">A free California listing. Legalgrads does not take a cut.</p>
+          <p className="mt-2 max-w-2xl text-ink">A free listing, in any U.S. state. Legalgrads does not take a cut.</p>
           <ul className="mt-6 grid gap-3 sm:grid-cols-3">
             {[
               ['Free listing', 'You are not charged to appear in the directory.'],
-              ['Checked by hand', 'Your listing goes live only after a manual State Bar check.'],
+              ['Checked by hand', 'Your listing goes live only after a manual check with your state bar.'],
               ['No referral fee', 'Legalgrads takes no referral fee and no share of legal fees.'],
             ].map(([title, body]) => (
               <li key={title} className="rounded-3xl bg-cream px-4 py-4">
@@ -152,7 +167,7 @@ function HeroArt() {
         <span className="absolute left-6 top-6 inline-flex items-center rounded-full bg-white/95 px-2 py-1 text-xs font-semibold text-navy shadow">{joinedLabel()}</span>
         <div className="px-1 pt-3">
           <h2 className="font-display text-lg font-extrabold">Your listing</h2>
-          <p className="text-xs text-ink">California · after a State Bar check</p>
+          <p className="text-xs text-ink">All 50 states + DC · after a state bar check</p>
         </div>
         <div className="mt-2 flex flex-wrap gap-1 px-1 pb-2">
           {['Contracts', 'Business', 'Real Estate'].map((tag) => (
@@ -167,7 +182,7 @@ function HeroArt() {
           ))}
         </div>
         <div className="px-1 pt-3">
-          <h2 className="font-display text-lg font-extrabold">Verified with the State Bar</h2>
+          <h2 className="font-display text-lg font-extrabold">Verified with the state bar</h2>
           <p className="text-xs text-ink">Every listing checked by hand.</p>
         </div>
       </article>

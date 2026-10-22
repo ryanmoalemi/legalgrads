@@ -52,7 +52,7 @@ export function ListingPreview({
       <div className="mt-3 flex flex-wrap gap-1">
         {areas.map((area) => <span key={area} className="rounded-full bg-[#F4EEFF] px-2 py-1 text-xs font-semibold text-purple">{area}</span>)}
       </div>
-      {booking ? <p className="mt-3 text-sm"><a className="font-semibold text-purple" href={booking}>Booking link</a></p> : null}
+      {booking ? <p className="mt-3 text-sm"><a className="font-semibold text-purple" href={booking}>Website</a></p> : null}
       {staticPreview ? (
         <div className="mt-4 rounded-2xl bg-cream p-4" data-testid="listing-message-preview">
           <p className="text-xs font-bold uppercase tracking-wide text-purple">Preview</p>
@@ -67,7 +67,7 @@ export function ListingPreview({
       ) : (
         <MessageAttorneyForm profileId={profileId} />
       )}
-      <p className="mt-3 text-sm text-ink">Clients find this card on Find an attorney after your State Bar record is verified. {label} is only the year you joined Legalgrads. It is not a rating and not a benefit to clients. Your email is not on this card.</p>
+      <p className="mt-3 text-sm text-ink">Clients find this card on Find an attorney after your state bar record is verified. {label} is only the year you joined Legalgrads. It is not a rating and not a benefit to clients. Your email is not on this card.</p>
     </article>
   );
 }

@@ -3,11 +3,12 @@ import { validEmail } from './format';
 import { mailtoHref } from './mailto';
 import { getSupabase } from './supabase';
 import { supabaseConfigured } from './site';
+import { stateName, US_STATES } from './states';
 
 export const STEP_IDS = ['you', 'license', 'areas', 'practice', 'rate', 'review'] as const;
 export const DRAFT_KEY = 'legalgrads-apply-draft';
-export const BIO_EXAMPLE = 'I help Oakland clients with leases and everyday contracts. I was admitted in California in 2025.';
-export const BAR_SEARCH_URL = 'https://apps.calbar.ca.gov/attorney/LicenseeSearch/QuickSearch';
+export const BIO_EXAMPLE = 'I help Oakland clients with leases and everyday contracts. I was admitted to the bar in 2025.';
+export const BAR_SEARCH_URL = 'https://www.americanbar.org/groups/legal_services/flh-home/flh-bar-directories-and-lawyer-finders/';
 
 export type Visibility = '' | 'public' | 'private';
 export type InsuranceChoice = '' | 'insured' | 'will_disclose';
@@ -18,6 +19,7 @@ export interface ApplicationInput {
   emailPublic: Visibility;
   phone: string;
   phonePublic: Visibility;
+  licensedState: string;
   barNumber: string;
   admissionDate: string;
   practiceAreas: string[];
@@ -41,6 +43,7 @@ export const EMPTY_APPLICATION: ApplicationInput = {
   emailPublic: '',
   phone: '',
   phonePublic: '',
+  licensedState: '',
   barNumber: '',
   admissionDate: '',
   practiceAreas: [],
@@ -138,7 +141,7 @@ export function publicContactHref(value: string): string | null {
   return null;
 }
 
-export const PHONE_HINT = 'Required so we can reach you about your application and State Bar check. Private unless you choose to show it on your listing.';
+export const PHONE_HINT = 'Required so we can reach you about your application and state bar check. Private unless you choose to show it on your listing.';
 export const PHONE_ERROR = 'Enter a 10-digit US phone number.';
 
 /** Formats a US number as (555) 555-5555 while the attorney types. A leading 1 is dropped once 11 digits are present. */
@@ -169,13 +172,14 @@ export function errorsForStep(step: number, input: ApplicationInput): Record<str
     if (phone) errors.phone = phone;
   }
   if (step === 1) {
-    if (!/^\d{1,6}$/.test(input.barNumber)) errors.barNumber = 'Use digits only, up to 6.';
+    if (!US_STATES.some((s) => s.code === input.licensedState)) errors.licensedState = 'Choose the state where you are licensed.';
+    if (!/^[A-Za-z0-9]{1,12}$/.test(input.barNumber)) errors.barNumber = 'Use letters and digits only, up to 12.';
     if (!input.admissionDate) errors.admissionDate = 'Enter your admission date.';
     else if (isFutureDate(input.admissionDate)) errors.admissionDate = 'Admission date cannot be in the future.';
   }
   if (step === 2 && input.practiceAreas.length === 0) errors.practiceAreas = 'Choose at least one practice area.';
   if (step === 3) {
-    if (input.citiesServed.trim().length < 2) errors.citiesServed = 'List the California cities you serve.';
+    if (input.citiesServed.trim().length < 2) errors.citiesServed = 'List the cities you serve.';
     if (input.languages.trim().length < 2) errors.languages = 'List the languages you work in.';
     if (input.bio.trim().length < 40) errors.bio = 'Write at least 40 characters.';
     else if (input.bio.length > 600) errors.bio = 'Keep the bio to 600 characters.';
@@ -221,7 +225,8 @@ export function applicationBody(input: ApplicationInput, reference: string): str
     'Email on public listing: no',
     `Phone: ${input.phone.trim()}`,
     `Phone on public listing: ${input.phonePublic === 'public' ? 'yes' : 'no'}`,
-    `California State Bar number: ${input.barNumber}`,
+    `State of licensure: ${stateName(input.licensedState)} (${input.licensedState})`,
+    `Bar number: ${input.barNumber}`,
     `Admission date: ${input.admissionDate}`,
     `Practice areas: ${areas}`,
     `Cities served: ${input.citiesServed.trim()}`,
@@ -236,7 +241,7 @@ export function applicationBody(input: ApplicationInput, reference: string): str
     'Bio:',
     input.bio.trim(),
     '',
-    'Listing requested only after manual California State Bar verification.',
+    'Listing requested only after manual state bar verification.',
   ].join('\n');
 }
 
@@ -291,7 +296,7 @@ export async function submitApplication(input: ApplicationInput, photo: File | n
       });
       if (uploaded.error) throw new Error('upload');
     }
-    const inserted = await supabase.from('attorney_applications').insert({
+    const row = {
       id,
       status: 'pending',
       full_name: input.fullName.trim(),
@@ -315,12 +320,17 @@ export async function submitApplication(input: ApplicationInput, photo: File | n
       insurance_choice: input.insurance,
       reference,
       attorney_terms_accepted_at: new Date().toISOString(),
-    });
+    };
+    let inserted = await supabase.from('attorney_applications').insert({ ...row, licensed_state: input.licensedState });
+    // Until the licensed_state migration runs, keep the state in the private reference field.
+    if (inserted.error && /licensed_state/i.test(inserted.error.message ?? '')) {
+      inserted = await supabase.from('attorney_applications').insert({ ...row, reference: `${reference} state:${input.licensedState}` });
+    }
     if (inserted.error) throw new Error('insert');
     return {
       ...base,
       channel: 'supabase',
-      message: "We'll verify your State Bar record within 2 business days and email you.",
+      message: "We'll verify your state bar record within 2 business days and email you.",
     };
   } catch {
     return { ...base, channel: 'mailto', message: STORED_OFFLINE };

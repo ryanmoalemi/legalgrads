@@ -11,7 +11,7 @@ export function ForAttorneysView() {
       <PageIntro
         kicker="For attorneys"
         title="Join free"
-        body="California attorneys can apply now. The listing is free. Your email stays private. Clients reach you through our secure contact form. Legalgrads takes no referral fee and no share of legal fees. Nothing goes live until we manually check your State Bar record."
+        body="Attorneys licensed in any U.S. state or DC can apply now. The listing is free. Your email stays private. Clients reach you through our secure contact form. Legalgrads takes no referral fee and no share of legal fees. Nothing goes live until we manually check your record with your state bar."
       />
       <p className="mt-4 inline-flex rounded-full bg-[#F3E9FF] px-3 py-1 text-xs font-bold text-purple">{joinedLabel()}</p>
       <p className="mt-2 max-w-3xl text-sm text-ink">{joinedLabel()} is only the year you join Legalgrads. It is not a rating and not a benefit to clients.</p>
@@ -22,7 +22,7 @@ export function ForAttorneysView() {
         {[
           ['Free listing', 'You are not charged to be in the directory.'],
           ['Direct contact', 'Clients contact you directly through a secure form.'],
-          ['Bar check first', 'We publish a profile only after a person checks the California State Bar record.'],
+          ['Bar check first', 'We publish a profile only after a person checks your record with your state bar.'],
         ].map(([title, body]) => (
           <li key={title} className="rounded-3xl bg-white p-5">
             <h2 className="font-display text-xl font-extrabold">{title}</h2>
@@ -43,7 +43,7 @@ export function ForAttorneysView() {
         ))}
       </ul>
       <h2 className="mt-10 font-display text-2xl font-extrabold">What clients will see</h2>
-      <p className="mt-2 text-sm text-ink">This sample uses your future listing, not a real attorney. Clients find the live card on Find an attorney after your State Bar record is verified.</p>
+      <p className="mt-2 text-sm text-ink">This sample uses your future listing, not a real attorney. Clients find the live card on Find an attorney after your state bar record is verified.</p>
       <div className="mt-4 max-w-xl">
         <ListingPreview
           sample
@@ -63,7 +63,7 @@ export function ForAttorneysView() {
         <div className="mt-4 space-y-4">
           <article className="rounded-3xl bg-white p-5">
             <h3 className="font-display text-lg font-extrabold">Is Legalgrads a referral service?</h3>
-            <p className="mt-2 text-sm text-ink">No. Legalgrads is a free directory, not a lawyer referral service certified by the State Bar of California. Clients contact you directly. We do not send you a matter for a fee.</p>
+            <p className="mt-2 text-sm text-ink">No. Legalgrads is a free directory, not a lawyer referral service certified by any state bar. Clients contact you directly. We do not send you a matter for a fee.</p>
           </article>
           <article className="rounded-3xl bg-white p-5">
             <h3 className="font-display text-lg font-extrabold">Does Legalgrads share fees?</h3>
@@ -71,11 +71,11 @@ export function ForAttorneysView() {
           </article>
           <article className="rounded-3xl bg-white p-5">
             <h3 className="font-display text-lg font-extrabold">Who is responsible for ethics and advertising?</h3>
-            <p className="mt-2 text-sm text-ink">You are. Your bio, rate, photo, and contact details are your own advertising and must follow the California Rules of Professional Conduct.</p>
+            <p className="mt-2 text-sm text-ink">You are. Your bio, rate, photo, and contact details are your own advertising and must follow the rules of professional conduct in the state where you are licensed.</p>
           </article>
           <article className="rounded-3xl bg-white p-5">
             <h3 className="font-display text-lg font-extrabold">How is my information used?</h3>
-            <p className="mt-2 text-sm text-ink">We use it to check your State Bar record and, if that passes, to show the listing you wrote. Your email stays private. Clients reach you through our secure contact form. A phone number is public only if you choose that. Email ryan@legalgrads.com to change or remove a listing.</p>
+            <p className="mt-2 text-sm text-ink">We use it to check your state bar record and, if that passes, to show the listing you wrote. Your email stays private. Clients reach you through our secure contact form. A phone number is public only if you choose that. Email ryan@legalgrads.com to change or remove a listing.</p>
           </article>
         </div>
       </section>

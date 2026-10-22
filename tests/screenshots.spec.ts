@@ -27,6 +27,7 @@ test('capture launch screenshots', async ({ page }) => {
       await page.getByTestId('apply-next').click();
     }],
     ['apply-3-areas', async () => {
+      await page.getByTestId('apply-state').selectOption('CA');
       await page.getByTestId('apply-bar').fill('123456');
       await page.getByTestId('apply-admitted').fill('2020-06-01');
       await page.getByTestId('apply-next').click();
