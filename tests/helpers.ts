@@ -8,25 +8,7 @@ export async function boot(page: Page, path = '/') {
     );
   });
   await page.goto(path);
-  await expect(page.getByTestId('app-ready')).toBeAttached();
-}
-
-export async function resultNames(page: Page): Promise<string[]> {
-  const names: string[] = [];
-  const settled = page.getByTestId('result-card').first().or(page.getByText('No eligible attorneys'));
-  await expect(settled).toBeVisible();
-  for (let i = 0; i < 6; i++) {
-    const text = (await page.getByTestId('result-count').innerText()).trim();
-    if (text.startsWith('0')) break;
-    await expect(page.getByTestId('result-card').first()).toBeVisible();
-    names.push(...(await page.getByTestId('result-name').allTextContents()));
-    const next = page.getByRole('button', { name: 'Next page' });
-    if ((await next.count()) === 0 || (await next.isDisabled())) break;
-    await next.click({ noWaitAfter: true });
-    await expect(page.getByText(new RegExp(`Page ${i + 2} of`))).toBeVisible();
-    await expect(page.getByTestId('result-card').first()).toBeVisible();
-  }
-  return names;
+  await expect(page.getByRole('heading', { level: 1 }).first()).toBeVisible();
 }
 
 export async function noOverflow(page: Page) {

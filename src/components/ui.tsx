@@ -1,13 +1,5 @@
 import Link from 'next/link';
-import { STATUS_LABEL, cx } from '@/lib/format';
-
-export function DemoMark({ children = 'DEMO' }: { children?: string }) {
-  return <span className="demo-pill">{children}</span>;
-}
-
-export function StatusPill({ status }: { status: string }) {
-  return <span className="rounded-full bg-cream px-2 py-1 text-xs font-semibold text-navy">{STATUS_LABEL[status] ?? status}</span>;
-}
+import { cx } from '@/lib/format';
 
 export function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
@@ -18,11 +10,11 @@ export function Field({ label, children }: { label: string; children: React.Reac
   );
 }
 
-export const inputClass = 'w-full rounded-2xl border border-navy/10 bg-white px-3 py-3 text-navy outline-none';
+export const inputClass = 'w-full rounded-2xl border border-navy/10 bg-white px-3 py-3 text-navy';
 
 export function Alert({ children }: { children: React.ReactNode }) {
   if (!children) return null;
-  return <p role="alert" className="mt-3 rounded-2xl bg-pink/10 px-3 py-2 text-sm text-pink">{children}</p>;
+  return <p role="alert" className="mt-3 rounded-2xl bg-[#F8E8EE] px-3 py-2 text-sm font-medium text-[#6E123F]">{children}</p>;
 }
 
 export function Notice({ children }: { children: React.ReactNode }) {

@@ -24,7 +24,29 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
-      - run: npm run build
+      - name: Check Supabase build secrets
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+        run: |
+          if [ -z "$NEXT_PUBLIC_SUPABASE_URL" ] || [ -z "$NEXT_PUBLIC_SUPABASE_ANON_KEY" ]; then
+            echo "Repository secrets NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY must be set. The Pages build bakes them into the static site."
+            exit 1
+          fi
+          case "$NEXT_PUBLIC_SUPABASE_URL" in
+            https://*.supabase.co) ;;
+            *) echo "NEXT_PUBLIC_SUPABASE_URL must be an https://*.supabase.co project URL."; exit 1 ;;
+          esac
+          case "$NEXT_PUBLIC_SUPABASE_ANON_KEY" in
+            sb_secret_*) echo "NEXT_PUBLIC_SUPABASE_ANON_KEY is a secret key. Use the publishable key instead."; exit 1 ;;
+          esac
+          echo "Supabase build secrets are present."
+      - name: Build static site
+        run: npm run build
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+          NEXT_PUBLIC_PHASE2: ${{ secrets.NEXT_PUBLIC_PHASE2 }}
       - uses: actions/upload-pages-artifact@v3
         with:
           path: out

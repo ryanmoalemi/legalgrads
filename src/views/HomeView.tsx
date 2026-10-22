@@ -1,46 +1,34 @@
 'use client';
 
 import Link from 'next/link';
-import { FormEvent, useEffect, useState } from 'react';
+import { FormEvent, useState } from 'react';
 import { SPECIALTIES } from '@/lib/catalog';
-import { initDb, joinWaitlist, publicAttorneys } from '@/lib/db';
-import { money, validEmail } from '@/lib/format';
-import { toCard } from '@/lib/search';
-import { previewState } from '@/lib/seed';
-import { DemoMark } from '@/components/ui';
-import { useDemo } from '@/components/DemoProvider';
+import { submitWaitlist } from '@/lib/applications';
+import { validEmail } from '@/lib/format';
+import { joinedLabel } from '@/lib/joined';
 
 const SHORTCUTS = ['contracts', 'start-a-business', 'real-estate', 'employment'];
 
 export function HomeView() {
-  const { rev } = useDemo();
-  const preview = previewState();
-  const [maya, setMaya] = useState(toCard(preview, 'user_maya'));
-  const [jordan, setJordan] = useState(toCard(preview, 'user_jordan'));
-  const [done, setDone] = useState(false);
+  const [done, setDone] = useState('');
+  const [mailto, setMailto] = useState('');
   const [error, setError] = useState('');
 
-  useEffect(() => {
-    void initDb().then(() => {
-      const cards = publicAttorneys({});
-      setMaya(cards.find((c) => c.slug === 'maya-r') ?? toCard(previewState(), 'user_maya'));
-      setJordan(cards.find((c) => c.slug === 'jordan-k') ?? toCard(previewState(), 'user_jordan'));
-    });
-  }, [rev]);
-
-  function onWaitlist(event: FormEvent<HTMLFormElement>) {
+  async function onWaitlist(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const email = String(new FormData(event.currentTarget).get('email') || '');
     if (!validEmail(email)) {
       setError('Enter a valid email address.');
-      setDone(false);
+      setDone('');
+      setMailto('');
       return;
     }
     setError('');
-    void initDb().then(() => {
-      joinWaitlist(email, 'client', 'homepage');
-      setDone(true);
-    });
+    const result = await submitWaitlist(email, 'homepage');
+    setMailto(result.channel === 'mailto' ? result.mailto : '');
+    setDone(result.channel === 'supabase'
+      ? 'You’re on the list. We’ll email you when California listings are published.'
+      : 'We did not store this on a server. Send the email so your address is not lost.');
   }
 
   return (
@@ -58,7 +46,7 @@ export function HomeView() {
             <span className="gradient-text mt-1 block">Ready to work for you.</span>
           </h1>
           <p className="mt-4 max-w-xl text-lg text-ink sm:text-xl">
-            Hire newly licensed attorneys who are ready to build their practices.
+            Hire newly licensed California attorneys who set their own rates. Listings go live only after a manual State Bar check.
           </p>
           <form onSubmit={onWaitlist} className="relative mt-6 flex max-w-xl items-center rounded-full bg-white p-1.5 shadow-pill">
             <span className="pl-3 text-navy" aria-hidden="true">
@@ -68,19 +56,20 @@ export function HomeView() {
               </svg>
             </span>
             <label className="sr-only" htmlFor="waitlist-email">Email address</label>
-            <input id="waitlist-email" data-testid="waitlist-email" name="email" type="email" placeholder="Drop your email for early access" className="min-w-0 flex-1 bg-transparent px-3 py-3 outline-none" />
+            <input id="waitlist-email" data-testid="waitlist-email" name="email" type="email" required placeholder="Drop your email for early access" className="min-w-0 flex-1 bg-transparent px-3 py-3 outline-none" />
             <button type="submit" data-testid="waitlist-submit" className="shrink-0 rounded-full bg-pink px-4 py-3 font-display text-sm font-semibold text-white sm:px-5 sm:text-base">Join the list ✨</button>
           </form>
           {error ? <p role="alert" className="mt-2 text-sm text-pink">{error}</p> : null}
-          {done ? <p role="status" className="mt-2 text-sm font-medium">You’re on the demo waitlist in this browser. No email was sent.</p> : null}
+          {done ? <p role="status" data-testid="waitlist-status" className="mt-2 text-sm font-medium">{done}</p> : null}
+          {mailto ? <p className="mt-2 text-sm"><a data-testid="waitlist-mailto" className="font-semibold text-purple" href={mailto}>Email this signup to ryan@legalgrads.com</a></p> : null}
+          <Link href="/join/" data-testid="home-attorney-cta" className="mt-3 inline-flex min-h-11 items-center justify-center rounded-full bg-white px-5 py-3 font-display text-sm font-semibold text-navy shadow-pill ring-1 ring-navy/10">
+            Join free
+          </Link>
           <p className="mt-3 text-sm text-ink sm:text-base">
-            Be the first to know when we launch. No <span className="hand-underline font-semibold text-navy">spam.
+            Be the first to know when attorneys are published. No <span className="hand-underline font-semibold text-navy">spam.
               <svg viewBox="0 0 80 10" aria-hidden="true"><path d="M2 7 C 20 2, 50 2, 78 6" stroke="#7A00FF" strokeWidth="3" fill="none" strokeLinecap="round" /></svg>
             </span>
           </p>
-          <Link href="/find-lawyer/" data-testid="explore-demo" className="mt-4 inline-flex min-h-11 items-center font-display font-semibold text-purple">
-            Explore interactive demo →
-          </Link>
           <div className="mt-5 grid grid-cols-2 gap-2 sm:grid-cols-4">
             {SHORTCUTS.map((slug) => {
               const spec = SPECIALTIES.find((s) => s.slug === slug)!;
@@ -93,17 +82,41 @@ export function HomeView() {
             })}
           </div>
         </div>
-        <HeroArt mayaRate={maya?.hourlyRate ?? 150} jordanRate={jordan?.hourlyRate ?? 175} />
+        <HeroArt />
       </section>
 
       <section className="mx-auto max-w-6xl px-4 py-8" aria-label="Benefits">
         <ul className="grid grid-cols-2 gap-x-3 gap-y-6 md:grid-cols-4 md:divide-x md:divide-[#eadfce]">
-          <Benefit testid="benefit-more-affordable" icon="/icons/benefits/more_affordable.svg" title="More Affordable" body="Get quality legal help at lower rates." />
-          <Benefit testid="benefit-newly-licensed" icon="/icons/benefits/newly_licensed.svg" title="Newly Licensed" body="Work with recent law grads who are ready to build their practices." />
-          <Benefit testid="benefit-verified" icon="/icons/benefits/verified_attorneys.svg" title="Verified Attorneys" body="All attorneys are licensed and background checked." />
-          <Benefit testid="benefit-wide-range" icon="/icons/benefits/wide_range.svg" title="Wide Range of Help" body="From business to real estate to contracts and more." />
+          <Benefit testid="benefit-more-affordable" icon="/icons/benefits/more_affordable.svg" title="More Affordable" body="Attorneys publish the flat or hourly rate they choose." />
+          <Benefit testid="benefit-newly-licensed" icon="/icons/benefits/newly_licensed.svg" title="Newly Licensed" body="Built for California lawyers opening a practice after the bar." />
+          <Benefit testid="benefit-verified" icon="/icons/benefits/verified_attorneys.svg" title="Verified Attorneys" body="A listing goes live only after a manual California State Bar check." />
+          <Benefit testid="benefit-wide-range" icon="/icons/benefits/wide_range.svg" title="Wide Range of Help" body="Contracts, business, real estate, employment, and more." />
         </ul>
-        <p className="mt-4 text-center text-xs text-ink">Benefit lines describe the product idea. Verification in this demo is simulated. No savings percentage is claimed. Profiles are fictional.</p>
+      </section>
+
+      <section className="mx-auto max-w-6xl px-4 pb-4" aria-labelledby="for-attorneys-heading" data-testid="home-for-attorneys">
+        <div className="rounded-[32px] bg-white p-6 shadow-card sm:p-8">
+          <p className="inline-flex items-center rounded-full bg-[#F3E9FF] px-3 py-1 font-display text-xs font-bold text-purple">
+            {joinedLabel()}
+          </p>
+          <h2 id="for-attorneys-heading" className="mt-3 font-display text-3xl font-extrabold tracking-tight text-navy sm:text-4xl">For attorneys</h2>
+          <p className="mt-2 max-w-2xl text-ink">A free California listing. You set the rate. Legalgrads does not take a cut.</p>
+          <ul className="mt-6 grid gap-3 sm:grid-cols-3">
+            {[
+              ['Free listing', 'You are not charged to appear in the directory.'],
+              ['Set your own rate', 'Publish a flat fee or an hourly amount that you choose.'],
+              ['No referral fee', 'Legalgrads takes no referral fee and no share of legal fees.'],
+            ].map(([title, body]) => (
+              <li key={title} className="rounded-3xl bg-cream px-4 py-4">
+                <h3 className="font-display text-lg font-extrabold">{title}</h3>
+                <p className="mt-1 text-sm text-ink">{body}</p>
+              </li>
+            ))}
+          </ul>
+          <Link href="/join/" data-testid="home-apply" className="mt-6 inline-flex min-h-12 items-center justify-center rounded-full bg-pink px-8 py-3 font-display text-base font-semibold text-white">
+            Join free
+          </Link>
+        </div>
       </section>
     </div>
   );
@@ -119,7 +132,7 @@ function Benefit({ testid, icon, title, body }: { testid: string; icon: string; 
   );
 }
 
-function HeroArt({ mayaRate, jordanRate }: { mayaRate: number; jordanRate: number }) {
+function HeroArt() {
   return (
     <div className="relative mx-auto h-[460px] w-full max-w-[520px] overflow-hidden sm:h-[540px] sm:overflow-visible">
       <div className="absolute left-6 top-16 h-56 w-56 rounded-full bg-pink/15 blur-2xl" aria-hidden="true" />
@@ -133,49 +146,32 @@ function HeroArt({ mayaRate, jordanRate }: { mayaRate: number; jordanRate: numbe
         <path d="M18 58 l16 -2 l-6 14" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" />
       </svg>
       <article className="absolute left-0 top-16 z-10 w-[74%] -rotate-6 rounded-[28px] bg-white p-3 shadow-card">
-        <img src="/headshots/01_maya.png" alt="Fictional demo portrait of Maya R." className="h-44 w-full rounded-2xl object-cover object-top sm:h-56" />
-        <span className="absolute left-6 top-6 inline-flex items-center gap-1 rounded-full bg-white/95 px-2 py-1 text-xs font-semibold text-navy shadow"><Cap /> Newly Licensed</span>
-        <div className="flex items-start justify-between gap-2 px-1 pt-3">
-          <div>
-            <h2 className="font-display text-lg font-extrabold">Maya R., Esq.</h2>
-            <p className="text-xs text-ink">Class of 2026 · UC Law</p>
-          </div>
-          <p className="font-display font-extrabold">{money(mayaRate)}/hr <DemoMark /></p>
+        <div className="flex h-44 items-center justify-center rounded-2xl bg-gradient-to-br from-[#F4EEFF] to-[#FFF1F8] sm:h-56">
+          <img src="/logos/legalgrads_mark.svg" alt="" className="h-24 w-24" />
+        </div>
+        <span className="absolute left-6 top-6 inline-flex items-center rounded-full bg-white/95 px-2 py-1 text-xs font-semibold text-navy shadow">{joinedLabel()}</span>
+        <div className="px-1 pt-3">
+          <h2 className="font-display text-lg font-extrabold">Your listing</h2>
+          <p className="text-xs text-ink">California · after a State Bar check</p>
         </div>
         <div className="mt-2 flex flex-wrap gap-1 px-1 pb-2">
-          {['Contracts', 'Business Law', 'Real Estate'].map((tag) => (
+          {['Contracts', 'Business', 'Real Estate'].map((tag) => (
             <span key={tag} className="rounded-full bg-[#F4EEFF] px-2 py-1 text-[11px] font-semibold text-purple">{tag}</span>
           ))}
         </div>
-        <Link href="/attorneys/maya-r/" className="absolute inset-0 rounded-[28px]" aria-label="View Maya R." />
       </article>
       <article className="absolute bottom-8 right-0 z-20 w-[72%] rotate-3 rounded-[28px] bg-white p-3 shadow-card">
-        <img src="/headshots/02_jordan.png" alt="Fictional demo portrait of Jordan K." className="h-40 w-full rounded-2xl object-cover object-top sm:h-48" />
-        <span className="absolute left-6 top-6 inline-flex items-center gap-1 rounded-full bg-white/95 px-2 py-1 text-xs font-semibold text-navy shadow"><Cap /> Newly Licensed</span>
-        <div className="flex items-start justify-between gap-2 px-1 pt-3">
-          <div>
-            <h2 className="font-display text-lg font-extrabold">Jordan K., Esq.</h2>
-            <p className="text-xs text-ink">Class of 2025 · NYU Law</p>
-          </div>
-          <p className="font-display font-extrabold">{money(jordanRate)}/hr <DemoMark /></p>
-        </div>
-        <div className="mt-2 flex flex-wrap gap-1 px-1 pb-2">
-          {['LLC Setup', 'Corporate Law', 'IP Law'].map((tag) => (
-            <span key={tag} className="rounded-full bg-[#F4EEFF] px-2 py-1 text-[11px] font-semibold text-purple">{tag}</span>
+        <div className="grid h-40 grid-cols-4 gap-2 rounded-2xl bg-[#FFF8F1] p-3 sm:h-48">
+          {SPECIALTIES.slice(0, 8).map((spec) => (
+            <img key={spec.slug} src={spec.icon} alt="" className="h-10 w-10 justify-self-center" />
           ))}
         </div>
-        <Link href="/attorneys/jordan-k/" className="absolute inset-0 rounded-[28px]" aria-label="View Jordan K." />
+        <div className="px-1 pt-3">
+          <h2 className="font-display text-lg font-extrabold">You set the rate</h2>
+          <p className="text-xs text-ink">Flat or hourly. No referral fee.</p>
+        </div>
       </article>
-      <p className="absolute bottom-0 right-6 z-30 -rotate-2 rounded-2xl bg-[#FFE14A] px-3 py-2 font-display text-sm font-extrabold shadow">⚖ Real lawyers.</p>
-      <p className="absolute bottom-16 left-2 z-30 max-w-[9rem] font-hand text-lg font-bold text-mint">Fictional demo</p>
+      <p className="absolute bottom-0 right-6 z-30 -rotate-2 rounded-2xl bg-[#FFE14A] px-3 py-2 font-display text-sm font-extrabold shadow">Real lawyers.</p>
     </div>
-  );
-}
-
-function Cap() {
-  return (
-    <svg width="14" height="14" viewBox="0 0 24 24" aria-hidden="true">
-      <path d="M2 10 12 5l10 5-10 5L2 10Z" fill="#7A00FF" />
-    </svg>
   );
 }
