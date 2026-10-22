@@ -116,6 +116,9 @@ const FOOTER = [
 ] as const;
 
 export function Footer() {
+  const path = usePathname() || '';
+  const join = path === '/join' || path.startsWith('/join/');
+  if (join) return <JoinFooter reserveActionBar={!path.includes('confirmation')} />;
   return (
     <footer className="mt-16 bg-navy text-white">
       <div className="mx-auto grid max-w-6xl gap-8 px-4 py-12 sm:grid-cols-2 lg:grid-cols-5">
@@ -137,6 +140,17 @@ export function Footer() {
       </div>
       <p className="border-t border-white/10 px-4 py-4 text-center text-xs text-white/60">© 2026 Legalgrads. Draft — pending legal review. October 21, 2026.</p>
     </footer>
+  );
+}
+
+function JoinFooter({ reserveActionBar }: { reserveActionBar: boolean }) {
+  return (
+    <>
+      <footer data-testid="join-footer" className="px-4 py-6 text-center text-xs text-navy/70">
+        <p>© 2026 Legalgrads · <Link className="font-semibold text-purple" href="/terms/">Terms</Link> · <Link className="font-semibold text-purple" href="/privacy/">Privacy</Link></p>
+      </footer>
+      {reserveActionBar ? <div className="join-footer-pad" aria-hidden="true" /> : null}
+    </>
   );
 }
 

@@ -1,5 +1,6 @@
-import { contactHref } from '@/lib/applications';
+import { publicContactHref } from '@/lib/applications';
 import { joinedLabel, joinedYear } from '@/lib/joined';
+import { MessageAttorneyForm } from '@/components/MessageAttorneyForm';
 
 export function ListingPreview({
   name,
@@ -11,6 +12,7 @@ export function ListingPreview({
   joined,
   photoUrl,
   contact,
+  profileId,
   sample = false,
 }: {
   name: string;
@@ -22,10 +24,12 @@ export function ListingPreview({
   joined?: string | number | Date | null;
   photoUrl?: string;
   contact?: string;
+  profileId?: string;
   sample?: boolean;
 }) {
   const year = joinedYear(joined);
   const label = joinedLabel(year);
+  const booking = contact ? publicContactHref(contact) : null;
   return (
     <article className="rounded-3xl bg-white p-5 shadow-card" data-testid={sample ? 'sample-listing' : 'listing-preview'}>
       {sample ? <p className="text-xs font-bold uppercase tracking-wide text-purple">Sample listing</p> : null}
@@ -45,8 +49,9 @@ export function ListingPreview({
       <div className="mt-3 flex flex-wrap gap-1">
         {areas.map((area) => <span key={area} className="rounded-full bg-[#F4EEFF] px-2 py-1 text-xs font-semibold text-purple">{area}</span>)}
       </div>
-      {contact ? <p className="mt-3 text-sm"><a className="font-semibold text-purple" href={contactHref(contact)}>Contact this attorney</a></p> : null}
-      <p className="mt-3 text-sm text-ink">Clients find this card on Find an attorney after your State Bar record is verified. {label} is only the year you joined Legalgrads. It is not a rating and not a benefit to clients.</p>
+      {booking ? <p className="mt-3 text-sm"><a className="font-semibold text-purple" href={booking}>Booking link</a></p> : null}
+      <MessageAttorneyForm profileId={profileId} />
+      <p className="mt-3 text-sm text-ink">Clients find this card on Find an attorney after your State Bar record is verified. {label} is only the year you joined Legalgrads. It is not a rating and not a benefit to clients. Your email is not on this card.</p>
     </article>
   );
 }

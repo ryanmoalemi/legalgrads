@@ -13,16 +13,17 @@ test('capture launch screenshots', async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 });
     await page.screenshot({ path: `${dir}/${name}-mobile.png`, fullPage: true });
   }
-  await page.setViewportSize({ width: 390, height: 844 });
+  await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto('/join/');
+  await page.waitForTimeout(300);
+  await page.screenshot({ path: `${dir}/apply-1-you-desktop.png`, fullPage: true });
+  await page.setViewportSize({ width: 390, height: 844 });
   const shots: [string, () => Promise<void>][] = [
     ['apply-1-you', async () => undefined],
     ['apply-2-license', async () => {
       await page.getByTestId('apply-name').fill('Alex Rivera');
       await page.getByTestId('apply-email').fill('alex.rivera@example.com');
-      await page.getByTestId('apply-email-private').check();
       await page.getByTestId('apply-phone').fill('4155551212');
-      await page.getByTestId('apply-phone-private').check();
       await page.getByTestId('apply-next').click();
     }],
     ['apply-3-areas', async () => {
@@ -44,19 +45,60 @@ test('capture launch screenshots', async ({ page }) => {
       await page.getByTestId('apply-rate-hourly').check();
       await page.getByTestId('apply-rate-amount').fill('225');
       await page.getByTestId('apply-rate-for').fill('Lease review');
-      await page.getByTestId('apply-contact').fill('https://example.com/book');
       await page.getByTestId('apply-next').click();
     }],
   ];
   for (const [name, step] of shots) {
     await step();
     await page.waitForTimeout(200);
-    await page.screenshot({ path: `${dir}/${name}-mobile.png`, fullPage: true });
+    await page.evaluate(() => window.scrollTo(0, 0));
+    await page.screenshot({ path: `${dir}/${name}-mobile-top.png` });
+    await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
+    await page.waitForTimeout(150);
+    await page.screenshot({ path: `${dir}/${name}-mobile-bottom.png` });
+    if (name === 'apply-1-you') {
+      await page.evaluate(() => window.scrollTo(0, 0));
+      await page.getByTestId('apply-name').fill('Alex Rivera');
+      await page.getByTestId('apply-email').fill('alex.rivera@example.com');
+      await page.getByTestId('apply-phone').fill('555-1212');
+      await page.getByTestId('apply-next').click();
+      await page.getByText('Enter a 10-digit US phone number.').waitFor();
+      await page.getByTestId('apply-phone').evaluate((el) => el.scrollIntoView({ block: 'center' }));
+      await page.waitForTimeout(150);
+      await page.screenshot({ path: `${dir}/apply-1-phone-error-mobile.png` });
+      await page.getByTestId('apply-name').fill('');
+      await page.getByTestId('apply-email').fill('');
+      await page.getByTestId('apply-phone').fill('');
+    }
   }
+  await page.getByTestId('apply-phone-private').check();
+  await page.getByTestId('apply-contact').fill('https://example.com/book');
   await page.getByTestId('apply-insured').check();
   await page.getByTestId('apply-terms').check();
   await page.getByTestId('application-submit').click();
   await page.waitForURL(/confirmation/);
   await page.waitForTimeout(300);
-  await page.screenshot({ path: `${dir}/confirmation-mobile.png`, fullPage: true });
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.evaluate(() => window.scrollTo(0, 0));
+  await page.screenshot({ path: `${dir}/confirmation-mobile-top.png` });
+  await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
+  await page.waitForTimeout(150);
+  await page.screenshot({ path: `${dir}/confirmation-mobile-bottom.png` });
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto('/for-attorneys/');
+  await page.getByTestId('message-attorney').scrollIntoViewIfNeeded();
+  await page.waitForTimeout(200);
+  await page.screenshot({ path: `${dir}/message-attorney-mobile.png` });
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.getByTestId('message-attorney').scrollIntoViewIfNeeded();
+  await page.waitForTimeout(200);
+  await page.screenshot({ path: `${dir}/message-attorney-desktop.png` });
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.getByTestId('message-name').fill('Casey Client');
+  await page.getByTestId('message-email').fill('casey.client@example.com');
+  await page.getByTestId('message-body').fill('Please see https://example.com/offer about my lease.');
+  await page.getByTestId('message-consent').check();
+  await page.getByTestId('message-submit').click();
+  await page.getByText('Please remove links; describe your situation in words').waitFor();
+  await page.getByTestId('sample-listing').screenshot({ path: `${dir}/message-link-error-mobile.png` });
 });

@@ -11,7 +11,7 @@ export function ForAttorneysView() {
       <PageIntro
         kicker="For attorneys"
         title="Join free"
-        body="California attorneys can apply now. The listing is free. Legalgrads takes no referral fee and no share of legal fees. Nothing goes live until we manually check your State Bar record."
+        body="California attorneys can apply now. The listing is free. Your email stays private. Clients reach you through our secure contact form. Legalgrads takes no referral fee and no share of legal fees. Nothing goes live until we manually check your State Bar record."
       />
       <p className="mt-4 inline-flex rounded-full bg-[#F3E9FF] px-3 py-1 text-xs font-bold text-purple">{joinedLabel()}</p>
       <p className="mt-2 max-w-3xl text-sm text-ink">{joinedLabel()} is only the year you join Legalgrads. It is not a rating and not a benefit to clients.</p>
@@ -75,7 +75,7 @@ export function ForAttorneysView() {
           </article>
           <article className="rounded-3xl bg-white p-5">
             <h3 className="font-display text-lg font-extrabold">How is my information used?</h3>
-            <p className="mt-2 text-sm text-ink">We use it to check your State Bar record and, if that passes, to show the listing you wrote. Phone and email are public only if you choose that. Email ryan@legalgrads.com to change or remove a listing.</p>
+            <p className="mt-2 text-sm text-ink">We use it to check your State Bar record and, if that passes, to show the listing you wrote. Your email stays private. Clients reach you through our secure contact form. A phone number is public only if you choose that. Email ryan@legalgrads.com to change or remove a listing.</p>
           </article>
         </div>
       </section>

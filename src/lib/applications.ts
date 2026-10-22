@@ -100,26 +100,54 @@ export function isFutureDate(iso: string): boolean {
 
 export function contactProblem(value: string): string | null {
   const trimmed = value.trim();
-  if (!trimmed) return 'Enter an https link, an email address, or a phone number.';
+  if (!trimmed) return 'Enter an https link or a phone number.';
   if (/^(javascript|data|vbscript):/i.test(trimmed)) return 'That contact method is not allowed.';
-  if (validEmail(trimmed)) return null;
+  if (validEmail(trimmed)) return 'Use an https link or a phone number. Your email stays private.';
   if (/^[+\d().\-\s]+$/.test(trimmed) && trimmed.replace(/\D/g, '').length >= 10) return null;
   if (/^https:\/\/\S+$/i.test(trimmed)) {
     try {
       const url = new URL(trimmed);
       if (url.protocol === 'https:' && url.hostname.includes('.')) return null;
     } catch {
-      return 'Enter a full https link, an email address, or a phone number.';
+      return 'Enter a full https link or a phone number.';
     }
   }
-  return 'Enter a full https link, an email address, or a phone number. A single word is not enough.';
+  return 'Enter a full https link or a phone number. A single word is not enough.';
 }
 
 export function contactHref(value: string): string {
   const trimmed = value.trim();
-  if (validEmail(trimmed)) return `mailto:${trimmed}`;
   if (/^[+\d().\-\s]+$/.test(trimmed)) return `tel:${trimmed.replace(/[^\d+]/g, '')}`;
   return trimmed;
+}
+
+/** Public pages may link a booking URL or a phone number. Never an email address. */
+export function publicContactHref(value: string): string | null {
+  const trimmed = value.trim();
+  if (!trimmed || validEmail(trimmed) || /^(javascript|data|vbscript):/i.test(trimmed)) return null;
+  if (/^[+\d().\-\s]+$/.test(trimmed) && trimmed.replace(/\D/g, '').length >= 10) {
+    return `tel:${trimmed.replace(/[^\d+]/g, '')}`;
+  }
+  if (/^https:\/\/\S+$/i.test(trimmed)) {
+    try {
+      const url = new URL(trimmed);
+      if (url.protocol === 'https:' && url.hostname.includes('.')) return trimmed;
+    } catch {
+      return null;
+    }
+  }
+  return null;
+}
+
+export const PHONE_HINT = 'Used to verify your license and recover your account. Private unless you choose to show it.';
+export const PHONE_ERROR = 'Enter a 10-digit US phone number.';
+
+/** Ten US digits. Spaces, dashes, parentheses, and a leading 1 are allowed. */
+export function phoneProblem(value: string): string | null {
+  const digits = value.replace(/\D/g, '');
+  const national = digits.length === 11 && digits.startsWith('1') ? digits.slice(1) : digits;
+  if (national.length !== 10) return PHONE_ERROR;
+  return null;
 }
 
 export function errorsForStep(step: number, input: ApplicationInput): Record<string, string> {
@@ -127,9 +155,8 @@ export function errorsForStep(step: number, input: ApplicationInput): Record<str
   if (step === 0) {
     if (input.fullName.trim().length < 2) errors.fullName = 'Enter your full name.';
     if (!validEmail(input.email)) errors.email = 'Enter a valid email address.';
-    if (input.emailPublic !== 'public' && input.emailPublic !== 'private') errors.emailPublic = 'Choose whether clients can see your email.';
-    if (input.phone.replace(/\D/g, '').length < 10) errors.phone = 'Enter a phone number with at least 10 digits.';
-    if (input.phonePublic !== 'public' && input.phonePublic !== 'private') errors.phonePublic = 'Choose whether clients can see your phone number.';
+    const phone = phoneProblem(input.phone);
+    if (phone) errors.phone = phone;
   }
   if (step === 1) {
     if (!/^\d{1,6}$/.test(input.barNumber)) errors.barNumber = 'Use digits only, up to 6.';
@@ -148,10 +175,11 @@ export function errorsForStep(step: number, input: ApplicationInput): Record<str
     const amount = Number(input.rateAmount);
     if (!input.rateAmount.trim() || !Number.isFinite(amount) || amount < 25) errors.rateAmount = 'Enter at least $25.';
     if (input.rateFor.trim().length < 2) errors.rateFor = 'Say what this rate covers.';
-    const contact = contactProblem(input.contactLink);
-    if (contact) errors.contactLink = contact;
   }
   if (step === 5) {
+    if (input.phonePublic !== 'public' && input.phonePublic !== 'private') errors.phonePublic = 'Choose whether clients can see your phone number.';
+    const contact = contactProblem(input.contactLink);
+    if (contact) errors.contactLink = contact;
     if (input.insurance !== 'insured' && input.insurance !== 'will_disclose') errors.insurance = 'Choose one option about professional liability insurance.';
     if (!input.terms) errors.terms = 'Agree to the Attorney Terms to submit.';
   }
@@ -179,7 +207,7 @@ export function applicationBody(input: ApplicationInput, reference: string): str
     '',
     `Name: ${input.fullName.trim()}`,
     `Email: ${input.email.trim()}`,
-    `Email on public listing: ${input.emailPublic === 'public' ? 'yes' : 'no'}`,
+    'Email on public listing: no',
     `Phone: ${input.phone.trim()}`,
     `Phone on public listing: ${input.phonePublic === 'public' ? 'yes' : 'no'}`,
     `California State Bar number: ${input.barNumber}`,
@@ -257,7 +285,7 @@ export async function submitApplication(input: ApplicationInput, photo: File | n
       status: 'pending',
       full_name: input.fullName.trim(),
       email: input.email.trim(),
-      email_public: input.emailPublic === 'public',
+      email_public: false,
       phone: input.phone.trim(),
       phone_public: input.phonePublic === 'public',
       bar_number: input.barNumber,
