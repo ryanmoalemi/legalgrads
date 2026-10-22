@@ -11,6 +11,7 @@ alter table public.attorney_applications add column if not exists email_public b
 alter table public.attorney_applications add column if not exists reference text;
 alter table public.attorney_applications add column if not exists insurance_choice text;
 
+drop policy if exists "public inserts pending applications" on public.attorney_applications;
 do $$
 begin
   if exists (
@@ -44,7 +45,7 @@ alter table public.attorney_applications add constraint attorney_applications_co
 alter table public.attorney_applications drop constraint if exists attorney_applications_insurance_choice_check;
 alter table public.attorney_applications add constraint attorney_applications_insurance_choice_check check (insurance_choice in ('insured', 'will_disclose'));
 alter table public.attorney_applications drop constraint if exists attorney_applications_admission_date_check;
-alter table public.attorney_applications add constraint attorney_applications_admission_date_check check (admission_date <= current_date);
+alter table public.attorney_applications add constraint attorney_applications_admission_date_check check (admission_date <= current_date) not valid;
 
 alter table public.attorney_profiles add column if not exists insured boolean not null default false;
 alter table public.attorney_profiles add column if not exists phone text;
@@ -53,7 +54,6 @@ alter table public.attorney_profiles add column if not exists rate_for text;
 alter table public.attorney_profiles add column if not exists rate_starting_at boolean not null default false;
 alter table public.attorney_profiles add column if not exists free_consultation boolean not null default false;
 
-drop policy if exists "public inserts pending applications" on public.attorney_applications;
 create policy "public inserts pending applications"
 on public.attorney_applications
 for insert
