@@ -60,8 +60,13 @@ test('free listing application keeps every field in the email fallback', async (
   await expect(page.getByTestId('message-honeypot')).not.toBeInViewport();
   await page.getByTestId('message-name').fill('Casey Client');
   await page.getByTestId('message-email').fill('casey.client@example.com');
-  await page.getByTestId('message-body').fill('I would like to ask about a lease review.');
+  await page.getByTestId('message-body').fill('Please see https://example.com/offer about my lease.');
   await page.getByTestId('message-consent').check();
+  await page.getByTestId('message-submit').click();
+  await expect(page.getByTestId('message-body')).toHaveAttribute('aria-invalid', 'true');
+  await expect(page.getByText('Please remove links; describe your situation in words')).toBeVisible();
+  await expect(page.getByTestId('message-status')).toHaveCount(0);
+  await page.getByTestId('message-body').fill('I would like to ask about a lease review.');
   await page.getByTestId('message-submit').click();
   await expect(page.getByTestId('message-status')).toContainText('your email stays private');
   await expect(page.getByRole('heading', { name: 'Is Legalgrads a referral service?' })).toBeVisible();

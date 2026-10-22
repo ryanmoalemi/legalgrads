@@ -1,3 +1,5 @@
+import { containsDisallowedLink } from './links.ts';
+
 /** Cheap checks and the Gemini classify call. Message text is not logged here. */
 
 export type ScreenLabel = 'genuine' | 'uncertain' | 'spam' | 'not_screened';
@@ -32,12 +34,9 @@ const SPAM_PHRASES = [
   'seed phrase',
 ];
 
-const LINK = /https?:\/\/[^\s]+|www\.[^\s]+/gi;
-
-export function precheckSpam(name: string, body: string): 'links' | 'keywords' | null {
-  const text = `${name}\n${body}`;
-  const links = text.match(LINK) ?? [];
-  if (links.length >= 4) return 'links';
+export function precheckSpam(name: string, body: string, phone = ''): 'links' | 'keywords' | null {
+  const text = `${name}\n${phone}\n${body}`;
+  if (containsDisallowedLink(text)) return 'links';
   const hay = text.toLowerCase();
   for (const phrase of SPAM_PHRASES) {
     if (hay.includes(phrase)) return 'keywords';

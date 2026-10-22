@@ -1,4 +1,7 @@
 import { expect, test } from '@playwright/test';
+import { buildRelayText, containsDisallowedLink, LINK_ERROR, withoutAutoLinks } from '../supabase/functions/_shared/links';
+import { relayMailPayload } from '../supabase/functions/_shared/mail';
+import { messageProblems } from '../src/lib/messages';
 import { CLASSIFIER_URL, classifyInquiry, parseScreenLabel, precheckSpam, relaySubject } from '../supabase/functions/_shared/screen';
 
 test('prechecks hold pitches and leave client inquiries alone', () => {
@@ -7,7 +10,78 @@ test('prechecks hold pitches and leave client inquiries alone', () => {
   expect(precheckSpam('Growth Co', 'We offer SEO services and a guest post placement on your site.')).toBe('keywords');
   const links = ['https://a.example/1', 'https://b.example/2', 'https://c.example/3', 'https://d.example/4'].join(' ');
   expect(precheckSpam('Ana Ruiz', `Please look at these pages ${links}`)).toBe('links');
-  expect(precheckSpam('Ana Ruiz', 'One link only: https://example.com/lease')).toBeNull();
+  expect(precheckSpam('Ana Ruiz', 'One link only: https://example.com/lease')).toBe('links');
+  expect(precheckSpam('Ana Ruiz', 'I need help with a lease dispute in Oakland.', 'bit.ly/offer')).toBe('links');
+});
+
+test('client messages reject every kind of link and keep ordinary sentences', () => {
+  const blocked = [
+    'Please look at https://example.com/offer before we talk.',
+    'The details are on http://example.com/case.',
+    'See www.example.com for the papers.',
+    'My question is about example.com and the lease.',
+    'Use hxxp://example.com/spam if you can.',
+    'Or hxxps://example.com/spam instead.',
+    'Visit example dot com for the pitch.',
+    'Visit example[.]com for the pitch.',
+    'Visit example (dot) com for the pitch.',
+    'Visit example . com for the pitch.',
+    'Read [this page](https://example.com/offer) please.',
+    'Read <a href="https://example.com/offer">this page</a> please.',
+    'Short link: bit.ly/abc123 for the offer.',
+    'Short link: tinyurl.com/abcd for the offer.',
+    'Short link: t.co/abc123 for the offer.',
+    'Short link: goo.gl/abc123 for the offer.',
+    'Short link: ow.ly/abc123 for the offer.',
+  ];
+  const base = {
+    name: 'Casey Client',
+    email: 'casey.client@example.com',
+    phone: '4155551212',
+    consent: true,
+    honeypot: '',
+  };
+  for (const body of blocked) {
+    expect(containsDisallowedLink(body), body).toBe(true);
+    expect(messageProblems({ ...base, body }).body, body).toBe(LINK_ERROR);
+  }
+  expect(messageProblems({ ...base, name: 'https://seo.example', body: 'I need help with a lease dispute in Oakland.' }).name).toBe(LINK_ERROR);
+
+  const allowed = [
+    'I was rear-ended on U.S. 101 at 3.30 p.m. near Dr. Shah.',
+    'The medical bill is about $1,200.50 and Mr. Alvarez saw it happen.',
+    'I need help with a lease dispute in Oakland, not a website.',
+    'Cal. Civ. Code is confusing, but I can explain what the landlord did.',
+  ];
+  for (const body of allowed) {
+    expect(containsDisallowedLink(body), body).toBe(false);
+    expect(messageProblems({ ...base, body }).body, body).toBeUndefined();
+  }
+});
+
+test('forwarded mail is plain text and a leftover link is not sent', () => {
+  const clean = buildRelayText({
+    attorney: 'Alex Rivera',
+    sender: 'Casey Client',
+    phone: '4155551212',
+    body: 'I need help with a lease dispute in Oakland.',
+    canReply: true,
+  });
+  expect(containsDisallowedLink(clean)).toBe(false);
+  const payload = relayMailPayload('Legalgrads <messages@legalgrads.com>', 'alex@example.com', 'New message on Legalgrads', clean, null);
+  expect(payload).not.toBeNull();
+  expect(payload).not.toHaveProperty('html');
+  expect(payload?.text).toBe(clean);
+
+  const linked = buildRelayText({
+    attorney: 'Alex Rivera',
+    sender: 'Casey Client',
+    phone: '',
+    body: 'See https://example.com/offer',
+    canReply: false,
+  });
+  expect(relayMailPayload('Legalgrads <messages@legalgrads.com>', 'alex@example.com', 'New message on Legalgrads', linked, null)).toBeNull();
+  expect(containsDisallowedLink(withoutAutoLinks('Example.com Law'))).toBe(false);
 });
 
 test('subject flags and unreadable classifier output fail open', () => {

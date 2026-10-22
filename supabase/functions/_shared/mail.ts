@@ -1,3 +1,5 @@
+import { containsDisallowedLink } from './links.ts';
+
 export const corsHeaders = {
   'access-control-allow-origin': '*',
   'access-control-allow-headers': 'authorization, apikey, content-type, x-legalgrads-inbound-secret',
@@ -22,13 +24,21 @@ export function replyAddress(messageId: string): string | null {
   return `reply+${messageId}@${domain}`;
 }
 
-/** Sends plain text through Resend. Returns false when the provider key is not set. */
+/** Plain text only. No html part, so a mail client is not handed an anchor. */
+export function relayMailPayload(from: string, to: string, subject: string, text: string, replyTo: string | null): Record<string, unknown> | null {
+  if (containsDisallowedLink(text) || containsDisallowedLink(subject)) return null;
+  const payload: Record<string, unknown> = { from, to: [to], subject, text };
+  if (replyTo) payload.reply_to = replyTo;
+  return payload;
+}
+
+/** Sends plain text through Resend. Returns false when the provider key is not set, or the body still has a link. */
 export async function sendRelay(to: string, subject: string, text: string, replyTo: string | null): Promise<boolean> {
   const apiKey = Deno.env.get('RESEND_API_KEY');
   const from = Deno.env.get('MESSAGE_FROM');
   if (!apiKey || !from) return false;
-  const payload: Record<string, unknown> = { from, to: [to], subject, text };
-  if (replyTo) payload.reply_to = replyTo;
+  const payload = relayMailPayload(from, to, subject, text, replyTo);
+  if (!payload) return false;
   const response = await fetch('https://api.resend.com/emails', {
     method: 'POST',
     headers: {

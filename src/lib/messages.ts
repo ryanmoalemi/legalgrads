@@ -1,4 +1,5 @@
 import { validEmail } from '@/lib/format';
+import { containsDisallowedLink, LINK_ERROR } from '../../supabase/functions/_shared/links';
 
 export interface AttorneyMessageInput {
   profileId?: string;
@@ -17,11 +18,14 @@ const FAILED = 'We could not send that message. Try again.';
 
 export function messageProblems(input: AttorneyMessageInput): Record<string, string> {
   const errors: Record<string, string> = {};
-  if (input.name.trim().length < 2) errors.name = 'Enter your name.';
+  if (containsDisallowedLink(input.name)) errors.name = LINK_ERROR;
+  else if (input.name.trim().length < 2) errors.name = 'Enter your name.';
   if (!validEmail(input.email)) errors.email = 'Enter a valid email address.';
-  if (input.phone.trim() && input.phone.replace(/\D/g, '').length < 10) errors.phone = 'Enter a phone number with at least 10 digits, or leave it blank.';
+  if (containsDisallowedLink(input.phone)) errors.phone = LINK_ERROR;
+  else if (input.phone.trim() && input.phone.replace(/\D/g, '').length < 10) errors.phone = 'Enter a phone number with at least 10 digits, or leave it blank.';
   const body = input.body.trim();
-  if (body.length < 10) errors.body = 'Write a short message, at least 10 characters.';
+  if (containsDisallowedLink(body)) errors.body = LINK_ERROR;
+  else if (body.length < 10) errors.body = 'Write a short message, at least 10 characters.';
   else if (body.length > 2000) errors.body = 'Keep the message under 2,000 characters.';
   if (!input.consent) errors.consent = 'Agree before sending.';
   return errors;
@@ -29,6 +33,10 @@ export function messageProblems(input: AttorneyMessageInput): Record<string, str
 
 export async function sendAttorneyMessage(input: AttorneyMessageInput): Promise<{ ok: boolean; message: string }> {
   if (input.honeypot.trim()) return { ok: true, message: SENT };
+  const problems = messageProblems(input);
+  if (problems.body === LINK_ERROR || problems.name === LINK_ERROR || problems.phone === LINK_ERROR) {
+    return { ok: false, message: LINK_ERROR };
+  }
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
   if (!url || !key || !input.profileId) return { ok: false, message: FAILED };

@@ -72,6 +72,7 @@ export function MessageAttorneyForm({ profileId }: { profileId?: string }) {
       </label>
       {errors.phone ? <p role="alert" className="mt-1 text-sm font-medium text-[#6E123F]">{errors.phone}</p> : null}
       <label className="mt-3 block text-sm font-semibold" htmlFor="message-body">Message
+        <span className="mt-1 block font-normal text-ink">No links. Describe your situation in words.</span>
         <textarea id="message-body" data-testid="message-body" className={fieldClass} rows={4} value={body} aria-invalid={errors.body ? true : undefined} onChange={(event) => setBody(event.target.value)} />
       </label>
       {errors.body ? <p role="alert" className="mt-1 text-sm font-medium text-[#6E123F]">{errors.body}</p> : null}

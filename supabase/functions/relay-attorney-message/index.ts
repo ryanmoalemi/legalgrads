@@ -1,4 +1,5 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.49.1';
+import { buildRelayText, containsDisallowedLink } from '../_shared/links.ts';
 import { corsHeaders, json, replyAddress, sendRelay } from '../_shared/mail.ts';
 import { classifyInquiry, precheckSpam, relaySubject, type ScreenLabel } from '../_shared/screen.ts';
 
@@ -70,7 +71,7 @@ Deno.serve(async (request) => {
     .gt('created_at', since);
   if ((profileCount ?? 0) >= 20) return json({ ok: false }, 429);
 
-  const blocked = precheckSpam(senderName, body);
+  const blocked = precheckSpam(senderName, body, senderPhone);
   let label: ScreenLabel = 'not_screened';
   let source: 'precheck' | 'classifier' | 'ai_error' = 'ai_error';
   if (blocked) {
@@ -119,17 +120,21 @@ Deno.serve(async (request) => {
   }
 
   const replyTo = replyAddress(inserted.id);
-  const text = [
-    `Someone sent a message about the Legalgrads listing for ${profile.full_name}.`,
-    '',
-    `Name: ${senderName}`,
-    senderPhone ? `Phone: ${senderPhone}` : '',
-    '',
+  const text = buildRelayText({
+    attorney: String(profile.full_name ?? ''),
+    sender: senderName,
+    phone: senderPhone,
     body,
-    '',
-    'Legalgrads relayed this message. Your email address is not shown to the sender, and their email address is not in this message.',
-    replyTo ? 'Reply to this email to respond through Legalgrads.' : 'Email delivery is one-way until reply routing is turned on.',
-  ].filter(Boolean).join('\n');
+    canReply: Boolean(replyTo),
+  });
+  if (containsDisallowedLink(text) || containsDisallowedLink(senderName) || containsDisallowedLink(senderPhone) || containsDisallowedLink(body)) {
+    await supabase.from('attorney_messages').update({
+      screen_status: 'quarantine',
+      screen_source: 'precheck',
+      relay_error: null,
+    }).eq('id', inserted.id);
+    return json({ ok: true, stored: true, relayed: false, held: true });
+  }
 
   const relayed = await sendRelay(attorneyEmail, relaySubject(label), text, replyTo);
   await supabase
