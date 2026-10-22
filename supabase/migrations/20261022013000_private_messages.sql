@@ -1,5 +1,6 @@
 -- Paste this file once if supabase/migrations/20261021120000_init.sql was already applied.
 -- A brand-new database should paste the updated init file only.
+-- Then paste supabase/migrations/20261022023000_message_spam_screen.sql once.
 -- Attorney emails are never public. Clients insert messages; they cannot read them.
 -- An Edge Function relays each message without putting either address in the other person's view.
 

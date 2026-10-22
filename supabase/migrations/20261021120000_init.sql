@@ -401,7 +401,11 @@ create table public.attorney_messages (
   consent_at timestamptz not null,
   honeypot text not null default '',
   relayed_at timestamptz,
-  relay_error text
+  relay_error text,
+  screen_status text not null default 'not_screened',
+  screen_source text,
+  constraint attorney_messages_screen_status_check check (screen_status in ('quarantine', 'genuine', 'uncertain', 'not_screened')),
+  constraint attorney_messages_screen_source_check check (screen_source is null or screen_source in ('precheck', 'classifier', 'ai_error'))
 );
 
 create table public.attorney_message_replies (
@@ -413,6 +417,7 @@ create table public.attorney_message_replies (
 
 create index attorney_messages_sender_idx on public.attorney_messages (sender_email, created_at desc);
 create index attorney_messages_profile_idx on public.attorney_messages (profile_id, created_at desc);
+create index attorney_messages_screen_idx on public.attorney_messages (screen_status, created_at desc);
 
 alter table public.attorney_messages enable row level security;
 alter table public.attorney_message_replies enable row level security;
@@ -430,6 +435,8 @@ with check (
   honeypot = ''
   and consent_at is not null
   and char_length(body) between 10 and 2000
+  and screen_status = 'not_screened'
+  and screen_source is null
   and exists (
     select 1 from public.attorney_profiles p
     where p.id = profile_id and p.published = true

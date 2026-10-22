@@ -1,7 +1,12 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.49.1';
 import { corsHeaders, json, replyAddress, sendRelay } from '../_shared/mail.ts';
+import { classifyInquiry, precheckSpam, relaySubject, type ScreenLabel } from '../_shared/screen.ts';
 
 const EMAIL = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
+
+function likeExact(value: string): string {
+  return value.replace(/[\\%_]/g, (char) => `\\${char}`);
+}
 
 Deno.serve(async (request) => {
   if (request.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders });
@@ -43,6 +48,13 @@ Deno.serve(async (request) => {
   if ((ipCount ?? 0) >= 10) return json({ ok: false }, 429);
   await supabase.from('message_rate_limits').insert({ bucket: `ip:${ip}` });
 
+  const { count: emailCount } = await supabase
+    .from('attorney_messages')
+    .select('id', { count: 'exact', head: true })
+    .ilike('sender_email', likeExact(senderEmail))
+    .gt('created_at', since);
+  if ((emailCount ?? 0) >= 5) return json({ ok: false }, 429);
+
   const { data: profile, error: profileError } = await supabase
     .from('attorney_profiles')
     .select('id, application_id, published, full_name')
@@ -51,6 +63,26 @@ Deno.serve(async (request) => {
     .maybeSingle();
   if (profileError || !profile) return json({ ok: false }, 404);
 
+  const { count: profileCount } = await supabase
+    .from('attorney_messages')
+    .select('id', { count: 'exact', head: true })
+    .eq('profile_id', profileId)
+    .gt('created_at', since);
+  if ((profileCount ?? 0) >= 20) return json({ ok: false }, 429);
+
+  const blocked = precheckSpam(senderName, body);
+  let label: ScreenLabel = 'not_screened';
+  let source: 'precheck' | 'classifier' | 'ai_error' = 'ai_error';
+  if (blocked) {
+    label = 'spam';
+    source = 'precheck';
+  } else {
+    const apiKey = Deno.env.get('GEMINI_API_KEY') ?? '';
+    label = await classifyInquiry({ name: senderName, body }, apiKey);
+    source = label === 'not_screened' ? 'ai_error' : 'classifier';
+  }
+
+  const screenStatus = label === 'spam' ? 'quarantine' : label;
   const { data: inserted, error: insertError } = await supabase
     .from('attorney_messages')
     .insert({
@@ -61,12 +93,18 @@ Deno.serve(async (request) => {
       body,
       consent_at: new Date().toISOString(),
       honeypot: '',
+      screen_status: screenStatus,
+      screen_source: source,
     })
     .select('id')
     .single();
   if (insertError) {
     if (/rate limit/i.test(insertError.message)) return json({ ok: false }, 429);
     return json({ ok: false }, 400);
+  }
+
+  if (screenStatus === 'quarantine') {
+    return json({ ok: true, stored: true, relayed: false, held: true });
   }
 
   const { data: application } = await supabase
@@ -93,7 +131,7 @@ Deno.serve(async (request) => {
     replyTo ? 'Reply to this email to respond through Legalgrads.' : 'Email delivery is one-way until reply routing is turned on.',
   ].filter(Boolean).join('\n');
 
-  const relayed = await sendRelay(attorneyEmail, 'New message on Legalgrads', text, replyTo);
+  const relayed = await sendRelay(attorneyEmail, relaySubject(label), text, replyTo);
   await supabase
     .from('attorney_messages')
     .update(relayed ? { relayed_at: new Date().toISOString(), relay_error: null } : { relay_error: 'not relayed' })

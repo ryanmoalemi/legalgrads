@@ -53,7 +53,8 @@ export async function sendAttorneyMessage(input: AttorneyMessageInput): Promise<
     });
     if (response.status === 429) return { ok: false, message: LATER };
     if (response.ok) {
-      const data = await response.json().catch(() => ({})) as { relayed?: boolean; stored?: boolean };
+      const data = await response.json().catch(() => ({})) as { relayed?: boolean; held?: boolean };
+      if (data.held) return { ok: true, message: SENT };
       return { ok: true, message: data.relayed ? SENT : STORED };
     }
     if (response.status === 404) return insertMessage(url, key, payload);

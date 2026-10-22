@@ -186,6 +186,7 @@ test('policies name Legalgrads and do not charge a referral fee', async ({ page 
   expect(terms).not.toMatch(/Early Attorney|Founding Member|first year|forever/i);
   await page.goto('/privacy/');
   await expect(page.getByRole('heading', { level: 1 })).toHaveText('Privacy Policy');
+  await expect(page.locator('main')).toContainText('Messages sent through a listing contact form are screened automatically for spam.');
   await page.goto('/terms/');
   await expect(page.getByRole('heading', { level: 1 })).toHaveText('Terms of Service');
   await expect(page.getByText('Draft — pending legal review. October 21, 2026.')).toBeVisible();

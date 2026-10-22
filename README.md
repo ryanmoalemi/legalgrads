@@ -34,7 +34,7 @@ CI builds without Supabase secrets, so the tests cover the email fallback and do
 
 1. Project URL: `https://qlhwojjdsonjxfeoiqww.supabase.co`.
 2. In the SQL editor, paste the whole file `supabase/migrations/20261021120000_init.sql` and run it once. That file is the full schema: tables, row level security, `review_application`, message storage, and the private `attorney-photos` bucket policies.
-3. If that init file was already pasted before private messages existed, do not paste it again. Paste `supabase/migrations/20261022013000_private_messages.sql` once instead.
+3. If that init file was already pasted before private messages existed, do not paste it again. Paste `supabase/migrations/20261022013000_private_messages.sql` once, then paste `supabase/migrations/20261022023000_message_spam_screen.sql` once. If you already pasted the private-messages file, paste only the spam-screen file. Do not re-run `supabase/migrations/20261021233000_application_details.sql` after these.
 4. Authentication → URL configuration:
    - Site URL: `https://legalgrads.com`
    - Redirect URLs: `https://legalgrads.com/attorney/profile/` and `http://localhost:3000/attorney/profile/`
@@ -48,7 +48,8 @@ CI builds without Supabase secrets, so the tests cover the email fallback and do
    - `MESSAGE_FROM` — a verified sender, for example `Legalgrads <messages@legalgrads.com>`.
    - `INBOUND_EMAIL_DOMAIN` — the domain that receives `reply+<id>@` addresses, so a reply can be relayed without showing either address.
    - `INBOUND_WEBHOOK_SECRET` — a random string. Resend (or the inbound hook) must send it as `x-legalgrads-inbound-secret`.
-   Without `RESEND_API_KEY`, the message is still stored and the attorney is not emailed yet. `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` are already available inside Edge Functions.
+   - `GEMINI_API_KEY` — a paid Gemini API key. The relay uses `gemini-2.5-flash-lite` to screen client messages before they are forwarded. About $0.04 per 1,000 typical messages ($0.10 per million input tokens and $0.40 per million output tokens). Use a billed key so Google does not use the text to improve its models. If this key is missing or the call fails, the message is still forwarded with the subject prefix `[Not screened]`.
+   Without `RESEND_API_KEY`, the message is still stored and the attorney is not emailed yet. `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` are already available inside Edge Functions. Spam is stored with `screen_status = quarantine` and is not emailed.
 8. After you sign in once with ryan@legalgrads.com (phase 2), promote that user in the SQL editor:
 
 ```sql

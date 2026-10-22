@@ -69,7 +69,8 @@ export const DOCS: Record<string, LegalDoc> = {
         heading: 'Information we collect',
         paragraphs: [
           'If you join the consumer waitlist, we collect your email address and the page you signed up from.',
-          'If you apply as an attorney, we collect your name, email, phone, whether you want email or phone on the public listing, California State Bar number, admission date, practice areas, cities served, bio, rate type, amount, what the rate covers, languages, contact method, optional photo, your professional-liability insurance choice, and the time you agreed to the Attorney Terms.',
+          'If you apply as an attorney, we collect your name, email, phone, whether you want your phone on the public listing, California State Bar number, admission date, practice areas, cities served, bio, rate type, amount, what the rate covers, languages, contact method, optional photo, your professional-liability insurance choice, and the time you agreed to the Attorney Terms.',
+          'If you message an attorney from a listing, we collect your name, email, optional phone, and the message.',
           'We store a cookie preference on your device. If you opt in, a local analytics note stays in that browser. We do not load third-party advertising trackers.',
         ],
       },
@@ -77,6 +78,7 @@ export const DOCS: Record<string, LegalDoc> = {
         heading: 'How we use it',
         paragraphs: [
           'We use waitlist emails to announce when the directory has published attorneys. We use attorney applications to review California State Bar records and, if the review passes, to publish a listing. We do not sell personal information and we do not share it for cross-context behavioral advertising.',
+          'Messages sent through a listing contact form are screened automatically for spam.',
           'Application records and photos are stored in Supabase (Postgres and private file storage) when that service is configured. If it is not configured, the form opens an email to ' + CONTACT_EMAIL + ' so the information is not discarded.',
         ],
       },
