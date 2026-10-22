@@ -63,7 +63,7 @@ export function ForAttorneysView() {
         <div className="mt-4 space-y-4">
           <article className="rounded-3xl bg-white p-5">
             <h3 className="font-display text-lg font-extrabold">Is Legalgrads a referral service?</h3>
-            <p className="mt-2 text-sm text-ink">No. Legalgrads is not a referral service. Clients contact you directly. We do not send you a matter for a fee.</p>
+            <p className="mt-2 text-sm text-ink">No. Legalgrads is a free directory, not a lawyer referral service certified by the State Bar of California. Clients contact you directly. We do not send you a matter for a fee.</p>
           </article>
           <article className="rounded-3xl bg-white p-5">
             <h3 className="font-display text-lg font-extrabold">Does Legalgrads share fees?</h3>
