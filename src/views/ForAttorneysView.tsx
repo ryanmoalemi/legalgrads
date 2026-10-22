@@ -21,7 +21,7 @@ export function ForAttorneysView() {
       <ul className="mt-10 grid gap-4 sm:grid-cols-3">
         {[
           ['Free listing', 'You are not charged to be in the directory.'],
-          ['Your rate', 'You choose a flat fee or an hourly amount. Clients contact you directly.'],
+          ['Direct contact', 'Clients contact you directly through a secure form.'],
           ['Bar check first', 'We publish a profile only after a person checks the California State Bar record.'],
         ].map(([title, body]) => (
           <li key={title} className="rounded-3xl bg-white p-5">

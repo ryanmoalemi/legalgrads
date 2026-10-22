@@ -106,7 +106,7 @@ export const DOCS: Record<string, LegalDoc> = {
       {
         heading: 'Free listing',
         paragraphs: [
-          'The listing is free, and it shows the year you joined Legalgrads. That mark is not a quality rating and not a benefit to clients. Legalgrads takes no referral fee and no share of your legal fees. You set your own flat fee or hourly rate. Your email stays private. Clients reach you through our secure contact form.',
+          'The listing is free, and it shows the year you joined Legalgrads. That mark is not a quality rating and not a benefit to clients. Legalgrads takes no referral fee and no share of your legal fees. Your email stays private. Clients reach you through our secure contact form.',
           'A later premium product, if Legalgrads offers one, will be a flat fee for extra visibility only. It will not be priced per lead and it will not be a percentage of legal fees.',
         ],
       },
