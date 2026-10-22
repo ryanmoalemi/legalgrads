@@ -17,7 +17,6 @@ import {
   PHONE_HINT,
   phoneProblem,
   loadDraft,
-  rateLabel,
   saveDraft,
   submitApplication,
 } from '@/lib/applications';
@@ -26,14 +25,13 @@ import { PhotoField } from '@/components/PhotoField';
 import { inputClass } from '@/components/ui';
 import { stateName, US_STATES } from '@/lib/states';
 
-const STEPS = ['You', 'License', 'Areas', 'Practice', 'Rate', 'Review'] as const;
+const STEPS = ['You', 'License', 'Areas', 'Practice', 'Review'] as const;
 
 const STEP_LINES = [
   'Your name, email, and phone.',
   'Your state of licensure, bar number, and admission date.',
   'Choose every area a client can filter by.',
   'Cities, languages, and a short bio.',
-  'The rate clients will see.',
   'Check the listing, then send it.',
 ];
 
@@ -128,7 +126,7 @@ export function ApplyView() {
       focusFirstInvalid();
       return;
     }
-    const found = errorsForStep(5, input);
+    const found = errorsForStep(4, input);
     setErrors(found);
     if (Object.keys(found).length > 0) {
       focusFirstInvalid();
@@ -144,7 +142,7 @@ export function ApplyView() {
 
   function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (step < 5) forward();
+    if (step < 4) forward();
     else void submit();
   }
 
@@ -257,40 +255,9 @@ export function ApplyView() {
 
       {step === 4 ? (
         <div className="mt-6 grid gap-5">
-          <fieldset aria-describedby="err-rate">
-            <legend className="flex flex-wrap items-center gap-1 text-base font-semibold text-navy">
-              Rate type
-              <InfoTip text="Clients see what you charge. They contact you directly. Legalgrads is not part of the payment." />
-            </legend>
-            <div className="mt-3 grid gap-2">
-              {(['flat', 'hourly'] as const).map((type) => (
-                <label key={type} className="flex min-h-14 items-center gap-3 rounded-2xl bg-white px-4 text-base ring-1 ring-navy/10">
-                  <input data-testid={`apply-rate-${type}`} className="h-5 w-5" type="radio" name="rateType" checked={input.rateType === type} aria-invalid={errors.rateType ? true : undefined} onChange={() => patch({ rateType: type })} />
-                  {type === 'flat' ? 'Flat fee' : 'Hourly'}
-                </label>
-              ))}
-            </div>
-          </fieldset>
-          {errors.rateType ? <p id="err-rate" role="alert" className="text-sm font-medium text-[#6E123F]">{errors.rateType}</p> : <p id="err-rate" className="sr-only" />}
-          <Field label="Amount in dollars" id="apply-rate-amount" type="number" hint="Minimum $25." error={errors.rateAmount} value={input.rateAmount} onChange={(value) => patch({ rateAmount: value })} />
-          <Field label="For what" id="apply-rate-for" why="Say what the amount covers, such as a lease review or a one-hour consult." error={errors.rateFor} value={input.rateFor} onChange={(value) => patch({ rateFor: value })} />
-          <label className="flex min-h-14 items-center gap-3 rounded-2xl bg-white px-4 text-base">
-            <input data-testid="apply-starting-at" className="h-5 w-5" type="checkbox" checked={input.rateStartingAt} onChange={(event) => patch({ rateStartingAt: event.target.checked })} />
-            Show this as “starting at”
-          </label>
-          <label className="flex min-h-14 items-center gap-3 rounded-2xl bg-white px-4 text-base">
-            <input data-testid="apply-free-consult" className="h-5 w-5" type="checkbox" checked={input.freeConsultation} onChange={(event) => patch({ freeConsultation: event.target.checked })} />
-            I offer a free consultation
-          </label>
-        </div>
-      ) : null}
-
-      {step === 5 ? (
-        <div className="mt-6 grid gap-5">
           <ListingPreview
             name={input.fullName}
             cities={input.citiesServed}
-            rate={rateLabel(input)}
             areas={input.practiceAreas.map((slug) => specialtyName(slug))}
             bio={input.bio}
             insured={input.insurance === 'insured'}
@@ -340,7 +307,7 @@ export function ApplyView() {
           {step > 0 ? (
             <button type="button" data-testid="apply-back" className="min-h-12 flex-1 rounded-full bg-white px-4 font-display text-base font-semibold text-navy ring-1 ring-navy/10" onClick={() => window.history.back()}>Back</button>
           ) : null}
-          {step < 5 ? (
+          {step < 4 ? (
             <button type="submit" data-testid="apply-next" className="min-h-12 flex-[1.4] rounded-full bg-pink px-4 font-display text-base font-semibold text-white">Continue</button>
           ) : (
             <button type="submit" data-testid="application-submit" disabled={busy} className="min-h-12 flex-[1.4] rounded-full bg-pink px-4 font-display text-base font-semibold text-white disabled:opacity-50">{busy ? 'Sending…' : 'Submit application'}</button>

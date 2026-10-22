@@ -20,16 +20,12 @@ interface PublicProfile {
   practice_areas: string[];
   cities_served: string;
   bio: string;
-  rate_type: 'flat' | 'hourly';
-  rate_amount: number;
   languages: string;
   contact_link: string;
   admission_date: string;
   published_at?: string | null;
   created_at?: string | null;
   insured?: boolean;
-  rate_for?: string;
-  rate_starting_at?: boolean;
   licensed_state?: string | null;
 }
 
@@ -57,7 +53,7 @@ export function DirectoryView() {
       setRows([]);
       return;
     }
-    const base = 'id, full_name, practice_areas, cities_served, bio, rate_type, rate_amount, rate_for, rate_starting_at, languages, contact_link, admission_date, insured, published_at, created_at';
+    const base = 'id, full_name, practice_areas, cities_served, bio, languages, contact_link, admission_date, insured, published_at, created_at';
     const load = (columns: string) => supabase.from('attorney_profiles').select(columns).eq('published', true);
     void (async () => {
       let result = await load(`${base}, licensed_state`);
@@ -135,7 +131,6 @@ export function DirectoryView() {
                   <h2 className="font-display text-2xl font-extrabold">{row.full_name}</h2>
                   <p className="text-sm text-ink">{row.cities_served}{row.licensed_state ? `, ${row.licensed_state}` : ''} · Admitted {row.admission_date}</p>
                 </div>
-                <p className="font-display font-extrabold">{row.rate_starting_at ? 'Starting at ' : ''}{money(Number(row.rate_amount))}{row.rate_type === 'hourly' ? '/hr' : ' flat'}{row.rate_for ? ` for ${row.rate_for}` : ''}</p>
               </div>
               <div className="mt-2 flex flex-wrap gap-2">
                 <p className="inline-flex rounded-full bg-[#F3E9FF] px-3 py-1 text-xs font-bold text-purple">{joinedLabel(row.published_at || row.created_at)}</p>
