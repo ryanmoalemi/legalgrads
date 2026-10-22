@@ -76,11 +76,19 @@ test('free listing application keeps every field in the email fallback', async (
   await expect(page.getByRole('heading', { level: 1 })).toHaveText('Join Legalgrads free');
   await expect(page.getByTestId('step-count')).toHaveText('Step 1 of 6 · You');
   await expect(page.getByRole('progressbar', { name: 'Progress' })).toHaveAttribute('aria-valuenow', '1');
+  await expect(page.getByTestId('apply-phone')).toHaveAttribute('type', 'tel');
+  await expect(page.getByTestId('apply-phone')).toHaveAttribute('autocomplete', 'tel');
+  await expect(page.getByTestId('apply-phone')).toHaveAttribute('aria-required', 'true');
+  await expect(page.getByText('Used to verify your license and recover your account. Private unless you choose to show it.')).toBeVisible();
   await page.getByTestId('apply-name').fill('Alex Rivera');
   await page.reload();
   await expect(page.getByTestId('apply-name')).toHaveValue('Alex Rivera');
   await page.getByTestId('apply-email').fill('alex.rivera@example.com');
-  await page.getByTestId('apply-phone').fill('4155551212');
+  await page.getByTestId('apply-phone').fill('555-1212');
+  await page.getByTestId('apply-next').click();
+  await expect(page.getByText('Enter a 10-digit US phone number.')).toBeVisible();
+  await expect(page).toHaveURL(/#you/);
+  await page.getByTestId('apply-phone').fill('(415) 555-1212');
   await page.getByTestId('apply-next').click();
   await expect(page).toHaveURL(/#license/);
   await page.goBack();
@@ -118,6 +126,8 @@ test('free listing application keeps every field in the email fallback', async (
   await expect(page.getByTestId('listing-preview')).toContainText('Find an attorney');
   await expect(page.getByTestId('listing-preview')).toContainText('Message this attorney');
   await expect(page.locator('main')).not.toContainText('Show your email on the public listing?');
+  await expect(page.getByTestId('apply-phone-public')).not.toBeChecked();
+  await expect(page.getByTestId('apply-phone-private')).not.toBeChecked();
   await page.getByTestId('apply-phone-private').check();
   await page.getByTestId('apply-contact').fill('javascript:alert(1)');
   await page.getByTestId('application-submit').click();
@@ -139,7 +149,7 @@ test('free listing application keeps every field in the email fallback', async (
   const decoded = decodeURIComponent(await mailto.getAttribute('href') ?? '');
   expect(decoded).toContain('Alex Rivera');
   expect(decoded).toContain('alex.rivera@example.com');
-  expect(decoded).toContain('4155551212');
+  expect(decoded).toContain('(415) 555-1212');
   expect(decoded).toContain('123456');
   expect(decoded).toContain('2020-06-01');
   expect(decoded).toContain('Oakland');

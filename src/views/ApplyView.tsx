@@ -14,6 +14,8 @@ import {
   dataUrlToFile,
   errorsForStep,
   insuranceLabel,
+  PHONE_HINT,
+  phoneProblem,
   loadDraft,
   rateLabel,
   saveDraft,
@@ -97,6 +99,13 @@ export function ApplyView() {
   }
 
   async function submit() {
+    const phone = phoneProblem(input.phone);
+    if (phone) {
+      setErrors({ phone });
+      window.location.hash = 'you';
+      focusFirstInvalid();
+      return;
+    }
     const found = errorsForStep(5, input);
     setErrors(found);
     if (Object.keys(found).length > 0) {
@@ -147,7 +156,7 @@ export function ApplyView() {
         <div className="mt-6 grid gap-5">
           <Field label="Full name" id="apply-name" why="This is the name clients see on your listing." error={errors.fullName} value={input.fullName} autoComplete="name" onChange={(value) => patch({ fullName: value })} />
           <Field label="Email" id="apply-email" type="email" why="We email you about the State Bar check. This address is never shown on your listing." error={errors.email} value={input.email} autoComplete="email" onChange={(value) => patch({ email: value })} />
-          <Field label="Phone" id="apply-phone" type="tel" why="We use this to reach you about the application. You choose on the last step whether clients see it." error={errors.phone} value={input.phone} autoComplete="tel" onChange={(value) => patch({ phone: value })} />
+          <Field label="Phone" id="apply-phone" type="tel" required hint={PHONE_HINT} error={errors.phone} value={input.phone} autoComplete="tel" onChange={(value) => patch({ phone: value })} />
         </div>
       ) : null}
 
@@ -339,6 +348,7 @@ function Field({
   autoComplete,
   placeholder,
   inputMode,
+  required = false,
 }: {
   label: string;
   id: string;
@@ -351,6 +361,7 @@ function Field({
   autoComplete?: string;
   placeholder?: string;
   inputMode?: 'numeric' | 'text';
+  required?: boolean;
 }) {
   const hintId = `hint-${id}`;
   const errorId = `err-${id}`;
@@ -370,6 +381,7 @@ function Field({
         placeholder={placeholder}
         className={fieldClass}
         value={value}
+        aria-required={required ? true : undefined}
         aria-invalid={error ? true : undefined}
         aria-describedby={describedBy}
         onChange={(event) => onChange(event.target.value)}

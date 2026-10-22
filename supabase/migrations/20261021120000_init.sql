@@ -23,7 +23,10 @@ create table public.attorney_applications (
   verified_by uuid references auth.users (id),
   full_name text not null check (char_length(full_name) between 2 and 120),
   email text not null check (email ~* '^[^@[:space:]]+@[^@[:space:]]+\.[^@[:space:]]+$'),
-  phone text not null check (char_length(phone) between 7 and 40),
+  phone text not null check (
+    char_length(phone) between 10 and 40
+    and regexp_replace(phone, '[^0-9]', '', 'g') ~ '^1?[0-9]{10}$'
+  ),
   bar_number text not null check (bar_number ~ '^[0-9]{1,6}$'),
   admission_date date not null check (admission_date <= current_date),
   practice_areas text[] not null check (cardinality(practice_areas) > 0),

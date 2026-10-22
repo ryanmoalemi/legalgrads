@@ -139,12 +139,24 @@ export function publicContactHref(value: string): string | null {
   return null;
 }
 
+export const PHONE_HINT = 'Used to verify your license and recover your account. Private unless you choose to show it.';
+export const PHONE_ERROR = 'Enter a 10-digit US phone number.';
+
+/** Ten US digits. Spaces, dashes, parentheses, and a leading 1 are allowed. */
+export function phoneProblem(value: string): string | null {
+  const digits = value.replace(/\D/g, '');
+  const national = digits.length === 11 && digits.startsWith('1') ? digits.slice(1) : digits;
+  if (national.length !== 10) return PHONE_ERROR;
+  return null;
+}
+
 export function errorsForStep(step: number, input: ApplicationInput): Record<string, string> {
   const errors: Record<string, string> = {};
   if (step === 0) {
     if (input.fullName.trim().length < 2) errors.fullName = 'Enter your full name.';
     if (!validEmail(input.email)) errors.email = 'Enter a valid email address.';
-    if (input.phone.replace(/\D/g, '').length < 10) errors.phone = 'Enter a phone number with at least 10 digits.';
+    const phone = phoneProblem(input.phone);
+    if (phone) errors.phone = phone;
   }
   if (step === 1) {
     if (!/^\d{1,6}$/.test(input.barNumber)) errors.barNumber = 'Use digits only, up to 6.';

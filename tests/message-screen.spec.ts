@@ -1,8 +1,18 @@
 import { expect, test } from '@playwright/test';
 import { buildRelayText, containsDisallowedLink, LINK_ERROR, withoutAutoLinks } from '../supabase/functions/_shared/links';
 import { relayMailPayload } from '../supabase/functions/_shared/mail';
+import { phoneProblem } from '../src/lib/applications';
 import { messageProblems } from '../src/lib/messages';
 import { CLASSIFIER_URL, classifyInquiry, parseScreenLabel, precheckSpam, relaySubject } from '../supabase/functions/_shared/screen';
+
+test('attorney sign-up phone is a required 10-digit US number', () => {
+  expect(phoneProblem('')).toBeTruthy();
+  expect(phoneProblem('555-1212')).toBeTruthy();
+  expect(phoneProblem('4155551212')).toBeNull();
+  expect(phoneProblem('(415) 555-1212')).toBeNull();
+  expect(phoneProblem('+1 415 555 1212')).toBeNull();
+  expect(phoneProblem('011 44 20 7946 0958')).toBeTruthy();
+});
 
 test('prechecks hold pitches and leave client inquiries alone', () => {
   expect(precheckSpam('Ana Ruiz', 'I was injured in a car accident last week and need advice about insurance.')).toBeNull();

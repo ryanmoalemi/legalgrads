@@ -56,6 +56,20 @@ test('capture launch screenshots', async ({ page }) => {
     await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
     await page.waitForTimeout(150);
     await page.screenshot({ path: `${dir}/${name}-mobile-bottom.png` });
+    if (name === 'apply-1-you') {
+      await page.evaluate(() => window.scrollTo(0, 0));
+      await page.getByTestId('apply-name').fill('Alex Rivera');
+      await page.getByTestId('apply-email').fill('alex.rivera@example.com');
+      await page.getByTestId('apply-phone').fill('555-1212');
+      await page.getByTestId('apply-next').click();
+      await page.getByText('Enter a 10-digit US phone number.').waitFor();
+      await page.getByTestId('apply-phone').evaluate((el) => el.scrollIntoView({ block: 'center' }));
+      await page.waitForTimeout(150);
+      await page.screenshot({ path: `${dir}/apply-1-phone-error-mobile.png` });
+      await page.getByTestId('apply-name').fill('');
+      await page.getByTestId('apply-email').fill('');
+      await page.getByTestId('apply-phone').fill('');
+    }
   }
   await page.getByTestId('apply-phone-private').check();
   await page.getByTestId('apply-contact').fill('https://example.com/book');
