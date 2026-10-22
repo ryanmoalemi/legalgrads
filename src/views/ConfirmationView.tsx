@@ -27,11 +27,11 @@ export function ConfirmationView() {
       <header>
         <p className="font-display text-sm font-bold text-purple">Application received</p>
         <h1 className="mt-2 max-w-lg font-display text-2xl font-extrabold leading-snug tracking-tight text-navy sm:text-3xl">
-          We&apos;ll verify your State Bar record within 2 business days and email you.
+          We&apos;ll verify your state bar record within 2 business days and email you.
         </h1>
       </header>
       <div data-testid="verification-explainer" className="mt-6 space-y-3 rounded-3xl bg-white p-5 text-sm leading-7 text-ink">
-        <p>Your listing is not live yet. A person checks the California State Bar record, then we email the address you entered. This page cannot send that email by itself.</p>
+        <p>Your listing is not live yet. A person checks your record with your state bar, then we email the address you entered. This page cannot send that email by itself.</p>
         {result?.reference ? <p>Reference <span data-testid="application-reference" className="font-semibold text-navy">{result.reference}</span></p> : null}
         {extraStatus ? <p role="status">{extraStatus}</p> : null}
         {result?.channel === 'mailto' && result.mailto ? (

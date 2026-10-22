@@ -15,18 +15,6 @@ const NAV = [
 
 const joinClass = 'inline-flex min-h-11 items-center justify-center rounded-full bg-pink px-4 py-2 font-display text-sm font-semibold text-white';
 
-export function AnnouncementBar() {
-  return (
-    <Link
-      href="/join/"
-      data-testid="attorney-announcement"
-      className="block bg-gradient-to-r from-purple via-pink to-orange px-4 py-2 text-center font-display text-sm font-semibold text-white"
-    >
-      California attorney? Join free →
-    </Link>
-  );
-}
-
 export function Header() {
   const [open, setOpen] = useState(false);
   const path = usePathname();
@@ -124,7 +112,7 @@ export function Footer() {
       <div className="mx-auto grid max-w-6xl gap-8 px-4 py-12 sm:grid-cols-2 lg:grid-cols-5">
         <div>
           <Logo variant="white" />
-          <p className="mt-4 text-sm text-white/75">A directory of newly licensed California attorneys. Legalgrads is not a law firm and not a State Bar certified lawyer referral service. Listings are free, with no per-lead fees.</p>
+          <p className="mt-4 text-sm text-white/75">A directory of newly licensed U.S. attorneys. Legalgrads is not a law firm and not a state-bar-certified lawyer referral service. Listings are free, with no per-lead fees.</p>
           <p className="mt-3 text-sm"><a className="underline" href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a></p>
         </div>
         {FOOTER.map(([title, links]) => (

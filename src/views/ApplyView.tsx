@@ -24,12 +24,13 @@ import {
 import { ListingPreview } from '@/components/ListingPreview';
 import { PhotoField } from '@/components/PhotoField';
 import { inputClass } from '@/components/ui';
+import { stateName, US_STATES } from '@/lib/states';
 
 const STEPS = ['You', 'License', 'Areas', 'Practice', 'Rate', 'Review'] as const;
 
 const STEP_LINES = [
   'Your name, email, and phone.',
-  'Your California State Bar number and admission date.',
+  'Your state of licensure, bar number, and admission date.',
   'Choose every area a client can filter by.',
   'Cities, languages, and a short bio.',
   'The rate clients will see.',
@@ -176,19 +177,27 @@ export function ApplyView() {
       {step === 0 ? (
         <div className="mt-6 grid gap-5">
           <Field label="Full name" id="apply-name" why="This is the name clients see on your listing." error={errors.fullName} value={input.fullName} autoComplete="name" onChange={(value) => patch({ fullName: value })} />
-          <Field label="Email" id="apply-email" type="email" why="We email you about the State Bar check. This address is never shown on your listing." error={errors.email} value={input.email} autoComplete="email" onChange={(value) => patch({ email: value })} />
+          <Field label="Email" id="apply-email" type="email" why="We email you about the state bar check. This address is never shown on your listing." error={errors.email} value={input.email} autoComplete="email" onChange={(value) => patch({ email: value })} />
           <Field label="Phone" id="apply-phone" type="tel" required hint={PHONE_HINT} error={errors.phone} value={input.phone} autoComplete="tel" transform={formatUsPhone} onChange={(value) => patch({ phone: value })} />
         </div>
       ) : null}
 
       {step === 1 ? (
         <div className="mt-6 grid gap-5">
-          <Field label="California State Bar number" id="apply-bar" inputMode="numeric" maxLength={6} hint="Digits only, up to 6." why="We look this up before anything goes live." error={errors.barNumber} value={input.barNumber} transform={(value) => value.replace(/\D/g, '').slice(0, 6)} onChange={(value) => patch({ barNumber: value })} />
-          <p className="text-sm"><a className="inline-flex min-h-11 items-center font-semibold text-purple" href={BAR_SEARCH_URL} target="_blank" rel="noreferrer">Look up a record on the State Bar site</a></p>
+          <div>
+            <label className="text-base font-semibold text-navy" htmlFor="apply-state">State of licensure</label>
+            <select id="apply-state" data-testid="apply-state" className={fieldClass} value={input.licensedState} aria-invalid={errors.licensedState ? true : undefined} aria-describedby="err-state" onChange={(event) => patch({ licensedState: event.target.value })}>
+              <option value="">Choose a state</option>
+              {US_STATES.map((s) => <option key={s.code} value={s.code}>{s.name}</option>)}
+            </select>
+            {errors.licensedState ? <p id="err-state" role="alert" className="mt-1 text-sm font-medium text-[#6E123F]">{errors.licensedState}</p> : <p id="err-state" className="sr-only" />}
+          </div>
+          <Field label={input.licensedState ? `${stateName(input.licensedState)} bar number` : 'Bar number'} id="apply-bar" maxLength={12} hint="The number your state bar issued. Letters and digits only." why="We look this up with your state bar before anything goes live." error={errors.barNumber} value={input.barNumber} transform={(value) => value.replace(/[^A-Za-z0-9]/g, '').slice(0, 12)} onChange={(value) => patch({ barNumber: value })} />
+          <p className="text-sm"><a className="inline-flex min-h-11 items-center font-semibold text-purple" href={BAR_SEARCH_URL} target="_blank" rel="noreferrer">Find your state bar’s lawyer lookup</a></p>
           <div>
             <div className="flex flex-wrap items-center gap-1">
               <label className="text-base font-semibold text-navy" htmlFor="apply-admitted">Admission date</label>
-              <InfoTip text="We confirm you are already admitted in California. A future date is not accepted." />
+              <InfoTip text="We confirm you are already admitted in that state. A future date is not accepted." />
             </div>
             <input id="apply-admitted" data-testid="apply-admitted" type="date" className={fieldClass} value={input.admissionDate} aria-invalid={errors.admissionDate ? true : undefined} aria-describedby="err-admitted" onChange={(event) => patch({ admissionDate: event.target.value })} />
             {errors.admissionDate ? <p id="err-admitted" role="alert" className="mt-1 text-sm font-medium text-[#6E123F]">{errors.admissionDate}</p> : <p id="err-admitted" className="sr-only" />}
@@ -222,7 +231,7 @@ export function ApplyView() {
 
       {step === 3 ? (
         <div className="mt-6 grid gap-5">
-          <Field label="Cities served" id="apply-cities" hint="Separate cities with commas. Example: Oakland, San Francisco." why="Clients search by California city." error={errors.citiesServed} value={input.citiesServed} onChange={(value) => patch({ citiesServed: value })} placeholder="Oakland, San Francisco" />
+          <Field label="Cities served" id="apply-cities" hint="Separate cities with commas. Example: Oakland, San Francisco." why="Clients search by state and city." error={errors.citiesServed} value={input.citiesServed} onChange={(value) => patch({ citiesServed: value })} placeholder="Oakland, San Francisco" />
           <Field label="Languages" id="apply-languages" hint="Separate languages with commas. Example: English, Spanish." why="Clients can see the languages you work in." error={errors.languages} value={input.languages} onChange={(value) => patch({ languages: value })} placeholder="English, Spanish" />
           <div>
             <div className="flex flex-wrap items-center gap-1">
@@ -289,7 +298,7 @@ export function ApplyView() {
             contact={input.contactLink}
             staticPreview
           />
-          <p className="text-sm text-ink">Nothing goes live until Legalgrads manually checks your California State Bar record. Your email stays private. Clients reach you through our secure contact form.</p>
+          <p className="text-sm text-ink">Nothing goes live until Legalgrads manually checks your state bar record. Your email stays private. Clients reach you through our secure contact form.</p>
           <section className="grid gap-3" aria-labelledby="review-phone">
             <h2 id="review-phone" className="font-display text-lg font-extrabold text-navy">Phone visibility</h2>
             <Choice name="phonePublic" legend="Show your phone number on the public listing?" why="Clients see it only if you choose show on listing. Your email is never shown." error={errors.phonePublic} value={input.phonePublic} onChange={(value) => patch({ phonePublic: value })} />
@@ -300,7 +309,7 @@ export function ApplyView() {
             <fieldset aria-invalid={errors.insurance ? true : undefined} aria-describedby="err-insurance">
               <legend className="flex flex-wrap items-center gap-1 text-base font-semibold text-navy">
                 Professional liability insurance
-                <InfoTip text="The Insured badge appears only if you carry insurance. If you do not, California Rule of Professional Conduct 1.4.2 requires a written disclosure to clients." />
+                <InfoTip text="The Insured badge appears only if you carry insurance. If you do not, your state’s rules may require a written disclosure to clients (for example, California Rule 1.4.2)." />
               </legend>
               <div className="mt-3 grid gap-2">
                 <label className="flex min-h-14 items-start gap-3 rounded-2xl bg-white px-4 py-3 text-base">
@@ -319,7 +328,7 @@ export function ApplyView() {
             <h2 id="review-terms" className="font-display text-lg font-extrabold text-navy">Terms</h2>
             <label className="flex min-h-14 items-start gap-3 rounded-2xl bg-white px-4 py-3 text-base">
               <input data-testid="apply-terms" className="mt-1 h-5 w-5" type="checkbox" checked={input.terms} aria-invalid={errors.terms ? true : undefined} aria-describedby="err-terms" onChange={(event) => patch({ terms: event.target.checked })} />
-              <span>I agree to the <Link className="font-semibold text-purple" href="/attorney-terms/">Attorney Terms</Link>. I am responsible for my own advertising. My listing goes live only after Legalgrads manually verifies my California State Bar record. Clients contact me directly.</span>
+              <span>I agree to the <Link className="font-semibold text-purple" href="/attorney-terms/">Attorney Terms</Link>. I am responsible for my own advertising. My listing goes live only after Legalgrads manually verifies my state bar record. Clients contact me directly.</span>
             </label>
             {errors.terms ? <p id="err-terms" role="alert" className="text-sm font-medium text-[#6E123F]">{errors.terms}</p> : <p id="err-terms" className="sr-only" />}
           </section>

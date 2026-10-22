@@ -4,15 +4,18 @@ import { LEGAL_LINKS } from '@/lib/legal';
 import { CONTACT_EMAIL } from '@/lib/site';
 import { PageIntro } from '@/components/ui';
 
+export const HOW_STEPS = [
+  ['Browse attorneys near you', 'Search published listings by state, city and practice area.'],
+  ['Read their listing', 'The attorney wrote the bio. A listing is published only after Legalgrads manually checks their state bar license.'],
+  ['Message them directly', 'Use the secure contact form. Your email stays private. Legalgrads takes no fee and is not part of the representation.'],
+];
+export const HOW_SUBTITLE = 'Clients browse and choose attorneys themselves. Legalgrads doesn’t match, recommend or refer.';
+
 export function HowItWorksView() {
-  const steps = [
-    ['Tell us you want a lawyer', 'Join the waitlist, or come back when published California listings are on the find page.'],
-    ['Read a verified listing', 'A profile appears only after Legalgrads manually checks the California State Bar record. The attorney wrote the bio.'],
-    ['Contact the attorney directly', 'Use the booking link on the listing. Legalgrads is not in the middle of the representation and does not take a fee.'],
-  ];
+  const steps = HOW_STEPS;
   return (
     <div className="mx-auto max-w-3xl px-4 py-10">
-      <PageIntro kicker="How it works" title="A directory, not a law firm" body="Consumers browse published attorneys. Attorneys apply separately and wait for a State Bar check." />
+      <PageIntro kicker="How it works" title="A directory, not a law firm" body={HOW_SUBTITLE} />
       <ol className="mt-8 space-y-4">
         {steps.map(([title, body], index) => (
           <li key={title} className="rounded-3xl bg-white p-5">
@@ -34,7 +37,7 @@ export function PricingView() {
       <div className="mt-8 rounded-3xl bg-white p-6">
         <h2 className="font-display text-2xl font-extrabold">Free listing</h2>
         <p className="mt-2 text-4xl font-display font-extrabold">$0</p>
-        <p className="mt-3 text-ink">A free directory listing after your California State Bar record is checked. The listing can show the year the attorney joined Legalgrads. That is not a rating and not a benefit to clients.</p>
+        <p className="mt-3 text-ink">A free directory listing after your state bar record is checked. The listing can show the year the attorney joined Legalgrads. That is not a rating and not a benefit to clients.</p>
       </div>
       <div className="mt-4 rounded-3xl bg-white p-6">
         <h2 className="font-display text-2xl font-extrabold">Later, if we offer it</h2>
@@ -47,8 +50,8 @@ export function PricingView() {
 export function AboutView() {
   return (
     <div className="mx-auto max-w-3xl px-4 py-10">
-      <PageIntro kicker="About" title="Legalgrads" body="Legalgrads is a directory for newly licensed California attorneys. The company is not a law firm and does not give legal advice." />
-      <p className="mt-6 text-ink">Attorneys can apply before listings open to the public. Each public profile waits on a manual State Bar check. Consumers can join a waitlist in the meantime.</p>
+      <PageIntro kicker="About" title="Legalgrads" body="Legalgrads is a directory for newly licensed U.S. attorneys in all 50 states and DC. The company is not a law firm and does not give legal advice." />
+      <p className="mt-6 text-ink">Attorneys can apply before listings open to the public. Each public profile waits on a manual state bar check. Consumers can join a waitlist in the meantime.</p>
       <p className="mt-4 text-ink">Write to <a className="font-semibold text-purple" href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>.</p>
     </div>
   );
@@ -56,10 +59,10 @@ export function AboutView() {
 
 export function FaqView() {
   const items = [
-    ['When will I see attorneys?', 'The find page lists only published profiles. Until the first State Bar checks are finished, it shows a waitlist. California bar results are expected around October 30, 2026, and applications are open now.'],
+    ['When will I see attorneys?', 'The find page lists only published profiles. Until the first state bar checks are finished, it shows a waitlist. Applications are open now to attorneys in all 50 states and DC.'],
     ['Does Legalgrads take a cut?', 'No. The listing is free. Legalgrads takes no referral fee and no share of legal fees.'],
     ['What does the Joined year mean?', 'It is the calendar year that attorney joined Legalgrads. It is not a quality rating and not a benefit to clients.'],
-    ['What does verification mean?', 'A person checks the California State Bar record before a listing is published. It is not an instant badge and it is not a background-check product.'],
+    ['What does verification mean?', 'A person checks the attorney’s record with their state bar before a listing is published. It is not an instant badge and it is not a background-check product.'],
     ['Who writes the listing?', 'The attorney does. They are responsible for their advertising, rate, and photo.'],
   ];
   return (
@@ -105,7 +108,7 @@ export function SpecialtyDetail({ slug }: { slug: string }) {
     <div className="mx-auto max-w-3xl px-4 py-10">
       <img src={spec.icon} alt="" width={72} height={72} />
       <PageIntro title={spec.name} body={spec.description} />
-      <p className="mt-4 text-ink">Examples: {spec.examples}. Attorneys in this area appear on the find page only after a California State Bar check.</p>
+      <p className="mt-4 text-ink">Examples: {spec.examples}. Attorneys in this area appear on the find page only after a state bar check.</p>
       <p className="mt-4"><Link className="font-semibold text-purple" href={`/find-lawyer/?specialty=${spec.slug}`}>See the directory</Link></p>
     </div>
   );
