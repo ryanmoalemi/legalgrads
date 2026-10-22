@@ -24,6 +24,12 @@ test('home is a real directory pitch with no fictional attorneys', async ({ page
   await expect(forAttorneys).toContainText('No referral fee');
   await expect(page.getByTestId('home-apply')).toHaveText('Join free');
   await expect(page.getByTestId('home-apply')).toHaveAttribute('href', '/join/');
+  await expect(page.getByTestId('hero-sample-card')).toHaveCount(2);
+  for (const card of await page.getByTestId('hero-sample-card').all()) {
+    await expect(card).toContainText('Sample listing');
+    await expect(card.locator('img')).toHaveAttribute('alt', /Sample listing photo/);
+    expect(await card.locator('img').evaluate((img: HTMLImageElement) => img.complete && img.naturalWidth > 0)).toBe(true);
+  }
   await expect(page.getByTestId('benefit-verified')).toBeVisible();
   await expect(page.getByTestId('benefit-more-affordable')).toContainText('Free to browse');
   expect(await page.locator('body').innerText()).not.toMatch(/More Affordable|\/hr|set the rate/i);
