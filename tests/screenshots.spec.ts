@@ -51,7 +51,11 @@ test('capture launch screenshots', async ({ page }) => {
   for (const [name, step] of shots) {
     await step();
     await page.waitForTimeout(200);
-    await page.screenshot({ path: `${dir}/${name}-mobile.png`, fullPage: true });
+    await page.evaluate(() => window.scrollTo(0, 0));
+    await page.screenshot({ path: `${dir}/${name}-mobile-top.png` });
+    await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
+    await page.waitForTimeout(150);
+    await page.screenshot({ path: `${dir}/${name}-mobile-bottom.png` });
   }
   await page.getByTestId('apply-phone-private').check();
   await page.getByTestId('apply-contact').fill('https://example.com/book');
@@ -60,7 +64,12 @@ test('capture launch screenshots', async ({ page }) => {
   await page.getByTestId('application-submit').click();
   await page.waitForURL(/confirmation/);
   await page.waitForTimeout(300);
-  await page.screenshot({ path: `${dir}/confirmation-mobile.png`, fullPage: true });
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.evaluate(() => window.scrollTo(0, 0));
+  await page.screenshot({ path: `${dir}/confirmation-mobile-top.png` });
+  await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
+  await page.waitForTimeout(150);
+  await page.screenshot({ path: `${dir}/confirmation-mobile-bottom.png` });
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto('/for-attorneys/');
   await page.getByTestId('message-attorney').scrollIntoViewIfNeeded();

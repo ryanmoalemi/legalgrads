@@ -120,7 +120,7 @@ export function ApplyView() {
   const progress = ((step + 1) / STEPS.length) * 100;
 
   return (
-    <form onSubmit={onSubmit} className="mx-auto flex w-full max-w-xl flex-col px-4 pb-28 pt-6 md:pb-10 md:pt-8">
+    <form onSubmit={onSubmit} className="join-form mx-auto flex w-full max-w-xl flex-col px-4 pt-6 md:pb-10 md:pt-8">
       <header>
         <h1 className="font-display text-3xl font-extrabold tracking-tight text-navy sm:text-4xl">Join Legalgrads free</h1>
         <p className="mt-2 text-base text-ink">{STEP_LINES[step]}</p>
@@ -287,8 +287,8 @@ export function ApplyView() {
         </div>
       ) : null}
 
-      <div className="fixed inset-x-0 bottom-0 z-40 border-t border-navy/10 bg-[#FFF8F1]/95 px-4 py-3 backdrop-blur md:static md:z-auto md:mt-8 md:border-0 md:bg-transparent md:px-0 md:py-0">
-        <div className="mx-auto flex max-w-xl gap-3 pb-[env(safe-area-inset-bottom)] md:pb-0">
+      <div data-testid="apply-actions" className="join-actions border-t border-navy/10 bg-[#FFF8F1]/95 px-4 pt-3 backdrop-blur md:mt-8 md:border-0 md:bg-transparent md:px-0 md:pt-0">
+        <div className="mx-auto flex max-w-xl gap-3">
           {step > 0 ? (
             <button type="button" data-testid="apply-back" className="min-h-12 flex-1 rounded-full bg-white px-4 font-display text-base font-semibold text-navy ring-1 ring-navy/10" onClick={() => window.history.back()}>Back</button>
           ) : null}

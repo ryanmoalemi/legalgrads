@@ -162,6 +162,31 @@ test('free listing application keeps every field in the email fallback', async (
   await expect(page.getByTestId('share-panel')).not.toContainText('Founding Member');
 });
 
+test('join mobile pins the action bar and uses a one-line footer', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await boot(page, '/join/');
+  const bar = page.getByTestId('apply-actions');
+  const barBox = await bar.boundingBox();
+  expect(barBox).toBeTruthy();
+  expect(barBox!.y + barBox!.height).toBeGreaterThan(830);
+  expect(barBox!.y + barBox!.height).toBeLessThanOrEqual(845);
+  const phone = await page.getByTestId('apply-phone').boundingBox();
+  expect(phone!.y + phone!.height).toBeLessThanOrEqual(barBox!.y + 1);
+  const footer = page.getByTestId('join-footer');
+  await expect(footer).toContainText('© 2026 Legalgrads');
+  await expect(footer.getByRole('link', { name: 'Terms' })).toHaveAttribute('href', '/terms/');
+  await expect(footer.getByRole('link', { name: 'Privacy' })).toHaveAttribute('href', '/privacy/');
+  await expect(page.getByRole('heading', { name: 'Product' })).toHaveCount(0);
+  await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
+  const footerBox = await footer.boundingBox();
+  const barAfter = await bar.boundingBox();
+  expect(footerBox!.y + footerBox!.height).toBeLessThanOrEqual(barAfter!.y + 1);
+  await page.goto('/join/confirmation/');
+  await expect(page.getByTestId('join-footer')).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Product' })).toHaveCount(0);
+  await expect(page.getByTestId('apply-actions')).toHaveCount(0);
+});
+
 test('application shows inline errors and the mobile step count', async ({ page }) => {
   await page.setViewportSize({ width: 375, height: 812 });
   await boot(page, '/join/');
