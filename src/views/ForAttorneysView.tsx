@@ -49,7 +49,6 @@ export function ForAttorneysView() {
           sample
           name="Your name"
           cities="Oakland"
-          rate="Starting at $225/hr for a consult"
           areas={['Contracts', 'Real Estate']}
           bio="A short bio you write. Clients read it on Find an attorney."
           insured={false}
@@ -71,7 +70,7 @@ export function ForAttorneysView() {
           </article>
           <article className="rounded-3xl bg-white p-5">
             <h3 className="font-display text-lg font-extrabold">Who is responsible for ethics and advertising?</h3>
-            <p className="mt-2 text-sm text-ink">You are. Your bio, rate, photo, and contact details are your own advertising and must follow the rules of professional conduct in the state where you are licensed.</p>
+            <p className="mt-2 text-sm text-ink">You are. Your bio, photo, and contact details are your own advertising and must follow the rules of professional conduct in the state where you are licensed.</p>
           </article>
           <article className="rounded-3xl bg-white p-5">
             <h3 className="font-display text-lg font-extrabold">How is my information used?</h3>

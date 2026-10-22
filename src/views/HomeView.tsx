@@ -88,7 +88,7 @@ export function HomeView() {
 
       <section className="mx-auto max-w-6xl px-4 py-8" aria-label="Benefits">
         <ul className="grid grid-cols-2 gap-x-3 gap-y-6 md:grid-cols-4 md:divide-x md:divide-[#eadfce]">
-          <Benefit testid="benefit-more-affordable" icon="/icons/benefits/more_affordable.svg" title="More Affordable" body="A free directory. No referral fee and no per-lead charge." />
+          <Benefit testid="benefit-more-affordable" icon="/icons/benefits/more_affordable.svg" title="Free to browse" body="Search the directory at no cost. No referral fee and no per-lead charge." />
           <Benefit testid="benefit-newly-licensed" icon="/icons/benefits/newly_licensed.svg" title="Newly Licensed" body="Built for lawyers in every state opening a practice after the bar." />
           <Benefit testid="benefit-verified" icon="/icons/benefits/verified_attorneys.svg" title="Verified Attorneys" body="A listing goes live only after a manual state bar check." />
           <Benefit testid="benefit-wide-range" icon="/icons/benefits/wide_range.svg" title="Wide Range of Help" body="Contracts, business, real estate, employment, and more." />

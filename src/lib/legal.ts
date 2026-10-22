@@ -69,7 +69,7 @@ export const DOCS: Record<string, LegalDoc> = {
         heading: 'Information we collect',
         paragraphs: [
           'If you join the consumer waitlist, we collect your email address and the page you signed up from.',
-          'If you apply as an attorney, we collect your name, email, phone, whether you want your phone on the public listing, state of licensure, bar number, admission date, practice areas, cities served, bio, rate type, amount, what the rate covers, languages, contact method, optional photo, your professional-liability insurance choice, and the time you agreed to the Attorney Terms.',
+          'If you apply as an attorney, we collect your name, email, phone, whether you want your phone on the public listing, state of licensure, bar number, admission date, practice areas, cities served, bio, languages, contact method, optional photo, your professional-liability insurance choice, and the time you agreed to the Attorney Terms.',
           'If you message an attorney from a listing, we collect your name, email, optional phone, and the message.',
           'We store a cookie preference on your device. If you opt in, a local analytics note stays in that browser. We do not load third-party advertising trackers.',
         ],
@@ -85,7 +85,7 @@ export const DOCS: Record<string, LegalDoc> = {
       {
         heading: 'What the public can see',
         paragraphs: [
-          'The public can read a profile only after it is published. A published profile can show name, bar number, admission date, practice areas, cities, bio, rate, languages, an https website link if you provided one, the year the attorney joined Legalgrads, and an Insured badge only if you said you carry professional liability insurance. Your email is never shown. Clients use a secure contact form, and Legalgrads relays that message without showing either email address. Your phone appears only if you chose to show it. The Joined year is only that calendar year. It is not a quality rating and not a benefit to clients.',
+          'The public can read a profile only after it is published. A published profile can show name, bar number, admission date, practice areas, cities, bio, languages, an https website link if you provided one, the year the attorney joined Legalgrads, and an Insured badge only if you said you carry professional liability insurance. Your email is never shown. Clients use a secure contact form, and Legalgrads relays that message without showing either email address. Your phone appears only if you chose to show it. The Joined year is only that calendar year. It is not a quality rating and not a benefit to clients.',
         ],
       },
       {
@@ -125,7 +125,7 @@ export const DOCS: Record<string, LegalDoc> = {
       {
         heading: 'Your advertising',
         paragraphs: [
-          'You are responsible for your own advertising content, including your bio, rate, photo, and contact link. You agree that your listing will comply with the rules of professional conduct on lawyer communications and advertising in each state where you are licensed (in California, for example, Rules 7.1 and 7.2 and the Business and Professions Code). Legalgrads does not review your listing as a substitute for your own duties.',
+          'You are responsible for your own advertising content, including your bio, photo, and contact link. You agree that your listing will comply with the rules of professional conduct on lawyer communications and advertising in each state where you are licensed (in California, for example, Rules 7.1 and 7.2 and the Business and Professions Code). Legalgrads does not review your listing as a substitute for your own duties.',
         ],
       },
       {
@@ -175,7 +175,7 @@ export const DOCS: Record<string, LegalDoc> = {
       {
         heading: 'Attorney-controlled content',
         paragraphs: [
-          'Each listing is attorney advertising by the lawyer who submitted it, not an advertisement by Legalgrads for legal services. The attorney is responsible for the truth of the bio, rate, photo, and claims. Legalgrads is the directory operator.',
+          'Each listing is attorney advertising by the lawyer who submitted it, not an advertisement by Legalgrads for legal services. The attorney is responsible for the truth of the bio, photo, and claims. Legalgrads is the directory operator.',
           'Listings are shown only after a manual state bar check. ' + contact,
         ],
       },
