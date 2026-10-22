@@ -172,9 +172,9 @@ export function CookieBanner() {
       role="dialog"
       aria-label="Cookie consent"
     >
-      <p className={`font-display text-sm font-bold ${joinStep ? 'cookie-join-hide' : ''}`}>Cookies</p>
-      {joinStep ? <p className="cookie-join-short text-sm text-ink">Optional cookies stay off unless you accept.</p> : null}
-      <p className={`mt-1 text-sm text-ink ${joinStep ? 'cookie-join-hide' : ''}`}>Strictly necessary storage is always on. Analytics and marketing stay off unless you opt in. No third-party tracker is loaded either way.</p>
+      <p className={`font-display text-sm font-bold cookie-join-hide`}>Cookies</p>
+      <p className="cookie-join-short text-sm text-ink">Optional cookies stay off unless you accept.</p>
+      <p className={`mt-1 text-sm text-ink cookie-join-hide`}>Strictly necessary storage is always on. Analytics and marketing stay off unless you opt in. No third-party tracker is loaded either way.</p>
       <div className="cookie-actions mt-3 flex flex-wrap gap-2">
         <button type="button" data-testid="cookie-accept" className="min-h-11 rounded-full bg-navy px-3 py-2 font-display text-sm font-semibold text-white" onClick={() => choose(true, true)}>Accept</button>
         <button type="button" data-testid="cookie-reject" className="min-h-11 rounded-full bg-cream px-3 py-2 font-display text-sm font-semibold" onClick={() => choose(false, false)}>Reject optional</button>

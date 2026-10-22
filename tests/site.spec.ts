@@ -45,6 +45,28 @@ test('home is a real directory pitch with no fictional attorneys', async ({ page
   await expect(page.getByTestId('waitlist-mailto')).toHaveAttribute('href', /reader%40example.com/);
 });
 
+test('home email pill fits and focus ring follows the pill on small phones', async ({ page }) => {
+  for (const [width, height] of [[360, 740], [390, 844], [412, 500]]) {
+    await page.setViewportSize({ width, height });
+    await page.goto('/');
+    const input = page.getByTestId('waitlist-email');
+    await expect(input).toHaveAttribute('placeholder', 'Your email');
+    const fits = await input.evaluate((el: HTMLInputElement) => {
+      const ctx = document.createElement('canvas').getContext('2d')!;
+      const cs = getComputedStyle(el);
+      ctx.font = `${cs.fontSize} ${cs.fontFamily}`;
+      return ctx.measureText(el.placeholder).width <= el.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
+    });
+    expect(fits).toBe(true);
+    await input.focus();
+    const outline = await input.evaluate((el) => { const cs = getComputedStyle(el); return cs.outlineStyle === 'none' || cs.outlineColor === 'rgba(0, 0, 0, 0)'; });
+    expect(outline).toBe(true);
+    expect(await page.locator('.waitlist-pill').evaluate((el) => getComputedStyle(el).boxShadow)).toContain('rgb(122, 0, 255)');
+    const banner = page.getByTestId('cookie-banner');
+    if (await banner.count()) await expect(banner).toBeHidden();
+  }
+});
+
 test('directory explains that attorneys are still joining', async ({ page }) => {
   await boot(page, '/find-lawyer/?specialty=contracts');
   await expect(page.getByTestId('filter-state')).toBeVisible();
