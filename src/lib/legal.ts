@@ -21,7 +21,7 @@ export const DOCS: Record<string, LegalDoc> = {
       {
         heading: 'Who we are',
         paragraphs: [
-          'Legalgrads is a directory for newly licensed California attorneys. Legalgrads is not a law firm, not a lawyer referral service that charges for leads, and not your attorney. Using the site does not create an attorney-client relationship with Legalgrads.',
+          'Legalgrads is a directory for newly licensed California attorneys. Legalgrads is not a law firm and not your attorney. Legalgrads is not a lawyer referral service certified by the State Bar of California, and it does not charge attorneys or clients per lead or take a share of legal fees. Using the site does not create an attorney-client relationship with Legalgrads.',
           contact,
         ],
       },
@@ -78,7 +78,7 @@ export const DOCS: Record<string, LegalDoc> = {
         heading: 'How we use it',
         paragraphs: [
           'We use waitlist emails to announce when the directory has published attorneys. We use attorney applications to review California State Bar records and, if the review passes, to publish a listing. We do not sell personal information and we do not share it for cross-context behavioral advertising.',
-          'Messages sent through a listing contact form are screened automatically for spam.',
+          'Messages sent through a listing contact form are relayed without showing either email address. Before delivery, messages are screened automatically for spam, which includes sending the sender name and message text to an AI classifier (Google Gemini). Messages that contain links are blocked. Screening can make mistakes; a blocked message is not a judgment about your legal matter.',
           'Application records and photos are stored in Supabase (Postgres and private file storage) when that service is configured. If it is not configured, the form opens an email to ' + CONTACT_EMAIL + ' so the information is not discarded.',
         ],
       },
@@ -161,7 +161,7 @@ export const DOCS: Record<string, LegalDoc> = {
         heading: 'Not legal advice',
         paragraphs: [
           'Text on this website is not legal advice and is not a recommendation of a particular attorney for your facts. An attorney-client relationship is formed only if you and a lawyer agree to one.',
-          'Bar verification means Legalgrads checked a California State Bar record before publishing. It is not a guarantee of a result, a promise about malpractice coverage beyond the attorney’s own confirmation, or a background-check product.',
+          'Legalgrads is not a lawyer referral service certified by the State Bar of California. Bar verification means Legalgrads checked a California State Bar record before publishing. It is not a guarantee of a result, a promise about malpractice coverage beyond the attorney’s own confirmation, or a background-check product.',
         ],
       },
     ],
@@ -190,7 +190,7 @@ export const DOCS: Record<string, LegalDoc> = {
       {
         heading: 'No referral fee',
         paragraphs: [
-          'Legalgrads does not charge attorneys or consumers a referral fee. Legalgrads does not take a share of legal fees. The listing is free. A Joined year on a listing is only the year the attorney joined Legalgrads. It is not a quality rating and not a benefit to clients. Any future charge would be a flat fee for visibility, not a price per lead.',
+          'Legalgrads is a free directory. It is not a lawyer referral service certified by the State Bar of California. Legalgrads does not charge attorneys or consumers a referral fee. Legalgrads does not take a share of legal fees. The listing is free. A Joined year on a listing is only the year the attorney joined Legalgrads. It is not a quality rating and not a benefit to clients. Any future charge would be a flat fee for visibility, not a price per lead.',
           'Choosing a lawyer from the directory is your decision. ' + contact,
         ],
       },

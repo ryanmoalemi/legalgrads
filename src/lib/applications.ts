@@ -138,7 +138,7 @@ export function publicContactHref(value: string): string | null {
   return null;
 }
 
-export const PHONE_HINT = 'Used to verify your license and recover your account. Private unless you choose to show it.';
+export const PHONE_HINT = 'Required so we can reach you about your application and State Bar check. Private unless you choose to show it on your listing.';
 export const PHONE_ERROR = 'Enter a 10-digit US phone number.';
 
 /** Formats a US number as (555) 555-5555 while the attorney types. A leading 1 is dropped once 11 digits are present. */

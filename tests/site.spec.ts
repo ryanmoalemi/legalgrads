@@ -79,7 +79,7 @@ test('free listing application keeps every field in the email fallback', async (
   await expect(page.getByTestId('apply-phone')).toHaveAttribute('type', 'tel');
   await expect(page.getByTestId('apply-phone')).toHaveAttribute('autocomplete', 'tel');
   await expect(page.getByTestId('apply-phone')).toHaveAttribute('aria-required', 'true');
-  await expect(page.getByText('Used to verify your license and recover your account. Private unless you choose to show it.')).toBeVisible();
+  await expect(page.getByText('Required so we can reach you about your application and State Bar check. Private unless you choose to show it on your listing.')).toBeVisible();
   await page.getByTestId('apply-name').fill('Alex Rivera');
   await page.reload();
   await expect(page.getByTestId('apply-name')).toHaveValue('Alex Rivera');
@@ -254,7 +254,7 @@ test('policies name Legalgrads and do not charge a referral fee', async ({ page 
   expect(terms).not.toMatch(/Early Attorney|Founding Member|first year|forever/i);
   await page.goto('/privacy/');
   await expect(page.getByRole('heading', { level: 1 })).toHaveText('Privacy Policy');
-  await expect(page.locator('main')).toContainText('Messages sent through a listing contact form are screened automatically for spam.');
+  await expect(page.locator('main')).toContainText('messages are screened automatically for spam');
   await page.goto('/terms/');
   await expect(page.getByRole('heading', { level: 1 })).toHaveText('Terms of Service');
   await expect(page.getByText('Draft — pending legal review. October 21, 2026.')).toBeVisible();
