@@ -52,7 +52,7 @@ export function MessageAttorneyForm({ profileId }: { profileId?: string }) {
       }}
     >
       <h3 id="message-attorney-title" className="font-display text-lg font-extrabold">Message this attorney</h3>
-      <p className="mt-1 text-sm text-ink">Your email stays private. The attorney’s email stays private. Legalgrads relays the message.</p>
+      <p className="mt-1 text-sm text-ink">Your email stays private. The attorney’s email stays private. Legalgrads relays the message after automatic spam screening, which uses AI. Links are not allowed. Do not include confidential details; sending a message does not create an attorney-client relationship.</p>
       <div className="absolute -left-[10000px] h-px w-px overflow-hidden" aria-hidden="true">
         <label>
           Company website
