@@ -36,17 +36,14 @@ test('capture launch screenshots', async ({ page }) => {
       await page.getByTestId('apply-specialty-contracts').click();
       await page.getByTestId('apply-next').click();
     }],
-    ['apply-5-rate', async () => {
+    ['apply-4-practice-filled', async () => {
       await page.getByTestId('apply-cities').fill('Oakland');
       await page.getByTestId('apply-languages').fill('English');
       await page.getByTestId('apply-bio').fill('I help East Bay clients with everyday contracts and residential paperwork.');
       await page.getByTestId('apply-next').click();
     }],
     ['apply-6-review', async () => {
-      await page.getByTestId('apply-rate-hourly').check();
-      await page.getByTestId('apply-rate-amount').fill('225');
-      await page.getByTestId('apply-rate-for').fill('Lease review');
-      await page.getByTestId('apply-next').click();
+      await expect(page.getByTestId('listing-preview')).toBeVisible();
     }],
   ];
   for (const [name, step] of shots) {
@@ -113,7 +110,7 @@ test('capture desktop step 3 with the cookie banner', async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto('/join/#areas');
   await expect(page.getByTestId('cookie-banner')).toBeVisible();
-  await expect(page.getByTestId('step-count')).toHaveText('Step 3 of 6 · Areas');
+  await expect(page.getByTestId('step-count')).toHaveText('Step 3 of 5 · Areas');
   await expect(page.getByTestId('apply-next')).toBeVisible();
   await page.waitForTimeout(300);
   await page.screenshot({ path: `${dir}/apply-3-areas-desktop-cookie.png` });

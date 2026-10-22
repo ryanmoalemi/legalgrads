@@ -21,7 +21,8 @@ test('home is a real directory pitch with no fictional attorneys', async ({ page
   await expect(page.getByTestId('home-apply')).toHaveText('Join free');
   await expect(page.getByTestId('home-apply')).toHaveAttribute('href', '/join/');
   await expect(page.getByTestId('benefit-verified')).toBeVisible();
-  await expect(page.getByTestId('benefit-more-affordable')).toBeVisible();
+  await expect(page.getByTestId('benefit-more-affordable')).toContainText('Free to browse');
+  expect(await page.locator('body').innerText()).not.toMatch(/More Affordable|\/hr|set the rate/i);
   await expect(page.getByTestId('benefit-newly-licensed')).toBeVisible();
   await expect(page.getByTestId('benefit-wide-range')).toBeVisible();
   const body = await page.locator('body').innerText();
@@ -73,7 +74,7 @@ test('free listing application keeps every field in the email fallback', async (
   await page.getByTestId('founding-cta').click();
   await expect(page).toHaveURL(/#you/);
   await expect(page.getByRole('heading', { level: 1 })).toHaveText('Join Legalgrads free');
-  await expect(page.getByTestId('step-count')).toHaveText('Step 1 of 6 · You');
+  await expect(page.getByTestId('step-count')).toHaveText('Step 1 of 5 · You');
   await expect(page.getByRole('progressbar', { name: 'Progress' })).toHaveAttribute('aria-valuenow', '1');
   await expect(page.getByTestId('apply-phone')).toHaveAttribute('type', 'tel');
   await expect(page.getByTestId('apply-phone')).toHaveAttribute('autocomplete', 'tel');
@@ -125,17 +126,7 @@ test('free listing application keeps every field in the email fallback', async (
   await page.getByTestId('apply-bio').fill('I help East Bay clients with everyday contracts and residential paperwork.');
   await expect(page.getByTestId('bio-count')).toContainText('/ 600');
   await page.getByTestId('apply-next').click();
-  await page.getByTestId('apply-rate-hourly').check();
-  await page.getByTestId('apply-rate-for').fill('Lease review');
-  await page.getByTestId('apply-next').click();
-  await expect(page.getByText('Enter the amount.')).toBeVisible();
-  await page.getByTestId('apply-rate-amount').fill('10');
-  await page.getByTestId('apply-next').click();
-  await expect(page.getByText('Enter at least $25.')).toBeVisible();
-  await page.getByTestId('apply-rate-amount').fill('225');
-  await page.getByTestId('apply-starting-at').check();
-  await page.getByTestId('apply-next').click();
-  await expect(page.getByTestId('step-count')).toHaveText('Step 6 of 6 · Review');
+  await expect(page.getByTestId('step-count')).toHaveText('Step 5 of 5 · Review');
   await expect(page.getByTestId('listing-preview')).toContainText('Alex Rivera');
   await expect(page.getByTestId('listing-preview')).toContainText('Find an attorney');
   await expect(page.getByTestId('listing-message-preview')).toContainText('Preview');
@@ -179,8 +170,8 @@ test('free listing application keeps every field in the email fallback', async (
   expect(decoded).toContain('2020-06-01');
   expect(decoded).toContain('Oakland');
   expect(decoded).toContain('English, Spanish');
-  expect(decoded).toContain('225');
-  expect(decoded).toContain('Lease review');
+  expect(decoded).toContain('State of licensure: California (CA)');
+  expect(decoded).not.toMatch(/Rate:/);
   expect(decoded).toContain('https://example.com/book');
   expect(decoded).toContain('Email on public listing: no');
   expect(decoded).toContain('Contracts');
@@ -231,7 +222,7 @@ test('application shows inline errors and the mobile step count', async ({ page 
   await expect(page.getByTestId('apply-name')).toBeFocused();
   await expect(page.getByTestId('apply-name')).toHaveAttribute('aria-invalid', 'true');
   await page.goto('/join/#license');
-  await expect(page.getByTestId('step-count')).toHaveText('Step 2 of 6 · License');
+  await expect(page.getByTestId('step-count')).toHaveText('Step 2 of 5 · License');
   await expect(page.getByTestId('step-count')).toHaveAttribute('aria-current', 'step');
   await expect(page.getByRole('progressbar', { name: 'Progress' })).toHaveAttribute('aria-valuenow', '2');
   await expect(page.getByRole('button', { name: 'Continue' })).toBeVisible();
@@ -288,7 +279,7 @@ test('cookie banner does not cover Continue', async ({ page }) => {
     await page.setViewportSize(size);
     await page.goto('/join/#areas');
     await expect(page.getByTestId('cookie-banner')).toBeVisible();
-    await expect(page.getByTestId('step-count')).toHaveText('Step 3 of 6 · Areas');
+    await expect(page.getByTestId('step-count')).toHaveText('Step 3 of 5 · Areas');
     const cookie = await page.getByTestId('cookie-banner').boundingBox();
     const bar = await page.getByTestId('apply-actions').boundingBox();
     const next = await page.getByTestId('apply-next').boundingBox();

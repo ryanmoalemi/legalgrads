@@ -63,9 +63,7 @@ interface ProfileRow {
   bio: string;
   cities_served: string;
   languages: string;
-  rate_type: 'flat' | 'hourly';
   licensed_state?: string | null;
-  rate_amount: number;
   contact_link: string;
   practice_areas: string[];
   bar_number: string;
@@ -88,7 +86,7 @@ export function PublicProfileView() {
       setMissing(true);
       return;
     }
-    void supabase.from('attorney_profiles').select('id, full_name, bio, cities_served, languages, rate_type, rate_amount, contact_link, practice_areas, bar_number, admission_date, published, published_at, created_at').eq('id', id).eq('published', true).maybeSingle().then(({ data }) => {
+    void supabase.from('attorney_profiles').select('id, full_name, bio, cities_served, languages, contact_link, practice_areas, bar_number, admission_date, published, published_at, created_at').eq('id', id).eq('published', true).maybeSingle().then(({ data }) => {
       setProfile((data as ProfileRow | null) ?? null);
       setMissing(!data);
     });
@@ -109,7 +107,6 @@ export function PublicProfileView() {
       <p className="inline-flex rounded-full bg-[#F3E9FF] px-3 py-1 text-xs font-bold text-purple">{joinedLabel(profile.published_at || profile.created_at)}</p>
       <h1 className="mt-3 font-display text-4xl font-extrabold">{profile.full_name}</h1>
       <p className="mt-2 text-ink">{profile.cities_served} · {profile.licensed_state ? `${profile.licensed_state} ` : ''}Bar {profile.bar_number} · admitted {profile.admission_date}</p>
-      <p className="mt-4 font-display text-2xl font-extrabold">{money(Number(profile.rate_amount))}{profile.rate_type === 'hourly' ? '/hr' : ' flat'}</p>
       <p className="mt-4 leading-7 text-ink">{profile.bio}</p>
       <div className="mt-3 flex flex-wrap gap-1">
         {profile.practice_areas.map((slug) => <span key={slug} className="rounded-full bg-[#F4EEFF] px-2 py-1 text-xs font-semibold text-purple">{specialtyName(slug)}</span>)}
@@ -128,7 +125,6 @@ export function ProfileEditorView() {
   const [bio, setBio] = useState('');
   const [cities, setCities] = useState('');
   const [languages, setLanguages] = useState('');
-  const [rate, setRate] = useState('');
   const [link, setLink] = useState('');
   const [applicationId, setApplicationId] = useState('');
 
@@ -142,8 +138,8 @@ export function ProfileEditorView() {
         setStatus('Sign in with the email link first.');
         return;
       }
-      const { data: apps } = await supabase.from('attorney_applications').select('id, bio, cities_served, languages, rate_amount, contact_link').ilike('email', email).limit(1);
-      const app = apps?.[0] as { id: string; bio: string; cities_served: string; languages: string; rate_amount: number; contact_link: string } | undefined;
+      const { data: apps } = await supabase.from('attorney_applications').select('id, bio, cities_served, languages, contact_link').ilike('email', email).limit(1);
+      const app = apps?.[0] as { id: string; bio: string; cities_served: string; languages: string; contact_link: string } | undefined;
       if (!app) {
         setStatus('No application is tied to this email yet.');
         return;
@@ -152,7 +148,6 @@ export function ProfileEditorView() {
       setBio(app.bio);
       setCities(app.cities_served);
       setLanguages(app.languages);
-      setRate(String(app.rate_amount));
       setLink(app.contact_link);
     });
   }, []);
@@ -167,7 +162,6 @@ export function ProfileEditorView() {
       bio,
       cities_served: cities,
       languages,
-      rate_amount: Number(rate),
       contact_link: link,
     }).eq('id', applicationId);
     if (updateError) setError(updateError.message);
@@ -176,8 +170,7 @@ export function ProfileEditorView() {
         bio,
         cities_served: cities,
         languages,
-        rate_amount: Number(rate),
-        contact_link: link,
+          contact_link: link,
       }).eq('application_id', applicationId);
       setStatus('Saved. Publishing still requires an admin state bar review.');
       setError('');
@@ -191,7 +184,6 @@ export function ProfileEditorView() {
       <form className="mt-6 grid gap-3" onSubmit={(event) => void save(event)}>
         <label className="text-sm font-medium">Cities<input className="mt-1 w-full rounded-2xl border border-navy/10 px-3 py-3" value={cities} onChange={(event) => setCities(event.target.value)} /></label>
         <label className="text-sm font-medium">Languages<input className="mt-1 w-full rounded-2xl border border-navy/10 px-3 py-3" value={languages} onChange={(event) => setLanguages(event.target.value)} /></label>
-        <label className="text-sm font-medium">Rate amount<input type="number" className="mt-1 w-full rounded-2xl border border-navy/10 px-3 py-3" value={rate} onChange={(event) => setRate(event.target.value)} /></label>
         <label className="text-sm font-medium">Contact link<input className="mt-1 w-full rounded-2xl border border-navy/10 px-3 py-3" value={link} onChange={(event) => setLink(event.target.value)} /></label>
         <label className="text-sm font-medium">Bio<textarea className="mt-1 w-full rounded-2xl border border-navy/10 px-3 py-3" rows={5} value={bio} onChange={(event) => setBio(event.target.value)} /></label>
         <button type="submit" className="min-h-11 rounded-full bg-pink font-display font-semibold text-white">Save</button>

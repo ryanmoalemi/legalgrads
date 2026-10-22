@@ -5,7 +5,6 @@ import { MessageAttorneyForm } from '@/components/MessageAttorneyForm';
 export function ListingPreview({
   name,
   cities,
-  rate,
   areas,
   bio,
   insured,
@@ -18,7 +17,6 @@ export function ListingPreview({
 }: {
   name: string;
   cities: string;
-  rate: string;
   areas: string[];
   bio: string;
   insured: boolean;
@@ -47,7 +45,6 @@ export function ListingPreview({
         <span className="rounded-full bg-[#F3E9FF] px-3 py-1 text-xs font-bold text-purple">{label}</span>
         {insured ? <span className="rounded-full bg-mint/20 px-3 py-1 text-xs font-bold text-navy">Insured</span> : null}
       </div>
-      <p className="mt-3 font-display font-extrabold">{rate}</p>
       <p className="mt-2 text-sm text-ink">{bio || 'Your short bio appears here.'}</p>
       <div className="mt-3 flex flex-wrap gap-1">
         {areas.map((area) => <span key={area} className="rounded-full bg-[#F4EEFF] px-2 py-1 text-xs font-semibold text-purple">{area}</span>)}

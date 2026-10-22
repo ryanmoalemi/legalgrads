@@ -5,7 +5,7 @@ import { getSupabase } from './supabase';
 import { supabaseConfigured } from './site';
 import { stateName, US_STATES } from './states';
 
-export const STEP_IDS = ['you', 'license', 'areas', 'practice', 'rate', 'review'] as const;
+export const STEP_IDS = ['you', 'license', 'areas', 'practice', 'review'] as const;
 export const DRAFT_KEY = 'legalgrads-apply-draft';
 export const BIO_EXAMPLE = 'I help Oakland clients with leases and everyday contracts. I was admitted to the bar in 2025.';
 export const BAR_SEARCH_URL = 'https://www.americanbar.org/groups/legal_services/flh-home/flh-bar-directories-and-lawyer-finders/';
@@ -25,10 +25,6 @@ export interface ApplicationInput {
   practiceAreas: string[];
   citiesServed: string;
   bio: string;
-  rateType: '' | 'flat' | 'hourly';
-  rateAmount: string;
-  rateFor: string;
-  rateStartingAt: boolean;
   freeConsultation: boolean;
   languages: string;
   contactLink: string;
@@ -49,10 +45,6 @@ export const EMPTY_APPLICATION: ApplicationInput = {
   practiceAreas: [],
   citiesServed: '',
   bio: '',
-  rateType: '',
-  rateAmount: '',
-  rateFor: '',
-  rateStartingAt: false,
   freeConsultation: false,
   languages: '',
   contactLink: '',
@@ -185,13 +177,6 @@ export function errorsForStep(step: number, input: ApplicationInput): Record<str
     else if (input.bio.length > 600) errors.bio = 'Keep the bio to 600 characters.';
   }
   if (step === 4) {
-    if (input.rateType !== 'flat' && input.rateType !== 'hourly') errors.rateType = 'Choose flat or hourly.';
-    const amount = Number(input.rateAmount);
-    if (!input.rateAmount.trim() || !Number.isFinite(amount)) errors.rateAmount = 'Enter the amount.';
-    else if (amount < 25) errors.rateAmount = 'Enter at least $25.';
-    if (input.rateFor.trim().length < 2) errors.rateFor = 'Say what this rate covers.';
-  }
-  if (step === 5) {
     if (input.phonePublic !== 'public' && input.phonePublic !== 'private') errors.phonePublic = 'Choose whether clients can see your phone number.';
     const contact = contactProblem(input.contactLink);
     if (contact) errors.contactLink = contact;
@@ -199,13 +184,6 @@ export function errorsForStep(step: number, input: ApplicationInput): Record<str
     if (!input.terms) errors.terms = 'Agree to the Attorney Terms to submit.';
   }
   return errors;
-}
-
-export function rateLabel(input: Pick<ApplicationInput, 'rateType' | 'rateAmount' | 'rateFor' | 'rateStartingAt'>): string {
-  const prefix = input.rateStartingAt ? 'Starting at ' : '';
-  const unit = input.rateType === 'hourly' ? '/hr' : ' flat';
-  const amount = input.rateAmount ? `$${input.rateAmount}${unit}` : 'Rate not set';
-  return `${prefix}${amount}${input.rateFor.trim() ? ` for ${input.rateFor.trim()}` : ''}`;
 }
 
 export function insuranceLabel(choice: InsuranceChoice): string {
@@ -231,7 +209,6 @@ export function applicationBody(input: ApplicationInput, reference: string): str
     `Practice areas: ${areas}`,
     `Cities served: ${input.citiesServed.trim()}`,
     `Languages: ${input.languages.trim()}`,
-    `Rate: ${rateLabel(input)}`,
     `Free consultation: ${input.freeConsultation ? 'yes' : 'no'}`,
     `Website: ${input.contactLink.trim() || 'none'}`,
     `Insurance: ${insuranceLabel(input.insurance)}`,
@@ -309,10 +286,6 @@ export async function submitApplication(input: ApplicationInput, photo: File | n
       practice_areas: input.practiceAreas,
       cities_served: input.citiesServed.trim(),
       bio: input.bio.trim(),
-      rate_type: input.rateType,
-      rate_amount: Number(input.rateAmount),
-      rate_for: input.rateFor.trim(),
-      rate_starting_at: input.rateStartingAt,
       free_consultation: input.freeConsultation,
       languages: input.languages.trim(),
       contact_link: input.contactLink.trim(),
@@ -321,10 +294,12 @@ export async function submitApplication(input: ApplicationInput, photo: File | n
       reference,
       attorney_terms_accepted_at: new Date().toISOString(),
     };
-    let inserted = await supabase.from('attorney_applications').insert({ ...row, licensed_state: input.licensedState });
-    // Until the licensed_state migration runs, keep the state in the private reference field.
-    if (inserted.error && /licensed_state/i.test(inserted.error.message ?? '')) {
-      inserted = await supabase.from('attorney_applications').insert({ ...row, reference: `${reference} state:${input.licensedState}` });
+    const full = { ...row, licensed_state: input.licensedState };
+    let inserted = await supabase.from('attorney_applications').insert(full);
+    // Until the nullable-rate migration runs, the rate columns are still required. Store a private
+    // placeholder that is never shown (listings no longer display rates).
+    if (inserted.error && /rate_/i.test(inserted.error.message ?? '')) {
+      inserted = await supabase.from('attorney_applications').insert({ ...full, rate_type: 'flat', rate_amount: 25, rate_for: 'not collected', rate_starting_at: false });
     }
     if (inserted.error) throw new Error('insert');
     return {

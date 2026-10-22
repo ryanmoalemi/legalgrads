@@ -63,7 +63,7 @@ export function FaqView() {
     ['Does Legalgrads take a cut?', 'No. The listing is free. Legalgrads takes no referral fee and no share of legal fees.'],
     ['What does the Joined year mean?', 'It is the calendar year that attorney joined Legalgrads. It is not a quality rating and not a benefit to clients.'],
     ['What does verification mean?', 'A person checks the attorney’s record with their state bar before a listing is published. It is not an instant badge and it is not a background-check product.'],
-    ['Who writes the listing?', 'The attorney does. They are responsible for their advertising, rate, and photo.'],
+    ['Who writes the listing?', 'The attorney does. They are responsible for their advertising, bio, and photo.'],
   ];
   return (
     <div className="mx-auto max-w-3xl px-4 py-10">
