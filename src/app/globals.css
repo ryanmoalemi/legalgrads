@@ -149,3 +149,27 @@ body[data-cookie-open] [aria-invalid='true'] {
     transition: none !important;
   }
 }
+
+.cookie-join-short { display: none; }
+@media (max-width: 639px) {
+  .cookie-banner-join {
+    left: 0;
+    right: 0;
+    width: 100%;
+    bottom: calc(4.5rem + env(safe-area-inset-bottom));
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    border-radius: 0;
+    padding: 0.4rem 0.75rem;
+    box-shadow: 0 -1px 0 rgba(11, 11, 59, 0.08);
+  }
+  .cookie-banner-join .cookie-join-hide { display: none; }
+  .cookie-banner-join .cookie-join-short { display: block; flex: 1; font-size: 0.75rem; line-height: 1.2; }
+  .cookie-banner-join .cookie-actions { margin-top: 0; flex-wrap: nowrap; gap: 0.25rem; }
+  .cookie-banner-join .cookie-actions a { display: none; }
+  .cookie-banner-join .cookie-actions button { padding-left: 0.6rem; padding-right: 0.6rem; font-size: 0.75rem; }
+  body[data-cookie-open] .join-form { padding-bottom: calc(8rem + env(safe-area-inset-bottom)); }
+  body[data-cookie-open] .join-footer-pad { height: calc(8rem + env(safe-area-inset-bottom)); }
+  body[data-cookie-open] [aria-invalid='true'] { scroll-margin-bottom: calc(8rem + env(safe-area-inset-bottom)); }
+}

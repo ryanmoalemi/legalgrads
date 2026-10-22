@@ -30,7 +30,7 @@ export function Header() {
           {NAV.map((item) => (
             <Link key={item.href} href={item.href} className="font-display text-sm font-semibold text-navy/80 hover:text-navy">{item.label}</Link>
           ))}
-          <Link href="/join/" data-testid="nav-join" className={joinClass}>Attorneys: Join free</Link>
+          <Link href="/join/" data-testid="nav-join" className={joinClass}>Attorneys: join free</Link>
           <span className="inline-flex items-center gap-2 rounded-full bg-[#F3E9FF] px-4 py-2 font-display text-sm font-semibold text-purple">
             <Rocket /> Launching soon
           </span>
@@ -51,7 +51,7 @@ export function Header() {
           {NAV.map((item) => (
             <Link key={item.href} href={item.href} className="block rounded-2xl px-3 py-3 font-display font-semibold">{item.label}</Link>
           ))}
-          <Link href="/join/" className={`${joinClass} mt-2 w-full`}>Attorneys: Join free</Link>
+          <Link href="/join/" className={`${joinClass} mt-2 w-full`}>Attorneys: join free</Link>
           <Link href="/specialties/" className="block rounded-2xl px-3 py-3 font-display font-semibold">Practice Areas</Link>
         </nav>
       ) : null}
@@ -73,7 +73,6 @@ const FOOTER = [
     ['/find-lawyer/', 'Find an attorney'],
     ['/specialties/', 'Practice Areas'],
     ['/how-it-works/', 'How It Works'],
-    ['/pricing/', 'Pricing'],
     ['/about/', 'About'],
     ['/faq/', 'FAQ'],
     ['/contact/', 'Contact'],
@@ -83,7 +82,7 @@ const FOOTER = [
     ['/join/', 'Join free'],
     ['/attorney-terms/', 'Attorney Terms'],
     ['/attorney-advertising/', 'Attorney advertising'],
-    ['/referral-disclosure/', 'Referral disclosure'],
+    ['/directory-disclosure/', 'Directory disclosure'],
   ]],
   ['Legal', [
     ['/legal/', 'Legal'],
@@ -173,9 +172,10 @@ export function CookieBanner() {
       role="dialog"
       aria-label="Cookie consent"
     >
-      <p className="font-display text-sm font-bold">Cookies</p>
-      <p className="mt-1 text-sm text-ink">Strictly necessary storage is always on. Analytics and marketing stay off unless you opt in. No third-party tracker is loaded either way.</p>
-      <div className="mt-3 flex flex-wrap gap-2">
+      <p className={`font-display text-sm font-bold ${joinStep ? 'cookie-join-hide' : ''}`}>Cookies</p>
+      {joinStep ? <p className="cookie-join-short text-sm text-ink">Optional cookies stay off unless you accept.</p> : null}
+      <p className={`mt-1 text-sm text-ink ${joinStep ? 'cookie-join-hide' : ''}`}>Strictly necessary storage is always on. Analytics and marketing stay off unless you opt in. No third-party tracker is loaded either way.</p>
+      <div className="cookie-actions mt-3 flex flex-wrap gap-2">
         <button type="button" data-testid="cookie-accept" className="min-h-11 rounded-full bg-navy px-3 py-2 font-display text-sm font-semibold text-white" onClick={() => choose(true, true)}>Accept</button>
         <button type="button" data-testid="cookie-reject" className="min-h-11 rounded-full bg-cream px-3 py-2 font-display text-sm font-semibold" onClick={() => choose(false, false)}>Reject optional</button>
         <Link href="/cookie-settings/" data-testid="cookie-customize" className="inline-flex min-h-11 items-center rounded-full px-3 py-2 font-display text-sm font-semibold text-purple" onClick={() => setOpen(false)}>Customize</Link>

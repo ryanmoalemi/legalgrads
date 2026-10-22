@@ -10,7 +10,7 @@ export function Field({ label, children }: { label: string; children: React.Reac
   );
 }
 
-export const inputClass = 'w-full rounded-2xl border border-navy/10 bg-white px-3 py-3 text-navy';
+export const inputClass = 'w-full rounded-2xl border border-navy/10 bg-white px-3 py-3 text-navy placeholder:text-ink/40';
 
 export function Alert({ children }: { children: React.ReactNode }) {
   if (!children) return null;

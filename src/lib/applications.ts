@@ -38,7 +38,7 @@ export const EMPTY_APPLICATION: ApplicationInput = {
   email: '',
   emailPublic: '',
   phone: '',
-  phonePublic: '',
+  phonePublic: 'private',
   licensedState: '',
   barNumber: '',
   admissionDate: '',
@@ -188,7 +188,7 @@ export function errorsForStep(step: number, input: ApplicationInput): Record<str
 
 export function insuranceLabel(choice: InsuranceChoice): string {
   if (choice === 'insured') return 'I carry professional liability insurance';
-  if (choice === 'will_disclose') return "I don't. I'll tell clients in writing, as Rule 1.4.2 requires.";
+  if (choice === 'will_disclose') return "I don't. I'll tell clients in writing if my state's rules require it.";
   return 'Not chosen';
 }
 
