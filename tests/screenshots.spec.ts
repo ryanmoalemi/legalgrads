@@ -13,16 +13,17 @@ test('capture launch screenshots', async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 });
     await page.screenshot({ path: `${dir}/${name}-mobile.png`, fullPage: true });
   }
-  await page.setViewportSize({ width: 390, height: 844 });
+  await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto('/join/');
+  await page.waitForTimeout(300);
+  await page.screenshot({ path: `${dir}/apply-1-you-desktop.png`, fullPage: true });
+  await page.setViewportSize({ width: 390, height: 844 });
   const shots: [string, () => Promise<void>][] = [
     ['apply-1-you', async () => undefined],
     ['apply-2-license', async () => {
       await page.getByTestId('apply-name').fill('Alex Rivera');
       await page.getByTestId('apply-email').fill('alex.rivera@example.com');
-      await page.getByTestId('apply-email-private').check();
       await page.getByTestId('apply-phone').fill('4155551212');
-      await page.getByTestId('apply-phone-private').check();
       await page.getByTestId('apply-next').click();
     }],
     ['apply-3-areas', async () => {
@@ -44,7 +45,6 @@ test('capture launch screenshots', async ({ page }) => {
       await page.getByTestId('apply-rate-hourly').check();
       await page.getByTestId('apply-rate-amount').fill('225');
       await page.getByTestId('apply-rate-for').fill('Lease review');
-      await page.getByTestId('apply-contact').fill('https://example.com/book');
       await page.getByTestId('apply-next').click();
     }],
   ];
@@ -53,6 +53,9 @@ test('capture launch screenshots', async ({ page }) => {
     await page.waitForTimeout(200);
     await page.screenshot({ path: `${dir}/${name}-mobile.png`, fullPage: true });
   }
+  await page.getByTestId('apply-email-private').check();
+  await page.getByTestId('apply-phone-private').check();
+  await page.getByTestId('apply-contact').fill('https://example.com/book');
   await page.getByTestId('apply-insured').check();
   await page.getByTestId('apply-terms').check();
   await page.getByTestId('application-submit').click();

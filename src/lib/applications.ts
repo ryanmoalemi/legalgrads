@@ -127,9 +127,7 @@ export function errorsForStep(step: number, input: ApplicationInput): Record<str
   if (step === 0) {
     if (input.fullName.trim().length < 2) errors.fullName = 'Enter your full name.';
     if (!validEmail(input.email)) errors.email = 'Enter a valid email address.';
-    if (input.emailPublic !== 'public' && input.emailPublic !== 'private') errors.emailPublic = 'Choose whether clients can see your email.';
     if (input.phone.replace(/\D/g, '').length < 10) errors.phone = 'Enter a phone number with at least 10 digits.';
-    if (input.phonePublic !== 'public' && input.phonePublic !== 'private') errors.phonePublic = 'Choose whether clients can see your phone number.';
   }
   if (step === 1) {
     if (!/^\d{1,6}$/.test(input.barNumber)) errors.barNumber = 'Use digits only, up to 6.';
@@ -148,10 +146,12 @@ export function errorsForStep(step: number, input: ApplicationInput): Record<str
     const amount = Number(input.rateAmount);
     if (!input.rateAmount.trim() || !Number.isFinite(amount) || amount < 25) errors.rateAmount = 'Enter at least $25.';
     if (input.rateFor.trim().length < 2) errors.rateFor = 'Say what this rate covers.';
-    const contact = contactProblem(input.contactLink);
-    if (contact) errors.contactLink = contact;
   }
   if (step === 5) {
+    if (input.emailPublic !== 'public' && input.emailPublic !== 'private') errors.emailPublic = 'Choose whether clients can see your email.';
+    if (input.phonePublic !== 'public' && input.phonePublic !== 'private') errors.phonePublic = 'Choose whether clients can see your phone number.';
+    const contact = contactProblem(input.contactLink);
+    if (contact) errors.contactLink = contact;
     if (input.insurance !== 'insured' && input.insurance !== 'will_disclose') errors.insurance = 'Choose one option about professional liability insurance.';
     if (!input.terms) errors.terms = 'Agree to the Attorney Terms to submit.';
   }

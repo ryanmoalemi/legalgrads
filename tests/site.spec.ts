@@ -59,13 +59,14 @@ test('free listing application keeps every field in the email fallback', async (
   await expect(page.getByTestId('invite-classmate')).toBeVisible();
   await page.getByTestId('founding-cta').click();
   await expect(page).toHaveURL(/#you/);
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText('Join Legalgrads free');
+  await expect(page.getByTestId('step-count')).toHaveText('Step 1 of 6 · You');
+  await expect(page.getByRole('progressbar', { name: 'Progress' })).toHaveAttribute('aria-valuenow', '1');
   await page.getByTestId('apply-name').fill('Alex Rivera');
   await page.reload();
   await expect(page.getByTestId('apply-name')).toHaveValue('Alex Rivera');
   await page.getByTestId('apply-email').fill('alex.rivera@example.com');
-  await page.getByTestId('apply-email-private').check();
   await page.getByTestId('apply-phone').fill('4155551212');
-  await page.getByTestId('apply-phone-private').check();
   await page.getByTestId('apply-next').click();
   await expect(page).toHaveURL(/#license/);
   await page.goBack();
@@ -93,17 +94,20 @@ test('free listing application keeps every field in the email fallback', async (
   await page.getByTestId('apply-rate-hourly').check();
   await page.getByTestId('apply-rate-amount').fill('10');
   await page.getByTestId('apply-rate-for').fill('Lease review');
-  await page.getByTestId('apply-contact').fill('javascript:alert(1)');
   await page.getByTestId('apply-next').click();
   await expect(page.getByText('Enter at least $25.')).toBeVisible();
-  await expect(page.getByText('That contact method is not allowed.')).toBeVisible();
   await page.getByTestId('apply-rate-amount').fill('225');
   await page.getByTestId('apply-starting-at').check();
-  await page.getByTestId('apply-contact').fill('https://example.com/book');
   await page.getByTestId('apply-next').click();
-  await expect(page.getByTestId('step-count')).toBeHidden();
+  await expect(page.getByTestId('step-count')).toHaveText('Step 6 of 6 · Review');
   await expect(page.getByTestId('listing-preview')).toContainText('Alex Rivera');
   await expect(page.getByTestId('listing-preview')).toContainText('Find an attorney');
+  await page.getByTestId('apply-email-private').check();
+  await page.getByTestId('apply-phone-private').check();
+  await page.getByTestId('apply-contact').fill('javascript:alert(1)');
+  await page.getByTestId('application-submit').click();
+  await expect(page.getByText('That contact method is not allowed.')).toBeVisible();
+  await page.getByTestId('apply-contact').fill('https://example.com/book');
   await page.getByTestId('apply-insured').check();
   await expect(page.getByTestId('listing-preview')).toContainText('Insured');
   await page.getByTestId('apply-terms').check();
@@ -146,8 +150,11 @@ test('application shows inline errors and the mobile step count', async ({ page 
   await expect(page.getByTestId('apply-name')).toBeFocused();
   await expect(page.getByTestId('apply-name')).toHaveAttribute('aria-invalid', 'true');
   await page.goto('/join/#license');
-  await expect(page.getByTestId('step-count')).toHaveText('Step 2 of 6');
-  await expect(page.getByRole('list', { name: 'Progress' }).getByRole('listitem').nth(1)).toHaveAttribute('aria-current', 'step');
+  await expect(page.getByTestId('step-count')).toHaveText('Step 2 of 6 · License');
+  await expect(page.getByTestId('step-count')).toHaveAttribute('aria-current', 'step');
+  await expect(page.getByRole('progressbar', { name: 'Progress' })).toHaveAttribute('aria-valuenow', '2');
+  await expect(page.getByRole('button', { name: 'Continue' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Back' })).toBeVisible();
 });
 
 test('policies name Legalgrads and do not charge a referral fee', async ({ page }) => {
