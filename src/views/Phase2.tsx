@@ -64,6 +64,7 @@ interface ProfileRow {
   cities_served: string;
   languages: string;
   rate_type: 'flat' | 'hourly';
+  licensed_state?: string | null;
   rate_amount: number;
   contact_link: string;
   practice_areas: string[];
@@ -107,14 +108,14 @@ export function PublicProfileView() {
     <div className="mx-auto max-w-3xl px-4 py-10">
       <p className="inline-flex rounded-full bg-[#F3E9FF] px-3 py-1 text-xs font-bold text-purple">{joinedLabel(profile.published_at || profile.created_at)}</p>
       <h1 className="mt-3 font-display text-4xl font-extrabold">{profile.full_name}</h1>
-      <p className="mt-2 text-ink">{profile.cities_served} · California State Bar {profile.bar_number} · admitted {profile.admission_date}</p>
+      <p className="mt-2 text-ink">{profile.cities_served} · {profile.licensed_state ? `${profile.licensed_state} ` : ''}Bar {profile.bar_number} · admitted {profile.admission_date}</p>
       <p className="mt-4 font-display text-2xl font-extrabold">{money(Number(profile.rate_amount))}{profile.rate_type === 'hourly' ? '/hr' : ' flat'}</p>
       <p className="mt-4 leading-7 text-ink">{profile.bio}</p>
       <div className="mt-3 flex flex-wrap gap-1">
         {profile.practice_areas.map((slug) => <span key={slug} className="rounded-full bg-[#F4EEFF] px-2 py-1 text-xs font-semibold text-purple">{specialtyName(slug)}</span>)}
       </div>
       <p className="mt-3 text-sm">Languages: {profile.languages}</p>
-      {publicContactHref(profile.contact_link) ? <p className="mt-3"><a className="font-semibold text-purple" href={publicContactHref(profile.contact_link) ?? undefined}>Booking link</a></p> : null}
+      {publicContactHref(profile.contact_link) ? <p className="mt-3"><a className="font-semibold text-purple" href={publicContactHref(profile.contact_link) ?? undefined}>Website</a></p> : null}
       <MessageAttorneyForm profileId={profile.id} />
       <button type="button" className="mt-6 min-h-11 rounded-full bg-navy px-5 font-display text-sm font-semibold text-white" onClick={() => downloadShareCard(profile.full_name, profile.published_at || profile.created_at)}>Download “I’m on Legalgrads”</button>
     </div>
@@ -178,7 +179,7 @@ export function ProfileEditorView() {
         rate_amount: Number(rate),
         contact_link: link,
       }).eq('application_id', applicationId);
-      setStatus('Saved. Publishing still requires an admin State Bar review.');
+      setStatus('Saved. Publishing still requires an admin state bar review.');
       setError('');
     }
   }
@@ -242,7 +243,7 @@ export function AdminReviewView() {
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-10">
-      <PageIntro title="Review applications" body="Approve only after you have checked the California State Bar record yourself. This page is not linked from the public site." />
+      <PageIntro title="Review applications" body="Approve only after you have checked the attorney’s state bar record yourself. This page is not linked from the public site." />
       {error ? <p role="alert" className="mt-4 text-sm text-pink">{error}</p> : null}
       {status ? <p role="status" className="mt-4 text-sm">{status}</p> : null}
       <ul className="mt-6 space-y-3">
