@@ -51,15 +51,10 @@ export function ListingPreview({
       </div>
       {booking ? <p className="mt-3 text-sm"><a className="font-semibold text-purple" href={booking}>Website</a></p> : null}
       {staticPreview ? (
-        <div className="mt-4 rounded-2xl bg-cream p-4" data-testid="listing-message-preview">
-          <p className="text-xs font-bold uppercase tracking-wide text-purple">Preview</p>
-          <p className="mt-1 font-display font-extrabold">Message this attorney</p>
-          <p className="mt-1 text-sm text-ink">Clients will see a private message form here.</p>
-          <div className="mt-3 grid gap-2" aria-hidden="true">
-            <div className="h-10 rounded-xl bg-white ring-1 ring-navy/10" />
-            <div className="h-10 rounded-xl bg-white ring-1 ring-navy/10" />
-            <div className="h-16 rounded-xl bg-white ring-1 ring-navy/10" />
-          </div>
+        <div className="mt-4 border-l-4 border-purple/40 pl-3" data-testid="listing-message-preview" role="note">
+          <p className="text-xs font-bold uppercase tracking-wide text-purple">Note</p>
+          <p className="mt-1 text-sm font-bold text-navy">Message this attorney</p>
+          <p className="mt-1 text-sm text-ink">Clients can send you a private message from this card. Your email stays hidden.</p>
         </div>
       ) : (
         <MessageAttorneyForm profileId={profileId} />

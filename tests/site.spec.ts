@@ -129,9 +129,10 @@ test('free listing application keeps every field in the email fallback', async (
   await expect(page.getByTestId('step-count')).toHaveText('Step 5 of 5 · Review');
   await expect(page.getByTestId('listing-preview')).toContainText('Alex Rivera');
   await expect(page.getByTestId('listing-preview')).toContainText('Find an attorney');
-  await expect(page.getByTestId('listing-message-preview')).toContainText('Preview');
-  await expect(page.getByTestId('listing-message-preview')).toContainText('Clients will see a private message form here.');
+  await expect(page.getByTestId('listing-message-preview')).toContainText('Message this attorney');
+  await expect(page.getByTestId('listing-message-preview')).toContainText('Clients can send you a private message from this card. Your email stays hidden.');
   await expect(page.getByTestId('listing-preview').locator('input, textarea, select, button')).toHaveCount(0);
+  await expect(page.getByTestId('listing-message-preview').locator('[aria-hidden="true"]')).toHaveCount(0);
   await expect(page.getByRole('heading', { name: 'Phone visibility' })).toBeVisible();
   await expect(page.getByRole('heading', { name: 'Insurance' })).toBeVisible();
   await expect(page.getByRole('heading', { name: 'Terms' })).toBeVisible();
