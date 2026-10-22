@@ -35,7 +35,7 @@ export function HomeView() {
     <div>
       <section className="mx-auto grid max-w-6xl items-center gap-8 px-4 pb-4 pt-2 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] lg:pt-4">
         <div className="min-w-0">
-          <h1 className="font-display text-[clamp(1.6rem,7.06vw,2.6rem)] font-black leading-[1.03] tracking-[-0.03em] text-navy sm:text-[2.75rem] lg:text-[clamp(2.6rem,4.5vw,4.3rem)] lg:leading-[1.03]">
+          <h1 className="font-display text-[clamp(1.6rem,7.06vw,2.6rem)] font-black leading-[1.03] tracking-[-0.03em] text-navy sm:text-[2.75rem] lg:whitespace-nowrap lg:text-[clamp(2.5rem,4.3vw,3.1rem)] lg:leading-[1.03]">
             <span className="hand-underline">
               Fresh
               <svg viewBox="0 0 120 12" aria-hidden="true">
