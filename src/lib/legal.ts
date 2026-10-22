@@ -181,16 +181,16 @@ export const DOCS: Record<string, LegalDoc> = {
       },
     ],
   },
-  'referral-disclosure': {
-    slug: 'referral-disclosure',
-    title: 'Referral Disclosure',
-    description: 'Legalgrads does not take a fee for introducing you to a lawyer.',
+  'directory-disclosure': {
+    slug: 'directory-disclosure',
+    title: 'Directory Disclosure',
+    description: 'Legalgrads is a directory. It does not match, recommend, or refer clients to lawyers.',
     updated,
     sections: [
       {
-        heading: 'No referral fee',
+        heading: 'A directory, not a referral service',
         paragraphs: [
-          'Legalgrads is a free directory. It is not a lawyer referral service certified by any state bar. Legalgrads does not charge attorneys or consumers a referral fee. Legalgrads does not take a share of legal fees. The listing is free. A Joined year on a listing is only the year the attorney joined Legalgrads. It is not a quality rating and not a benefit to clients. Any future charge would be a flat fee for visibility, not a price per lead.',
+          'Legalgrads is a free directory. Clients browse listings and choose for themselves. Legalgrads does not match, recommend, or refer clients to any attorney, and it is not a lawyer referral service certified by any state bar. Legalgrads does not charge attorneys or consumers a referral fee and does not take a share of legal fees. A Joined year on a listing is only the year the attorney joined Legalgrads. It is not a quality rating.',
           'Choosing a lawyer from the directory is your decision. ' + contact,
         ],
       },
@@ -262,7 +262,7 @@ export const LEGAL_LINKS: { href: string; title: string }[] = [
   { href: '/cookies/', title: 'Cookie Policy' },
   { href: '/disclaimers/', title: 'Disclaimers' },
   { href: '/attorney-advertising/', title: 'Attorney Advertising' },
-  { href: '/referral-disclosure/', title: 'Referral Disclosure' },
+  { href: '/directory-disclosure/', title: 'Directory Disclosure' },
   { href: '/security/', title: 'Security' },
   { href: '/do-not-sell-or-share/', title: 'Do Not Sell or Share' },
   { href: '/accessibility/', title: 'Accessibility' },
