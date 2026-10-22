@@ -6,7 +6,7 @@ import { supabaseConfigured } from './site';
 
 export const STEP_IDS = ['you', 'license', 'areas', 'practice', 'rate', 'review'] as const;
 export const DRAFT_KEY = 'legalgrads-apply-draft';
-export const BIO_EXAMPLE = 'I help Oakland clients with leases and everyday contracts. I was admitted in California in 2026.';
+export const BIO_EXAMPLE = 'I help Oakland clients with leases and everyday contracts. I was admitted in California in 2025.';
 export const BAR_SEARCH_URL = 'https://apps.calbar.ca.gov/attorney/LicenseeSearch/QuickSearch';
 
 export type Visibility = '' | 'public' | 'private';
@@ -100,19 +100,18 @@ export function isFutureDate(iso: string): boolean {
 
 export function contactProblem(value: string): string | null {
   const trimmed = value.trim();
-  if (!trimmed) return 'Enter an https link or a phone number.';
+  if (!trimmed) return null;
   if (/^(javascript|data|vbscript):/i.test(trimmed)) return 'That contact method is not allowed.';
-  if (validEmail(trimmed)) return 'Use an https link or a phone number. Your email stays private.';
-  if (/^[+\d().\-\s]+$/.test(trimmed) && trimmed.replace(/\D/g, '').length >= 10) return null;
+  if (validEmail(trimmed)) return 'Use an https link. Your email stays private.';
   if (/^https:\/\/\S+$/i.test(trimmed)) {
     try {
       const url = new URL(trimmed);
       if (url.protocol === 'https:' && url.hostname.includes('.')) return null;
     } catch {
-      return 'Enter a full https link or a phone number.';
+      return 'Enter a full https link, or leave this blank.';
     }
   }
-  return 'Enter a full https link or a phone number. A single word is not enough.';
+  return 'Enter a full https link, or leave this blank.';
 }
 
 export function contactHref(value: string): string {
@@ -141,6 +140,17 @@ export function publicContactHref(value: string): string | null {
 
 export const PHONE_HINT = 'Used to verify your license and recover your account. Private unless you choose to show it.';
 export const PHONE_ERROR = 'Enter a 10-digit US phone number.';
+
+/** Formats a US number as (555) 555-5555 while the attorney types. A leading 1 is dropped once 11 digits are present. */
+export function formatUsPhone(value: string): string {
+  let digits = value.replace(/\D/g, '');
+  if (digits.length >= 11 && digits.startsWith('1')) digits = digits.slice(1);
+  digits = digits.slice(0, 10);
+  if (!digits) return '';
+  if (digits.length < 4) return `(${digits}`;
+  if (digits.length < 7) return `(${digits.slice(0, 3)}) ${digits.slice(3)}`;
+  return `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6)}`;
+}
 
 /** Ten US digits. Spaces, dashes, parentheses, and a leading 1 are allowed. */
 export function phoneProblem(value: string): string | null {
@@ -173,7 +183,8 @@ export function errorsForStep(step: number, input: ApplicationInput): Record<str
   if (step === 4) {
     if (input.rateType !== 'flat' && input.rateType !== 'hourly') errors.rateType = 'Choose flat or hourly.';
     const amount = Number(input.rateAmount);
-    if (!input.rateAmount.trim() || !Number.isFinite(amount) || amount < 25) errors.rateAmount = 'Enter at least $25.';
+    if (!input.rateAmount.trim() || !Number.isFinite(amount)) errors.rateAmount = 'Enter the amount.';
+    else if (amount < 25) errors.rateAmount = 'Enter at least $25.';
     if (input.rateFor.trim().length < 2) errors.rateFor = 'Say what this rate covers.';
   }
   if (step === 5) {
@@ -195,7 +206,7 @@ export function rateLabel(input: Pick<ApplicationInput, 'rateType' | 'rateAmount
 
 export function insuranceLabel(choice: InsuranceChoice): string {
   if (choice === 'insured') return 'I carry professional liability insurance';
-  if (choice === 'will_disclose') return "I don't currently, and I will disclose that to clients in writing as California Rule of Professional Conduct 1.4.2 requires";
+  if (choice === 'will_disclose') return "I don't. I'll tell clients in writing, as Rule 1.4.2 requires.";
   return 'Not chosen';
 }
 
@@ -217,7 +228,7 @@ export function applicationBody(input: ApplicationInput, reference: string): str
     `Languages: ${input.languages.trim()}`,
     `Rate: ${rateLabel(input)}`,
     `Free consultation: ${input.freeConsultation ? 'yes' : 'no'}`,
-    `Contact: ${input.contactLink.trim()}`,
+    `Website: ${input.contactLink.trim() || 'none'}`,
     `Insurance: ${insuranceLabel(input.insurance)}`,
     'Agreed to Attorney Terms: yes',
     `Photo: ${input.photoName ? `${input.photoName} (attach this file manually; it is not inside the link)` : 'none provided'}`,

@@ -1,9 +1,22 @@
 import { expect, test } from '@playwright/test';
 import { buildRelayText, containsDisallowedLink, LINK_ERROR, withoutAutoLinks } from '../supabase/functions/_shared/links';
 import { relayMailPayload } from '../supabase/functions/_shared/mail';
-import { phoneProblem } from '../src/lib/applications';
+import { contactProblem, formatUsPhone, phoneProblem } from '../src/lib/applications';
 import { messageProblems } from '../src/lib/messages';
 import { CLASSIFIER_URL, classifyInquiry, parseScreenLabel, precheckSpam, relaySubject } from '../supabase/functions/_shared/screen';
+
+test('phone formats as the attorney types and a website link is optional', () => {
+  expect(formatUsPhone('4155551212')).toBe('(415) 555-1212');
+  expect(formatUsPhone('+1 415 555 1212')).toBe('(415) 555-1212');
+  expect(formatUsPhone('415555')).toBe('(415) 555');
+  expect(formatUsPhone('')).toBe('');
+  expect(contactProblem('')).toBeNull();
+  expect(contactProblem('   ')).toBeNull();
+  expect(contactProblem('https://example.com/book')).toBeNull();
+  expect(contactProblem('javascript:alert(1)')).toBeTruthy();
+  expect(contactProblem('alex.rivera@example.com')).toBeTruthy();
+  expect(contactProblem('(415) 555-1212')).toBeTruthy();
+});
 
 test('attorney sign-up phone is a required 10-digit US number', () => {
   expect(phoneProblem('')).toBeTruthy();

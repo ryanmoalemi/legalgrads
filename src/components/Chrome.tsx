@@ -155,10 +155,22 @@ function JoinFooter({ reserveActionBar }: { reserveActionBar: boolean }) {
 }
 
 export function CookieBanner() {
+  const path = usePathname() || '';
+  const joinStep = path === '/join' || path === '/join/';
   const [open, setOpen] = useState(false);
   useEffect(() => {
     setOpen(!readConsent());
   }, []);
+  useEffect(() => {
+    if (!open) {
+      delete document.body.dataset.cookieOpen;
+      return;
+    }
+    document.body.dataset.cookieOpen = 'true';
+    return () => {
+      delete document.body.dataset.cookieOpen;
+    };
+  }, [open]);
   if (!open) return null;
 
   function choose(analytics: boolean, marketing: boolean) {
@@ -167,13 +179,18 @@ export function CookieBanner() {
   }
 
   return (
-    <div data-testid="cookie-banner" className="fixed inset-x-3 bottom-3 z-[60] mx-auto max-w-3xl rounded-3xl bg-white p-4 shadow-card" role="dialog" aria-label="Cookie consent">
-      <p className="font-display font-bold">Cookies</p>
+    <div
+      data-testid="cookie-banner"
+      className={`cookie-banner rounded-3xl bg-white p-3 shadow-card ${joinStep ? 'cookie-banner-join' : ''}`}
+      role="dialog"
+      aria-label="Cookie consent"
+    >
+      <p className="font-display text-sm font-bold">Cookies</p>
       <p className="mt-1 text-sm text-ink">Strictly necessary storage is always on. Analytics and marketing stay off unless you opt in. No third-party tracker is loaded either way.</p>
       <div className="mt-3 flex flex-wrap gap-2">
-        <button type="button" data-testid="cookie-accept" className="min-h-11 rounded-full bg-navy px-4 py-2 font-display text-sm font-semibold text-white" onClick={() => choose(true, true)}>Accept</button>
-        <button type="button" data-testid="cookie-reject" className="min-h-11 rounded-full bg-cream px-4 py-2 font-display text-sm font-semibold" onClick={() => choose(false, false)}>Reject optional</button>
-        <Link href="/cookie-settings/" data-testid="cookie-customize" className="inline-flex min-h-11 items-center rounded-full px-4 py-2 font-display text-sm font-semibold text-purple" onClick={() => setOpen(false)}>Customize</Link>
+        <button type="button" data-testid="cookie-accept" className="min-h-11 rounded-full bg-navy px-3 py-2 font-display text-sm font-semibold text-white" onClick={() => choose(true, true)}>Accept</button>
+        <button type="button" data-testid="cookie-reject" className="min-h-11 rounded-full bg-cream px-3 py-2 font-display text-sm font-semibold" onClick={() => choose(false, false)}>Reject optional</button>
+        <Link href="/cookie-settings/" data-testid="cookie-customize" className="inline-flex min-h-11 items-center rounded-full px-3 py-2 font-display text-sm font-semibold text-purple" onClick={() => setOpen(false)}>Customize</Link>
       </div>
     </div>
   );

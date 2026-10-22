@@ -85,7 +85,7 @@ export const DOCS: Record<string, LegalDoc> = {
       {
         heading: 'What the public can see',
         paragraphs: [
-          'The public can read a profile only after it is published. A published profile can show name, bar number, admission date, practice areas, cities, bio, rate, languages, an https booking link or phone number if you provided one, the year the attorney joined Legalgrads, and an Insured badge only if you said you carry professional liability insurance. Your email is never shown. Clients use a secure contact form, and Legalgrads relays that message without showing either email address. Your phone appears only if you chose to show it. The Joined year is only that calendar year. It is not a quality rating and not a benefit to clients.',
+          'The public can read a profile only after it is published. A published profile can show name, bar number, admission date, practice areas, cities, bio, rate, languages, an https website link if you provided one, the year the attorney joined Legalgrads, and an Insured badge only if you said you carry professional liability insurance. Your email is never shown. Clients use a secure contact form, and Legalgrads relays that message without showing either email address. Your phone appears only if you chose to show it. The Joined year is only that calendar year. It is not a quality rating and not a benefit to clients.',
         ],
       },
       {
