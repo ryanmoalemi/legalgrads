@@ -44,10 +44,10 @@ export function HomeView() {
               </svg>
             </span>{' '}
             out of law school.
-            <span className="gradient-text mt-1 block">Ready to work for you.</span>
+            <span className="gradient-text mt-1 block">Licensed near you.</span>
           </h1>
           <p className="mt-4 max-w-xl text-lg text-ink sm:text-xl">
-            Hire newly licensed U.S. attorneys. Listings go live only after a manual check with the attorney’s state bar.
+            Browse newly licensed attorneys near you, free. Every listing goes live only after a manual check with the attorney’s state bar.
           </p>
           <form onSubmit={onWaitlist} className="relative mt-6 flex max-w-xl items-center rounded-full bg-white p-1.5 shadow-pill">
             <span className="pl-3 text-navy" aria-hidden="true">
@@ -64,7 +64,7 @@ export function HomeView() {
           {done ? <p role="status" data-testid="waitlist-status" className="mt-2 text-sm font-medium">{done}</p> : null}
           {mailto ? <p className="mt-2 text-sm"><a data-testid="waitlist-mailto" className="font-semibold text-purple" href={mailto}>Email this signup to ryan@legalgrads.com</a></p> : null}
           <Link href="/join/" data-testid="home-attorney-cta" className="mt-3 inline-flex min-h-11 items-center justify-center rounded-full bg-white px-5 py-3 font-display text-sm font-semibold text-navy shadow-pill ring-1 ring-navy/10">
-            Join free
+            Attorneys: join free
           </Link>
           <p className="mt-3 text-sm text-ink sm:text-base">
             Be the first to know when attorneys are published. No <span className="hand-underline font-semibold text-navy">spam.

@@ -21,7 +21,7 @@ export function ForAttorneysView() {
       <ul className="mt-10 grid gap-4 sm:grid-cols-3">
         {[
           ['Free listing', 'You are not charged to be in the directory.'],
-          ['Direct contact', 'Clients contact you directly through a secure form.'],
+          ['Direct contact', 'Clients reach you through Legalgrads’ private contact form. Your email stays hidden.'],
           ['Bar check first', 'We publish a profile only after a person checks your record with your state bar.'],
         ].map(([title, body]) => (
           <li key={title} className="rounded-3xl bg-white p-5">
@@ -62,7 +62,7 @@ export function ForAttorneysView() {
         <div className="mt-4 space-y-4">
           <article className="rounded-3xl bg-white p-5">
             <h3 className="font-display text-lg font-extrabold">Is Legalgrads a referral service?</h3>
-            <p className="mt-2 text-sm text-ink">No. Legalgrads is a free directory, not a lawyer referral service certified by any state bar. Clients contact you directly. We do not send you a matter for a fee.</p>
+            <p className="mt-2 text-sm text-ink">No. Legalgrads is a free directory, not a lawyer referral service certified by any state bar. Clients browse the directory and message you through our private contact form. Legalgrads does not match, recommend, or refer clients.</p>
           </article>
           <article className="rounded-3xl bg-white p-5">
             <h3 className="font-display text-lg font-extrabold">Does Legalgrads share fees?</h3>

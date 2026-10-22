@@ -23,14 +23,14 @@ import {
 import { ListingPreview } from '@/components/ListingPreview';
 import { PhotoField } from '@/components/PhotoField';
 import { inputClass } from '@/components/ui';
-import { stateName, US_STATES } from '@/lib/states';
+import { STATE_BAR_LOOKUP, stateName, US_STATES } from '@/lib/states';
 
 const STEPS = ['You', 'License', 'Areas', 'Practice', 'Review'] as const;
 
 const STEP_LINES = [
   'Your name, email, and phone.',
   'Your state of licensure, bar number, and admission date.',
-  'Choose every area a client can filter by.',
+  'Choose the areas you practice. Clients browse by these.',
   'Cities, languages, and a short bio.',
   'Check the listing, then send it.',
 ];
@@ -151,16 +151,15 @@ export function ApplyView() {
   return (
     <form onSubmit={onSubmit} className="join-form mx-auto flex w-full max-w-xl flex-col px-4 pt-6 md:pt-8">
       <header id="join-step">
-        <h1 className="font-display text-3xl font-extrabold tracking-tight text-navy sm:text-4xl">Join Legalgrads free</h1>
-        <p className="mt-2 text-base text-ink">{STEP_LINES[step]}</p>
+        <h1 className="font-display text-3xl font-black tracking-tight text-navy sm:text-4xl">Join Legalgrads free</h1>
+        <p className="mt-2 font-display text-lg font-bold text-navy sm:text-xl" data-testid="step-line">{STEP_LINES[step]}</p>
       </header>
 
       <div className="mt-5">
-        <p className="font-display text-sm font-bold" data-testid="step-count" aria-current="step">
-          Step {step + 1} of {STEPS.length} · {STEPS[step]}
-        </p>
-        <div
-          className="mt-2 h-1.5 overflow-hidden rounded-full bg-navy/10"
+        <p className="sr-only" data-testid="step-count" aria-current="step">Step {step + 1} of {STEPS.length} · {STEPS[step]}</p>
+        <ol
+          className="grid grid-cols-5 gap-1"
+          data-testid="step-dots"
           role="progressbar"
           aria-label="Progress"
           aria-valuemin={1}
@@ -168,8 +167,18 @@ export function ApplyView() {
           aria-valuenow={step + 1}
           aria-valuetext={`Step ${step + 1} of ${STEPS.length}, ${STEPS[step]}`}
         >
-          <div className="h-full rounded-full bg-gradient-to-r from-purple via-pink to-orange" style={{ width: `${progress}%` }} />
-        </div>
+          {STEPS.map((name, index) => {
+            const done = index < step;
+            const current = index === step;
+            return (
+              <li key={name} className="relative flex flex-col items-center text-center" aria-hidden="true">
+                {index > 0 ? <span className={`absolute right-1/2 top-3 h-0.5 w-full -translate-y-1/2 ${index <= step ? 'bg-purple' : 'bg-navy/15'}`} /> : null}
+                <span className={`relative flex h-6 w-6 items-center justify-center rounded-full font-display text-xs font-bold ${current ? 'bg-pink text-white ring-4 ring-pink/20' : done ? 'bg-purple text-white' : 'bg-white text-ink ring-1 ring-navy/20'}`}>{done ? '✓' : index + 1}</span>
+                <span className={`mt-1 font-display text-xs ${current ? 'font-bold text-navy' : 'font-semibold text-ink'}`}>{name}</span>
+              </li>
+            );
+          })}
+        </ol>
       </div>
 
       {step === 0 ? (
@@ -191,7 +200,7 @@ export function ApplyView() {
             {errors.licensedState ? <p id="err-state" role="alert" className="mt-1 text-sm font-medium text-[#6E123F]">{errors.licensedState}</p> : <p id="err-state" className="sr-only" />}
           </div>
           <Field label={input.licensedState ? `${stateName(input.licensedState)} bar number` : 'Bar number'} id="apply-bar" maxLength={12} hint="The number your state bar issued. Letters and digits only." why="We look this up with your state bar before anything goes live." error={errors.barNumber} value={input.barNumber} transform={(value) => value.replace(/[^A-Za-z0-9]/g, '').slice(0, 12)} onChange={(value) => patch({ barNumber: value })} />
-          <p className="text-sm"><a className="inline-flex min-h-11 items-center font-semibold text-purple" href={BAR_SEARCH_URL} target="_blank" rel="noreferrer">Find your state bar’s lawyer lookup</a></p>
+          <p className="text-sm"><a className="inline-flex min-h-11 items-center font-semibold text-purple" data-testid="bar-lookup" href={STATE_BAR_LOOKUP[input.licensedState] ?? BAR_SEARCH_URL} target="_blank" rel="noreferrer">{STATE_BAR_LOOKUP[input.licensedState] ? `Open the ${stateName(input.licensedState)} attorney lookup` : 'Find your state bar’s lawyer lookup'}</a></p>
           <div>
             <div className="flex flex-wrap items-center gap-1">
               <label className="text-base font-semibold text-navy" htmlFor="apply-admitted">Admission date</label>
@@ -229,8 +238,8 @@ export function ApplyView() {
 
       {step === 3 ? (
         <div className="mt-6 grid gap-5">
-          <Field label="Cities served" id="apply-cities" hint="Separate cities with commas. Example: Oakland, San Francisco." why="Clients search by state and city." error={errors.citiesServed} value={input.citiesServed} onChange={(value) => patch({ citiesServed: value })} placeholder="Oakland, San Francisco" />
-          <Field label="Languages" id="apply-languages" hint="Separate languages with commas. Example: English, Spanish." why="Clients can see the languages you work in." error={errors.languages} value={input.languages} onChange={(value) => patch({ languages: value })} placeholder="English, Spanish" />
+          <Field label="Cities served" id="apply-cities" hint="Separate cities with commas, for example: Springfield, Riverside." why="Clients search by state and city." error={errors.citiesServed} value={input.citiesServed} onChange={(value) => patch({ citiesServed: value })} />
+          <Field label="Languages" id="apply-languages" hint="Separate languages with commas, for example: English, Spanish." why="Clients can see the languages you work in." error={errors.languages} value={input.languages} onChange={(value) => patch({ languages: value })} />
           <div>
             <div className="flex flex-wrap items-center gap-1">
               <label className="text-base font-semibold text-navy" htmlFor="apply-bio">Short bio</label>
@@ -258,6 +267,8 @@ export function ApplyView() {
           <ListingPreview
             name={input.fullName}
             cities={input.citiesServed}
+            state={stateName(input.licensedState)}
+            languages={input.languages}
             areas={input.practiceAreas.map((slug) => specialtyName(slug))}
             bio={input.bio}
             insured={input.insurance === 'insured'}
@@ -265,18 +276,20 @@ export function ApplyView() {
             contact={input.contactLink}
             staticPreview
           />
-          <p className="text-sm text-ink">Nothing goes live until Legalgrads manually checks your state bar record. Your email stays private. Clients reach you through our secure contact form.</p>
+          <p className="text-sm text-ink" data-testid="review-privacy">Nothing goes live until we verify your state bar record. Your email and phone stay private unless you choose otherwise.</p>
+          <section className="grid gap-5 rounded-3xl bg-white/60 p-4 ring-1 ring-navy/10" aria-labelledby="review-details" data-testid="listing-details">
+            <h2 id="review-details" className="font-display text-lg font-extrabold text-navy">Listing details</h2>
           <section className="grid gap-3" aria-labelledby="review-phone">
-            <h2 id="review-phone" className="font-display text-lg font-extrabold text-navy">Phone visibility</h2>
+            <h3 id="review-phone" className="font-display text-base font-bold text-navy">Phone visibility</h3>
             <Choice name="phonePublic" legend="Show your phone number on the public listing?" why="Clients see it only if you choose show on listing. Your email is never shown." error={errors.phonePublic} value={input.phonePublic} onChange={(value) => patch({ phonePublic: value })} />
           </section>
           <Field label="Website" id="apply-contact" optional hint="An https link, if you have one. Leave this blank if you don't." error={errors.contactLink} value={input.contactLink} onChange={(value) => patch({ contactLink: value })} placeholder="https://" />
           <section className="grid gap-3" aria-labelledby="review-insurance">
-            <h2 id="review-insurance" className="font-display text-lg font-extrabold text-navy">Insurance</h2>
+            <h3 id="review-insurance" className="font-display text-base font-bold text-navy">Insurance</h3>
             <fieldset aria-invalid={errors.insurance ? true : undefined} aria-describedby="err-insurance">
               <legend className="flex flex-wrap items-center gap-1 text-base font-semibold text-navy">
                 Professional liability insurance
-                <InfoTip text="The Insured badge appears only if you carry insurance. If you do not, your state’s rules may require a written disclosure to clients (for example, California Rule 1.4.2)." />
+                <InfoTip text="The Insured badge appears only if you carry insurance. If you do not, your state’s rules may require a written disclosure to clients (check your state bar’s rules)." />
               </legend>
               <div className="mt-3 grid gap-2">
                 <label className="flex min-h-14 items-start gap-3 rounded-2xl bg-white px-4 py-3 text-base">
@@ -285,17 +298,18 @@ export function ApplyView() {
                 </label>
                 <label className="flex min-h-14 items-start gap-3 rounded-2xl bg-white px-4 py-3 text-base">
                   <input data-testid="apply-disclose" className="mt-1 h-5 w-5" type="radio" name="insurance" checked={input.insurance === 'will_disclose'} aria-invalid={errors.insurance ? true : undefined} onChange={() => patch({ insurance: 'will_disclose' })} />
-                  I don&apos;t. I&apos;ll tell clients in writing, as Rule 1.4.2 requires.
+                  I don&apos;t. I&apos;ll tell clients in writing if my state&apos;s rules require it.
                 </label>
               </div>
               {errors.insurance ? <p id="err-insurance" role="alert" className="mt-2 text-sm font-medium text-[#6E123F]">{errors.insurance}</p> : <p id="err-insurance" className="sr-only" />}
             </fieldset>
           </section>
+          </section>
           <section className="grid gap-3" aria-labelledby="review-terms">
             <h2 id="review-terms" className="font-display text-lg font-extrabold text-navy">Terms</h2>
             <label className="flex min-h-14 items-start gap-3 rounded-2xl bg-white px-4 py-3 text-base">
               <input data-testid="apply-terms" className="mt-1 h-5 w-5" type="checkbox" checked={input.terms} aria-invalid={errors.terms ? true : undefined} aria-describedby="err-terms" onChange={(event) => patch({ terms: event.target.checked })} />
-              <span>I agree to the <Link className="font-semibold text-purple" href="/attorney-terms/">Attorney Terms</Link>. I am responsible for my own advertising. My listing goes live only after Legalgrads manually verifies my state bar record. Clients contact me directly.</span>
+              <span>I agree to the <Link className="font-semibold text-purple" href="/attorney-terms/">Attorney Terms</Link>. I am responsible for my own advertising. My listing goes live only after Legalgrads manually verifies my state bar record. Clients reach me through Legalgrads’ private contact form.</span>
             </label>
             {errors.terms ? <p id="err-terms" role="alert" className="text-sm font-medium text-[#6E123F]">{errors.terms}</p> : <p id="err-terms" className="sr-only" />}
           </section>
