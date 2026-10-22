@@ -1,8 +1,9 @@
 -- Legalgrads directory. Paste this entire file once into the Supabase SQL editor
 -- (project qlhwojjdsonjxfeoiqww). It creates the tables, row level security,
 -- the review function, and the private attorney-photos bucket policies.
--- The publishable key may insert applications and waitlist rows only.
+-- The publishable key may insert applications, waitlist rows, and attorney messages.
 -- It may read attorney_profiles only when published is true.
+-- It cannot read attorney emails or stored messages.
 -- Do not put a secret or service-role key in the website.
 
 create extension if not exists pgcrypto;
@@ -22,7 +23,10 @@ create table public.attorney_applications (
   verified_by uuid references auth.users (id),
   full_name text not null check (char_length(full_name) between 2 and 120),
   email text not null check (email ~* '^[^@[:space:]]+@[^@[:space:]]+\.[^@[:space:]]+$'),
-  phone text not null check (char_length(phone) between 7 and 40),
+  phone text not null check (
+    char_length(phone) between 10 and 40
+    and regexp_replace(phone, '[^0-9]', '', 'g') ~ '^1?[0-9]{10}$'
+  ),
   bar_number text not null check (bar_number ~ '^[0-9]{1,6}$'),
   admission_date date not null check (admission_date <= current_date),
   practice_areas text[] not null check (cardinality(practice_areas) > 0),
@@ -38,7 +42,6 @@ create table public.attorney_applications (
     contact_link !~* '^(javascript|data|vbscript):'
     and (
       contact_link ~* '^https://[^[:space:]]+\.[^[:space:]]+'
-      or contact_link ~* '^[^@[:space:]]+@[^@[:space:]]+\.[^@[:space:]]+$'
       or contact_link ~ '^[0-9+().[:space:]-]{10,40}$'
     )
   ),
@@ -114,6 +117,7 @@ with check (
   and verified_by is null
   and insurance_choice in ('insured', 'will_disclose')
   and attorney_terms_accepted_at is not null
+  and email_public = false
 );
 
 create policy "applicant or admin reads applications"
@@ -297,7 +301,7 @@ begin
       app.cities_served, app.bio, app.rate_type, app.rate_amount, app.rate_for, app.rate_starting_at, app.free_consultation,
       app.languages, app.contact_link, app.photo_path, app.insurance_choice = 'insured',
       case when app.phone_public then app.phone else null end,
-      case when app.email_public then app.email else null end,
+      null,
       true, now()
     )
     on conflict (application_id) do update set
@@ -369,5 +373,154 @@ using (
   bucket_id = 'attorney-photos'
   and name like 'published/%'
 );
+
+create or replace function public.strip_profile_email()
+returns trigger
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  new.email := null;
+  return new;
+end;
+$$;
+
+drop trigger if exists strip_profile_email on public.attorney_profiles;
+create trigger strip_profile_email
+before insert or update on public.attorney_profiles
+for each row execute function public.strip_profile_email();
+
+revoke select (email) on public.attorney_profiles from anon, authenticated;
+
+create table public.attorney_messages (
+  id uuid primary key default gen_random_uuid(),
+  created_at timestamptz not null default now(),
+  profile_id uuid not null references public.attorney_profiles (id) on delete cascade,
+  sender_name text not null check (char_length(sender_name) between 2 and 120),
+  sender_email text not null check (sender_email ~* '^[^@[:space:]]+@[^@[:space:]]+\.[^@[:space:]]+$'),
+  sender_phone text check (sender_phone is null or char_length(sender_phone) between 7 and 40),
+  body text not null check (char_length(body) between 10 and 2000),
+  consent_at timestamptz not null,
+  honeypot text not null default '',
+  relayed_at timestamptz,
+  relay_error text,
+  screen_status text not null default 'not_screened',
+  screen_source text,
+  constraint attorney_messages_screen_status_check check (screen_status in ('quarantine', 'genuine', 'uncertain', 'not_screened')),
+  constraint attorney_messages_screen_source_check check (screen_source is null or screen_source in ('precheck', 'classifier', 'ai_error'))
+);
+
+create table public.attorney_message_replies (
+  id uuid primary key default gen_random_uuid(),
+  message_id uuid not null references public.attorney_messages (id) on delete cascade,
+  direction text not null check (direction in ('to_attorney', 'to_sender')),
+  created_at timestamptz not null default now()
+);
+
+create index attorney_messages_sender_idx on public.attorney_messages (sender_email, created_at desc);
+create index attorney_messages_profile_idx on public.attorney_messages (profile_id, created_at desc);
+create index attorney_messages_screen_idx on public.attorney_messages (screen_status, created_at desc);
+
+alter table public.attorney_messages enable row level security;
+alter table public.attorney_message_replies enable row level security;
+
+revoke all on public.attorney_messages from anon, authenticated;
+revoke all on public.attorney_message_replies from anon, authenticated;
+grant insert on public.attorney_messages to anon, authenticated;
+grant select on public.attorney_messages to authenticated;
+
+create policy "public inserts attorney messages"
+on public.attorney_messages
+for insert
+to anon, authenticated
+with check (
+  honeypot = ''
+  and consent_at is not null
+  and char_length(body) between 10 and 2000
+  and screen_status = 'not_screened'
+  and screen_source is null
+  and exists (
+    select 1 from public.attorney_profiles p
+    where p.id = profile_id and p.published = true
+  )
+);
+
+create policy "admins read attorney messages"
+on public.attorney_messages
+for select
+to authenticated
+using (exists (select 1 from public.admin_users a where a.user_id = auth.uid()));
+
+create or replace function public.enforce_message_rate_limit()
+returns trigger
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  if new.honeypot <> '' then
+    raise exception 'message rejected';
+  end if;
+  if (
+    select count(*) from public.attorney_messages
+    where lower(sender_email) = lower(new.sender_email)
+      and created_at > now() - interval '1 hour'
+  ) >= 5 then
+    raise exception 'rate limit';
+  end if;
+  if (
+    select count(*) from public.attorney_messages
+    where profile_id = new.profile_id
+      and created_at > now() - interval '1 hour'
+  ) >= 20 then
+    raise exception 'rate limit';
+  end if;
+  return new;
+end;
+$$;
+
+drop trigger if exists enforce_message_rate_limit on public.attorney_messages;
+create trigger enforce_message_rate_limit
+before insert on public.attorney_messages
+for each row execute function public.enforce_message_rate_limit();
+
+create or replace function public.message_has_link(value text)
+returns boolean
+language sql
+immutable
+as $$
+  select coalesce(value, '') ~* 'h[[:space:]]*t[[:space:]]*t[[:space:]]*p[[:space:]]*s?[[:space:]]*:[[:space:]]*/[[:space:]]*/|h[[:space:]]*x[[:space:]]*x[[:space:]]*p[[:space:]]*s?[[:space:]]*:[[:space:]]*/[[:space:]]*/|[[:<:]]www[[:space:]]*\.|<[[:space:]]*/?[[:space:]]*a[[:space:]>]|href[[:space:]]*=|\[[^]]{0,200}\][[:space:]]*\([^)]{0,300}(\.|/|http|hxxp|www)|[[:<:]][a-z0-9][a-z0-9-]{0,62}[[:space:]]*(\[[[:space:]]*\.[[:space:]]*\]|\([[:space:]]*\.[[:space:]]*\)|\[[[:space:]]*dot[[:space:]]*\]|\([[:space:]]*dot[[:space:]]*\))[[:space:]]*(com|net|org|io|co|ly|gl|cc|gov|edu)|[[:<:]]dot[[:space:]]+(com|net|org|io|co|ly|info|biz|xyz)|[[:<:]]([a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?\.)+(com|net|org|edu|gov|io|co|us|uk|info|biz|me|ly|gl|cc|to|gd|be|at|ai|app|dev|xyz|site|online|link|click|legal|law|gy|tv)[[:>:]]'
+$$;
+
+create or replace function public.quarantine_linked_message()
+returns trigger
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  if public.message_has_link(coalesce(new.sender_name, '') || E'\n' || coalesce(new.sender_phone, '') || E'\n' || coalesce(new.body, '')) then
+    new.screen_status := 'quarantine';
+    new.screen_source := 'precheck';
+  end if;
+  return new;
+end;
+$$;
+
+drop trigger if exists quarantine_linked_message on public.attorney_messages;
+create trigger quarantine_linked_message
+before insert on public.attorney_messages
+for each row execute function public.quarantine_linked_message();
+
+create table public.message_rate_limits (
+  id bigint generated always as identity primary key,
+  bucket text not null,
+  created_at timestamptz not null default now()
+);
+
+alter table public.message_rate_limits enable row level security;
+revoke all on public.message_rate_limits from anon, authenticated;
+create index message_rate_limits_bucket_idx on public.message_rate_limits (bucket, created_at desc);
 
 notify pgrst, 'reload schema';

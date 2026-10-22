@@ -69,7 +69,8 @@ export const DOCS: Record<string, LegalDoc> = {
         heading: 'Information we collect',
         paragraphs: [
           'If you join the consumer waitlist, we collect your email address and the page you signed up from.',
-          'If you apply as an attorney, we collect your name, email, phone, whether you want email or phone on the public listing, California State Bar number, admission date, practice areas, cities served, bio, rate type, amount, what the rate covers, languages, contact method, optional photo, your professional-liability insurance choice, and the time you agreed to the Attorney Terms.',
+          'If you apply as an attorney, we collect your name, email, phone, whether you want your phone on the public listing, California State Bar number, admission date, practice areas, cities served, bio, rate type, amount, what the rate covers, languages, contact method, optional photo, your professional-liability insurance choice, and the time you agreed to the Attorney Terms.',
+          'If you message an attorney from a listing, we collect your name, email, optional phone, and the message.',
           'We store a cookie preference on your device. If you opt in, a local analytics note stays in that browser. We do not load third-party advertising trackers.',
         ],
       },
@@ -77,13 +78,14 @@ export const DOCS: Record<string, LegalDoc> = {
         heading: 'How we use it',
         paragraphs: [
           'We use waitlist emails to announce when the directory has published attorneys. We use attorney applications to review California State Bar records and, if the review passes, to publish a listing. We do not sell personal information and we do not share it for cross-context behavioral advertising.',
+          'Messages sent through a listing contact form are screened automatically for spam.',
           'Application records and photos are stored in Supabase (Postgres and private file storage) when that service is configured. If it is not configured, the form opens an email to ' + CONTACT_EMAIL + ' so the information is not discarded.',
         ],
       },
       {
         heading: 'What the public can see',
         paragraphs: [
-          'The public can read a profile only after it is published. A published profile can show name, bar number, admission date, practice areas, cities, bio, rate, languages, the contact method you provided, the year the attorney joined Legalgrads, and an Insured badge only if you said you carry professional liability insurance. Your phone and email appear only if you chose to show them. The Joined year is only that calendar year. It is not a quality rating and not a benefit to clients.',
+          'The public can read a profile only after it is published. A published profile can show name, bar number, admission date, practice areas, cities, bio, rate, languages, an https booking link or phone number if you provided one, the year the attorney joined Legalgrads, and an Insured badge only if you said you carry professional liability insurance. Your email is never shown. Clients use a secure contact form, and Legalgrads relays that message without showing either email address. Your phone appears only if you chose to show it. The Joined year is only that calendar year. It is not a quality rating and not a benefit to clients.',
         ],
       },
       {
@@ -104,7 +106,7 @@ export const DOCS: Record<string, LegalDoc> = {
       {
         heading: 'Free listing',
         paragraphs: [
-          'The listing is free, and it shows the year you joined Legalgrads. That mark is not a quality rating and not a benefit to clients. Legalgrads takes no referral fee and no share of your legal fees. You set your own flat fee or hourly rate. Clients contact you directly.',
+          'The listing is free, and it shows the year you joined Legalgrads. That mark is not a quality rating and not a benefit to clients. Legalgrads takes no referral fee and no share of your legal fees. You set your own flat fee or hourly rate. Your email stays private. Clients reach you through our secure contact form.',
           'A later premium product, if Legalgrads offers one, will be a flat fee for extra visibility only. It will not be priced per lead and it will not be a percentage of legal fees.',
         ],
       },

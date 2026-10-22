@@ -1,0 +1,146 @@
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.49.1';
+import { buildRelayText, containsDisallowedLink } from '../_shared/links.ts';
+import { corsHeaders, json, replyAddress, sendRelay } from '../_shared/mail.ts';
+import { classifyInquiry, precheckSpam, relaySubject, type ScreenLabel } from '../_shared/screen.ts';
+
+const EMAIL = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
+
+function likeExact(value: string): string {
+  return value.replace(/[\\%_]/g, (char) => `\\${char}`);
+}
+
+Deno.serve(async (request) => {
+  if (request.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders });
+  if (request.method !== 'POST') return json({ ok: false }, 405);
+
+  let payload: Record<string, unknown>;
+  try {
+    payload = await request.json();
+  } catch {
+    return json({ ok: false }, 400);
+  }
+
+  if (String(payload.company_website ?? '').trim()) return json({ ok: true, stored: false, relayed: false });
+
+  const profileId = String(payload.profile_id ?? '');
+  const senderName = String(payload.sender_name ?? '').trim();
+  const senderEmail = String(payload.sender_email ?? '').trim();
+  const senderPhone = payload.sender_phone == null ? '' : String(payload.sender_phone).trim();
+  const body = String(payload.body ?? '').trim();
+  if (!/^[0-9a-f-]{36}$/i.test(profileId)) return json({ ok: false }, 400);
+  if (senderName.length < 2 || senderName.length > 120) return json({ ok: false }, 400);
+  if (!EMAIL.test(senderEmail) || senderEmail.length > 200) return json({ ok: false }, 400);
+  if (senderPhone && (senderPhone.length < 7 || senderPhone.length > 40)) return json({ ok: false }, 400);
+  if (body.length < 10 || body.length > 2000) return json({ ok: false }, 400);
+  if (payload.consent !== true) return json({ ok: false }, 400);
+
+  const supabaseUrl = Deno.env.get('SUPABASE_URL');
+  const serviceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+  if (!supabaseUrl || !serviceKey) return json({ ok: false }, 500);
+  const supabase = createClient(supabaseUrl, serviceKey, { auth: { persistSession: false } });
+
+  const ip = (request.headers.get('x-forwarded-for') ?? '').split(',')[0]?.trim() || 'unknown';
+  const since = new Date(Date.now() - 60 * 60 * 1000).toISOString();
+  const { count: ipCount } = await supabase
+    .from('message_rate_limits')
+    .select('id', { count: 'exact', head: true })
+    .eq('bucket', `ip:${ip}`)
+    .gt('created_at', since);
+  if ((ipCount ?? 0) >= 10) return json({ ok: false }, 429);
+  await supabase.from('message_rate_limits').insert({ bucket: `ip:${ip}` });
+
+  const { count: emailCount } = await supabase
+    .from('attorney_messages')
+    .select('id', { count: 'exact', head: true })
+    .ilike('sender_email', likeExact(senderEmail))
+    .gt('created_at', since);
+  if ((emailCount ?? 0) >= 5) return json({ ok: false }, 429);
+
+  const { data: profile, error: profileError } = await supabase
+    .from('attorney_profiles')
+    .select('id, application_id, published, full_name')
+    .eq('id', profileId)
+    .eq('published', true)
+    .maybeSingle();
+  if (profileError || !profile) return json({ ok: false }, 404);
+
+  const { count: profileCount } = await supabase
+    .from('attorney_messages')
+    .select('id', { count: 'exact', head: true })
+    .eq('profile_id', profileId)
+    .gt('created_at', since);
+  if ((profileCount ?? 0) >= 20) return json({ ok: false }, 429);
+
+  const blocked = precheckSpam(senderName, body, senderPhone);
+  let label: ScreenLabel = 'not_screened';
+  let source: 'precheck' | 'classifier' | 'ai_error' = 'ai_error';
+  if (blocked) {
+    label = 'spam';
+    source = 'precheck';
+  } else {
+    const apiKey = Deno.env.get('GEMINI_API_KEY') ?? '';
+    label = await classifyInquiry({ name: senderName, body }, apiKey);
+    source = label === 'not_screened' ? 'ai_error' : 'classifier';
+  }
+
+  const screenStatus = label === 'spam' ? 'quarantine' : label;
+  const { data: inserted, error: insertError } = await supabase
+    .from('attorney_messages')
+    .insert({
+      profile_id: profileId,
+      sender_name: senderName,
+      sender_email: senderEmail,
+      sender_phone: senderPhone || null,
+      body,
+      consent_at: new Date().toISOString(),
+      honeypot: '',
+      screen_status: screenStatus,
+      screen_source: source,
+    })
+    .select('id')
+    .single();
+  if (insertError) {
+    if (/rate limit/i.test(insertError.message)) return json({ ok: false }, 429);
+    return json({ ok: false }, 400);
+  }
+
+  if (screenStatus === 'quarantine') {
+    return json({ ok: true, stored: true, relayed: false, held: true });
+  }
+
+  const { data: application } = await supabase
+    .from('attorney_applications')
+    .select('email')
+    .eq('id', profile.application_id)
+    .maybeSingle();
+  const attorneyEmail = String(application?.email ?? '');
+  if (!EMAIL.test(attorneyEmail)) {
+    await supabase.from('attorney_messages').update({ relay_error: 'no attorney address' }).eq('id', inserted.id);
+    return json({ ok: true, stored: true, relayed: false });
+  }
+
+  const replyTo = replyAddress(inserted.id);
+  const text = buildRelayText({
+    attorney: String(profile.full_name ?? ''),
+    sender: senderName,
+    phone: senderPhone,
+    body,
+    canReply: Boolean(replyTo),
+  });
+  if (containsDisallowedLink(text) || containsDisallowedLink(senderName) || containsDisallowedLink(senderPhone) || containsDisallowedLink(body)) {
+    await supabase.from('attorney_messages').update({
+      screen_status: 'quarantine',
+      screen_source: 'precheck',
+      relay_error: null,
+    }).eq('id', inserted.id);
+    return json({ ok: true, stored: true, relayed: false, held: true });
+  }
+
+  const relayed = await sendRelay(attorneyEmail, relaySubject(label), text, replyTo);
+  await supabase
+    .from('attorney_messages')
+    .update(relayed ? { relayed_at: new Date().toISOString(), relay_error: null } : { relay_error: 'not relayed' })
+    .eq('id', inserted.id);
+
+  return json({ ok: true, stored: true, relayed });
+});

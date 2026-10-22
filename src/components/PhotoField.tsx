@@ -56,7 +56,7 @@ export function PhotoField({
         <input
           id="apply-photo"
           data-testid="apply-photo"
-          className="mt-1 block w-full"
+          className="mt-2 block min-h-12 w-full text-base"
           type="file"
           accept="image/jpeg,image/png,image/webp"
           aria-invalid={error ? true : undefined}
@@ -64,7 +64,7 @@ export function PhotoField({
           onChange={(event) => onFile(event.target.files?.[0] ?? null)}
         />
       </label>
-      <p id="hint-photo" className="mt-1 text-sm text-ink">Why we ask: clients recognize you on the listing. JPG, PNG, or WebP, under 5 MB. Drag the zoom to frame the circle.</p>
+      <p id="hint-photo" className="mt-1 text-sm text-ink">JPG, PNG, or WebP, under 5 MB. Drag the zoom to frame the circle.</p>
       {error ? <p id="err-photo" role="alert" className="mt-1 text-sm font-medium text-[#6E123F]">{error}</p> : <p id="err-photo" className="sr-only" />}
       {preview ? (
         <div className="mt-3 flex items-center gap-4">
