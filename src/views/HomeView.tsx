@@ -176,7 +176,7 @@ function HeroArt() {
         place="New York · Brooklyn"
         tags={['Start a Business', 'Employment']}
       />
-      <p className="absolute bottom-0 right-6 z-30 -rotate-2 rounded-2xl bg-[#FFE14A] px-3 py-2 font-display text-sm font-extrabold shadow">Real lawyers.</p>
+      <p className="absolute bottom-0 right-6 z-30 -rotate-2 rounded-2xl bg-[#FFE14A] px-3 py-2 font-display text-sm font-extrabold shadow">Ready to work for you</p>
     </div>
   );
 }
