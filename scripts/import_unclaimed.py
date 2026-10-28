@@ -54,7 +54,7 @@ for r in csv.DictReader(SRC.open(newline='', encoding='utf-8')):
         'city': prev['city'] if prev else (slugify(city) or 'california'),
         'cityName': city or 'California',
         'name': name, 'barNumber': bar,
-        'admitted': d.strftime('%b %Y'), 'admittedYear': str(d.year),
+        'admitted': d.strftime('%b %Y'), 'admissionDate': d.strftime('%Y-%m-%d'), 'admittedYear': str(d.year),
         'status': clean(r.get('status')) or 'See State Bar',
         'discipline': 'See State Bar profile',
         'lawSchool': school or 'Not listed',
@@ -66,5 +66,7 @@ for bar, p in existing.items():
     if p.get('status') == 'Active' and bar not in inactive:
         rows.setdefault(bar, p)
 out = sorted(rows.values(), key=lambda p: int(p['barNumber']))
+DIR = ROOT / 'public/data/unclaimed-directory.json'
+DIR.write_text(json.dumps([{'id': p['barNumber'], 'n': p['name'], 'c': p['cityName'], 'z': p.get('officeZip', ''), 'a': p.get('admissionDate', ''), 'u': f"/attorneys/{p['state']}/{p['city']}/{p['slug']}/"} for p in out], separators=(',', ':')) + '\n')
 OUT.write_text(json.dumps(out, indent=1, ensure_ascii=False) + '\n')
 print(f'{len(out)} unclaimed profiles ({len(out) - len(existing)} new) -> {OUT.relative_to(ROOT)}')

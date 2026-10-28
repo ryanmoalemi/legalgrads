@@ -20,6 +20,7 @@ export type AttorneyProfile = {
   lastVerified: string; // e.g. 'Oct 27, 2026'
   demo?: boolean; // demo profiles are always noindex
   officeZip?: string;
+  admissionDate?: string;
   claimed?: {
     photo: string;
     headline: string;
@@ -77,6 +78,20 @@ const DEMO_PROFILES: AttorneyProfile[] = [
 
 export const PROFILES: AttorneyProfile[] = [...DEMO_PROFILES, ...(unclaimedCa as AttorneyProfile[])];
 
+export const REAL_PROFILES = PROFILES.filter((p) => !p.demo);
+export type CityGroup = { state: string; stateName: string; stateCode: string; city: string; cityName: string; profiles: AttorneyProfile[] };
+export function cityGroups(): CityGroup[] {
+  const m = new Map<string, CityGroup>();
+  for (const p of REAL_PROFILES) {
+    const k = `${p.state}/${p.city}`;
+    if (!m.has(k)) m.set(k, { state: p.state, stateName: p.stateName, stateCode: p.stateCode, city: p.city, cityName: p.cityName, profiles: [] });
+    m.get(k)!.profiles.push(p);
+  }
+  for (const g of m.values()) g.profiles.sort((a, b) => a.name.localeCompare(b.name));
+  return [...m.values()].sort((a, b) => b.profiles.length - a.profiles.length || a.cityName.localeCompare(b.cityName));
+}
+export const cityPath = (state: string, city: string) => `/attorneys/${state}/${city}/`;
+
 export const calbarUrl = (n: string) => `https://apps.calbar.ca.gov/attorney/Licensee/Detail/${n}`;
 export const profilePath = (p: AttorneyProfile) => `/attorneys/${p.state}/${p.city}/${p.slug}/`;
 export const firstName = (p: AttorneyProfile) => p.name.split(' ')[0];
@@ -84,7 +99,7 @@ export const initials = (p: AttorneyProfile) => p.name.split(' ').map((w) => w[0
 export const seoTitle = (p: AttorneyProfile) => `${p.name}, ${p.claimed ? 'Business ' : ''}Attorney in ${p.cityName}, ${p.stateCode} | LegalGrads`;
 export const seoDescription = (p: AttorneyProfile) => p.claimed
   ? `${p.name} helps small businesses with contracts, formation and advice. Licensed in ${p.stateName} since ${p.admittedYear}.`
-  : `${p.name} is a ${p.stateName} attorney admitted in ${p.admittedYear}. License info from State Bar records.`;
+  : `${p.name} is a ${p.cityName}, ${p.stateCode} attorney admitted in ${p.admitted}${p.lawSchool && p.lawSchool !== 'Not listed' ? ` (${p.lawSchool})` : ''}. License #${p.barNumber} from State Bar records.`;
 
 export function profileJsonLd(p: AttorneyProfile) {
   const url = `https://legalgrads.com${profilePath(p)}`;
@@ -113,8 +128,8 @@ export function profileJsonLd(p: AttorneyProfile) {
     '@type': 'BreadcrumbList',
     itemListElement: [
       { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://legalgrads.com/' },
-      { '@type': 'ListItem', position: 2, name: p.stateName, item: 'https://legalgrads.com/find-lawyer/' },
-      { '@type': 'ListItem', position: 3, name: p.cityName, item: 'https://legalgrads.com/find-lawyer/' },
+      { '@type': 'ListItem', position: 2, name: p.stateName, item: `https://legalgrads.com/attorneys/${p.state}/` },
+      { '@type': 'ListItem', position: 3, name: p.cityName, item: `https://legalgrads.com${cityPath(p.state, p.city)}` },
       { '@type': 'ListItem', position: 4, name: p.name, item: url },
     ],
   });
