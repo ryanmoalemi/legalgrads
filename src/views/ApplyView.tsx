@@ -283,6 +283,10 @@ export function ApplyView() {
             <h3 id="review-phone" className="font-display text-base font-bold text-navy">Phone visibility</h3>
             <Choice name="phonePublic" legend="Show your phone number on the public listing?" why="Clients see it only if you choose show on listing. Your email is never shown." error={errors.phonePublic} value={input.phonePublic} onChange={(value) => patch({ phonePublic: value })} />
           </section>
+          <label className="flex items-start gap-3 text-base font-semibold text-navy">
+            <input data-testid="apply-in-person" className="mt-1 h-5 w-5" type="checkbox" checked={input.inPerson} onChange={(event) => patch({ inPerson: event.target.checked })} />
+            <span>Offers in-person meetings / will visit your business <span className="block text-sm font-normal text-ink">Optional. Shows an In-person tag on your listing and lets clients filter for it.</span></span>
+          </label>
           <Field label="Website" id="apply-contact" optional hint="An https link, if you have one. Leave this blank if you don't." error={errors.contactLink} value={input.contactLink} onChange={(value) => patch({ contactLink: value })} placeholder="https://" />
           <section className="grid gap-3" aria-labelledby="review-insurance">
             <h3 id="review-insurance" className="font-display text-base font-bold text-navy">Insurance</h3>
