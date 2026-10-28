@@ -3,17 +3,11 @@ import { useEffect, useState } from 'react';
 import { getSupabase } from '@/lib/supabase';
 
 const BOT_UA = /bot|crawl|spider|slurp|headless|lighthouse|preview|facebookexternalhit/i;
-const KEY = 'lg_vid';
 
-function visitorId(): string | null {
-  try {
-    let id = localStorage.getItem(KEY);
-    if (!id) { id = crypto.randomUUID(); localStorage.setItem(KEY, id); }
-    return id;
-  } catch { return null; }
-}
-
-/** Records one view per visitor per profile per day and shows the monthly count when it is 5 or more. */
+/**
+ * First-party, cookieless view count. Nothing is stored in the browser (no cookie, no localStorage).
+ * The server dedupes with a salted daily hash and stores no IPs. Independent of the analytics consent toggle.
+ */
 export function ProfileViews({ slug }: { slug: string }) {
   const [count, setCount] = useState<number | null>(null);
   useEffect(() => {
@@ -21,9 +15,8 @@ export function ProfileViews({ slug }: { slug: string }) {
     if (!supabase) return;
     let cancelled = false;
     (async () => {
-      const vid = visitorId();
-      if (vid && !BOT_UA.test(navigator.userAgent) && !navigator.webdriver) {
-        await supabase.rpc('record_profile_view', { p_slug: slug, p_visitor: vid }).then(() => undefined, () => undefined);
+      if (!BOT_UA.test(navigator.userAgent) && !navigator.webdriver) {
+        await supabase.rpc('record_profile_view', { p_slug: slug }).then(() => undefined, () => undefined);
       }
       const { data } = await supabase.rpc('profile_views_this_month', { p_slug: slug }).then((r) => r, () => ({ data: null }));
       if (!cancelled && typeof data === 'number' && data >= 5) setCount(data);

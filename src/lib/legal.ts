@@ -72,6 +72,7 @@ export const DOCS: Record<string, LegalDoc> = {
           'If you apply as an attorney, we collect your name, email, phone, whether you want your phone on the public listing, state of licensure, bar number, admission date, practice areas, cities served, bio, languages, contact method, optional photo, your professional-liability insurance choice, and the time you agreed to the Attorney Terms.',
           'If you message an attorney from a listing, we collect your name, email, optional phone, and the message.',
           'We store a cookie preference on your device. If you opt in, a local analytics note stays in that browser. We do not load third-party advertising trackers.',
+          'Attorney profile pages show a first-party, cookieless view count. When a profile loads, our server records one view per visitor per profile per day using a one-way hash of the IP address and browser type with a salt that changes daily and is then discarded. We never store the IP address, and nothing is saved in your browser. Only the daily totals per profile are kept, to show how many people viewed it.',
         ],
       },
       {
