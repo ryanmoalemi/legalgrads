@@ -26,6 +26,7 @@ export interface ApplicationInput {
   citiesServed: string;
   bio: string;
   freeConsultation: boolean;
+  inPerson: boolean;
   languages: string;
   contactLink: string;
   photoName: string;
@@ -46,6 +47,7 @@ export const EMPTY_APPLICATION: ApplicationInput = {
   citiesServed: '',
   bio: '',
   freeConsultation: false,
+  inPerson: false,
   languages: '',
   contactLink: '',
   photoName: '',
@@ -210,6 +212,7 @@ export function applicationBody(input: ApplicationInput, reference: string): str
     `Cities served: ${input.citiesServed.trim()}`,
     `Languages: ${input.languages.trim()}`,
     `Free consultation: ${input.freeConsultation ? 'yes' : 'no'}`,
+    `Offers in-person meetings / will visit your business: ${input.inPerson ? 'yes' : 'no'}`,
     `Website: ${input.contactLink.trim() || 'none'}`,
     `Insurance: ${insuranceLabel(input.insurance)}`,
     'Agreed to Attorney Terms: yes',
@@ -294,8 +297,9 @@ export async function submitApplication(input: ApplicationInput, photo: File | n
       reference,
       attorney_terms_accepted_at: new Date().toISOString(),
     };
-    const full = { ...row, licensed_state: input.licensedState };
+    const full = { ...row, licensed_state: input.licensedState, in_person: input.inPerson };
     let inserted = await supabase.from('attorney_applications').insert(full);
+    if (inserted.error && /in_person/.test(inserted.error.message)) inserted = await supabase.from('attorney_applications').insert({ ...row, licensed_state: input.licensedState });
     // Until the nullable-rate migration runs, the rate columns are still required. Store a private
     // placeholder that is never shown (listings no longer display rates).
     if (inserted.error && /rate_/i.test(inserted.error.message ?? '')) {

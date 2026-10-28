@@ -42,6 +42,7 @@ export function AttorneyProfilePage({ p }: { p: AttorneyProfile }) {
                 <span className="chip">🎓 Admitted {p.admittedYear}</span>
                 <span className="chip">🗣 {c.languages.join(', ')}</span>
                 {c.remote && <span className="chip">💻 {c.remote}</span>}
+                {c.inPerson && <span className="chip">🤝 In-person · visits your business</span>}
               </>) : (<>
                 <span className="chip solid">Unclaimed profile</span>
                 <span className="chip">📍 {p.cityName}, {p.stateCode}</span>

@@ -25,6 +25,7 @@ export type AttorneyProfile = {
     languages: string[];
     remote?: string;
     meets: string;
+    inPerson?: boolean; // Offers in-person meetings / will visit your business
     services: ProfileService[];
     practiceAreas: string[];
     knowsAbout: string[];
@@ -53,6 +54,7 @@ export const PROFILES: AttorneyProfile[] = [
       languages: ['English', 'Spanish'],
       remote: 'Remote across California',
       meets: 'Video, phone, in person',
+      inPerson: true,
       services: [
         { icon: '📝', title: 'Contract drafting', detail: 'Vendor, client & service agreements' },
         { icon: '🔍', title: 'Contract review', detail: 'Plain-English redlines before you sign' },
