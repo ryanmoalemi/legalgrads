@@ -35,6 +35,7 @@ const caveat = localFont({
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://legalgrads.com'),
+  verification: { google: 'VuaqBDBpMxICyqFhvuwk_BlT9Rvv19IfOCFuCcNZhGk' },
   title: { default: 'Legalgrads | Fresh out of law school. Ready to work for you.', template: '%s | Legalgrads' },
   description: 'A directory of newly licensed U.S. attorneys. Listings go live only after a manual check with the attorney’s state bar.',
   icons: {
