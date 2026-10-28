@@ -1,0 +1,56 @@
+.lgp *{box-sizing:border-box;margin:0;padding:0}
+.lgp{background:#FFF8F1;color:#0B0B3B;line-height:1.5}
+.lgp a{color:#7A00FF}
+.lgp .wrap{max-width:1100px;margin:0 auto;padding:20px 24px 110px}
+.lgp .crumbs{font-size:13px;color:#6b6b8f;margin-bottom:14px}
+.lgp .crumbs a{color:#6b6b8f;text-decoration:none}
+.lgp .hero{position:relative;border-radius:28px;padding:30px;background:linear-gradient(120deg,#7A00FF 0%,#FF008A 60%,#FF6B22 100%);color:#fff;display:flex;gap:26px;align-items:center;overflow:hidden}
+.lgp .hero:after{content:"";position:absolute;right:-40px;top:-40px;width:220px;height:220px;border-radius:50%;background:rgba(255,255,255,.12)}
+.lgp .avatar{flex:none;width:150px;height:150px;border-radius:50%;border:5px solid #fff;object-fit:cover;background:#F3E9FF;color:#7A00FF;display:flex;align-items:center;justify-content:center;font-size:52px;font-weight:900;box-shadow:0 10px 30px rgba(0,0,0,.2);position:relative}
+.lgp .tassel{position:absolute;right:-6px;top:-10px;font-size:40px;transform:rotate(15deg)}
+.lgp .hero h1{font-size:40px;font-weight:900;line-height:1.1}
+.lgp .hero .head{font-size:18px;font-weight:600;opacity:.95;margin:4px 0 12px}
+.lgp .chips{display:flex;flex-wrap:wrap;gap:8px}
+.lgp .chip{background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.4);padding:5px 12px;border-radius:999px;font-size:13px;font-weight:700}
+.lgp .chip.solid{background:#fff;color:#7A00FF}
+.lgp .chip.mint{background:#00C5A2;border-color:#00C5A2;color:#fff}
+.lgp .chip.gold{background:#FFD23F;color:#0B0B3B;border-color:#FFD23F}
+.lgp .grid{display:grid;grid-template-columns:1fr 340px;gap:22px;margin-top:22px}
+.lgp .card{background:#fff;border-radius:22px;padding:24px;box-shadow:0 4px 18px rgba(122,0,255,.07);margin-bottom:22px}
+.lgp .card h2{font-size:20px;font-weight:900;margin-bottom:12px}
+.lgp .lic{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.lgp .lic div{background:#F4EEFF;border-radius:14px;padding:12px}
+.lgp .lic small{display:block;font-size:12px;color:#6b6b8f;font-weight:700;text-transform:uppercase;letter-spacing:.5px}
+.lgp .lic b{font-size:16px}
+.lgp .ok{color:#00A889}
+.lgp .verified{font-size:13px;color:#6b6b8f;margin-top:12px}
+.lgp .svc{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.lgp .svc div{border:2px solid #F3E9FF;border-radius:16px;padding:14px}
+.lgp .svc b{display:block}
+.lgp .svc span{font-size:14px;color:#4a4a70}
+.lgp .tags span{display:inline-block;background:#FFF1F8;color:#C2006A;font-weight:700;font-size:13px;border-radius:999px;padding:5px 12px;margin:0 6px 6px 0}
+.lgp .note{font-size:13px;background:#FFF8F1;border-radius:12px;padding:10px 12px;margin-top:12px}
+.lgp .cta{background:#0B0B3B;color:#fff}
+.lgp .btn{display:block;text-align:center;font-weight:800;border-radius:999px;padding:14px;text-decoration:none;margin-top:12px}
+.lgp .btn.pink{background:#FF008A;color:#fff}
+.lgp .btn.ghost{border:2px solid #fff;color:#fff}
+.lgp .btn.out{border:2px solid #7A00FF;color:#7A00FF}
+.lgp .claim{background:linear-gradient(135deg,#FFD23F,#FF6B22);color:#0B0B3B}
+.lgp .claim h2{font-size:22px}
+.lgp .claim ul{margin:10px 0 0 18px;font-size:14px}
+.lgp .facts li{list-style:none;display:flex;justify-content:space-between;border-bottom:1px solid #F3E9FF;padding:9px 0;font-size:14px;gap:10px}
+.lgp .facts li span:first-child{color:#6b6b8f}
+.lgp .facts li span:last-child{font-weight:700;text-align:right}
+.lgp .disc{font-size:12.5px;color:#55557a;background:#fff;border-radius:16px;padding:16px;border:1px dashed #d9c7ff}
+.lgp .small{font-size:13px}
+.lgp .sticky{display:none}
+@media(max-width:800px){
+.lgp .hero{flex-direction:column;text-align:center;padding:26px 18px}
+.lgp .chips{justify-content:center}
+.lgp .hero h1{font-size:30px}
+.lgp .avatar{width:120px;height:120px;font-size:42px}
+.lgp .grid{grid-template-columns:1fr}
+.lgp .svc,.lgp .lic{grid-template-columns:1fr}
+.lgp .sticky{display:flex;gap:10px;position:fixed;left:0;right:0;bottom:0;background:#fff;padding:12px 16px;box-shadow:0 -6px 20px rgba(0,0,0,.1);z-index:9}
+.lgp .sticky a{flex:1;margin:0}
+}
