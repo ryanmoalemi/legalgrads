@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { type AttorneyProfile, calbarUrl, firstName, initials, profileJsonLd } from '@/lib/profiles';
 import '@/app/attorneys/profile-template.css';
+import { ProfileViews } from './ProfileViews';
 
 const Disclaimer = () => (
   <div className="disc"><b>About this listing.</b> LegalGrads is a free directory of licensed attorneys. We are not a law firm and not a lawyer referral service. We don&apos;t recommend, rank, match or endorse any attorney, and we don&apos;t receive any part of an attorney&apos;s fees. You contact attorneys directly. Information on unclaimed profiles comes from public State Bar records; always confirm license status on the official State Bar website. Listing is not a guarantee of quality. Attorney advertising.</div>
@@ -48,6 +49,7 @@ export function AttorneyProfilePage({ p }: { p: AttorneyProfile }) {
                 <span className="chip">● {p.status} license</span>
               </>)}
             </div>
+            <ProfileViews slug={p.slug} />
           </div>
         </section>
         {c ? (
