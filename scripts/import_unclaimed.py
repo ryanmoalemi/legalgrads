@@ -4,7 +4,7 @@
 Usage: python3 scripts/import_unclaimed.py [path/to/ca-admits-2024.csv]
 Writes src/data/unclaimed-ca.json. Keyed (deduped) on bar_number, so re-running
 upserts: existing attorneys keep the same slug/URL, new rows are added, nothing duplicates.
-Only admit dates in 2024 or later are kept. Languages, photos and ratings are never imported.
+Only Active licenses with admit dates in 2024 or later are kept; non-Active entries are dropped. Languages, photos and ratings are never imported.
 """
 import csv, json, re, sys, unicodedata
 from datetime import datetime
@@ -28,6 +28,7 @@ def titlecase(s):
 
 existing = {p['barNumber']: p for p in json.loads(OUT.read_text())} if OUT.exists() else {}
 rows = {}
+inactive = set()  # bars seen non-Active (or otherwise excluded) in the current CSV
 for r in csv.DictReader(SRC.open(newline='', encoding='utf-8')):
     bar = clean(r.get('bar_number'))
     name = clean(r.get('name'))
@@ -35,7 +36,9 @@ for r in csv.DictReader(SRC.open(newline='', encoding='utf-8')):
         d = datetime.strptime(clean(r.get('admit_date')), '%m/%d/%Y')
     except ValueError:
         continue
-    if not bar.isdigit() or not name or d.year < 2024:
+    if not bar.isdigit() or not name or d.year < 2024 or clean(r.get('status')) != 'Active':
+        rows.pop(bar, None)
+        inactive.add(bar)
         continue
     city = titlecase(clean(r.get('city')))
     school = clean(r.get('law_school')).split(';')[0].strip()
@@ -60,7 +63,8 @@ for r in csv.DictReader(SRC.open(newline='', encoding='utf-8')):
     }
 # Keep previously imported attorneys even if a later CSV is partial.
 for bar, p in existing.items():
-    rows.setdefault(bar, p)
+    if p.get('status') == 'Active' and bar not in inactive:
+        rows.setdefault(bar, p)
 out = sorted(rows.values(), key=lambda p: int(p['barNumber']))
 OUT.write_text(json.dumps(out, indent=1, ensure_ascii=False) + '\n')
 print(f'{len(out)} unclaimed profiles ({len(out) - len(existing)} new) -> {OUT.relative_to(ROOT)}')
