@@ -119,23 +119,6 @@
   "officeZip": "91941"
  },
  {
-  "slug": "kakoli-mitra-354219",
-  "state": "ca",
-  "stateCode": "CA",
-  "stateName": "California",
-  "city": "san-francisco",
-  "cityName": "San Francisco",
-  "name": "Kakoli Mitra",
-  "barNumber": "354219",
-  "admitted": "Jan 2024",
-  "admittedYear": "2024",
-  "status": "Inactive",
-  "discipline": "See State Bar profile",
-  "lawSchool": "George Washington Univ LS",
-  "lastVerified": "Oct 27, 2026",
-  "officeZip": "94112"
- },
- {
   "slug": "javid-laknahour-354221",
   "state": "ca",
   "stateCode": "CA",
@@ -901,23 +884,6 @@
   "officeZip": "90071"
  },
  {
-  "slug": "annise-katherine-maguire-354292",
-  "state": "ca",
-  "stateCode": "CA",
-  "stateName": "California",
-  "city": "washington",
-  "cityName": "Washington",
-  "name": "Annise Katherine Maguire",
-  "barNumber": "354292",
-  "admitted": "Feb 2024",
-  "admittedYear": "2024",
-  "status": "Inactive",
-  "discipline": "See State Bar profile",
-  "lawSchool": "Univ of Michigan Law Sch",
-  "lastVerified": "Oct 27, 2026",
-  "officeZip": "20006"
- },
- {
   "slug": "samantha-ann-johnson-354293",
   "state": "ca",
   "stateCode": "CA",
@@ -1173,23 +1139,6 @@
   "officeZip": "93003"
  },
  {
-  "slug": "isabel-heather-macquarrie-354315",
-  "state": "ca",
-  "stateCode": "CA",
-  "stateName": "California",
-  "city": "forest-hills",
-  "cityName": "Forest Hills",
-  "name": "Isabel Heather Macquarrie",
-  "barNumber": "354315",
-  "admitted": "Feb 2024",
-  "admittedYear": "2024",
-  "status": "Not Eligible to Practice Law",
-  "discipline": "See State Bar profile",
-  "lawSchool": "Harvard Univ Law School",
-  "lastVerified": "Oct 27, 2026",
-  "officeZip": "11375"
- },
- {
   "slug": "desiree-monique-benet-saran-354316",
   "state": "ca",
   "stateCode": "CA",
@@ -1341,23 +1290,6 @@
   "lawSchool": "U of San Francisco SOL",
   "lastVerified": "Oct 27, 2026",
   "officeZip": "94111"
- },
- {
-  "slug": "stephen-andrews-354327",
-  "state": "ca",
-  "stateCode": "CA",
-  "stateName": "California",
-  "city": "los-angeles",
-  "cityName": "Los Angeles",
-  "name": "Stephen Andrews",
-  "barNumber": "354327",
-  "admitted": "Feb 2024",
-  "admittedYear": "2024",
-  "status": "Not Eligible to Practice Law",
-  "discipline": "See State Bar profile",
-  "lawSchool": "Yale Law School",
-  "lastVerified": "Oct 27, 2026",
-  "officeZip": "90014"
  },
  {
   "slug": "pouch-liang-354328",
@@ -1681,23 +1613,6 @@
   "lawSchool": "New York Law School",
   "lastVerified": "Oct 27, 2026",
   "officeZip": "90212"
- },
- {
-  "slug": "bryant-scott-forster-354352",
-  "state": "ca",
-  "stateCode": "CA",
-  "stateName": "California",
-  "city": "los-angeles",
-  "cityName": "Los Angeles",
-  "name": "Bryant Scott Forster",
-  "barNumber": "354352",
-  "admitted": "Feb 2024",
-  "admittedYear": "2024",
-  "status": "Not Eligible to Practice Law",
-  "discipline": "See State Bar profile",
-  "lawSchool": "UC College of the Law, San Francisco",
-  "lastVerified": "Oct 27, 2026",
-  "officeZip": "90025"
  },
  {
   "slug": "james-travis-burroughs-354354",
@@ -2414,23 +2329,6 @@
   "officeZip": "91405"
  },
  {
-  "slug": "henrik-born-354409",
-  "state": "ca",
-  "stateCode": "CA",
-  "stateName": "California",
-  "city": "new-york",
-  "cityName": "New York",
-  "name": "Henrik Born",
-  "barNumber": "354409",
-  "admitted": "Feb 2024",
-  "admittedYear": "2024",
-  "status": "Inactive",
-  "discipline": "See State Bar profile",
-  "lawSchool": "New York Univ SOL",
-  "lastVerified": "Oct 27, 2026",
-  "officeZip": "10026"
- },
- {
   "slug": "yaniv-yasmeh-354410",
   "state": "ca",
   "stateCode": "CA",
@@ -2616,23 +2514,6 @@
   "lawSchool": "Univ of California, Irvine SOL",
   "lastVerified": "Oct 27, 2026",
   "officeZip": "94304"
- },
- {
-  "slug": "ja-young-lee-354426",
-  "state": "ca",
-  "stateCode": "CA",
-  "stateName": "California",
-  "city": "california",
-  "cityName": "California",
-  "name": "Ja-Young Lee",
-  "barNumber": "354426",
-  "admitted": "Feb 2024",
-  "admittedYear": "2024",
-  "status": "Inactive",
-  "discipline": "See State Bar profile",
-  "lawSchool": "Foreign Law School",
-  "lastVerified": "Oct 27, 2026",
-  "officeZip": ""
  },
  {
   "slug": "yuri-terao-354427",
@@ -3126,23 +3007,6 @@
   "lawSchool": "California Western SOL",
   "lastVerified": "Oct 28, 2026",
   "officeZip": "92220"
- },
- {
-  "slug": "carolyn-shanice-crump-354462",
-  "state": "ca",
-  "stateCode": "CA",
-  "stateName": "California",
-  "city": "los-angeles",
-  "cityName": "Los Angeles",
-  "name": "Carolyn Shanice Crump",
-  "barNumber": "354462",
-  "admitted": "Mar 2024",
-  "admittedYear": "2024",
-  "status": "Not Eligible to Practice Law",
-  "discipline": "See State Bar profile",
-  "lawSchool": "Howard Univ SOL",
-  "lastVerified": "Oct 28, 2026",
-  "officeZip": "90047"
  },
  {
   "slug": "alexander-clamon-354463",
@@ -3689,23 +3553,6 @@
   "officeZip": "90034"
  },
  {
-  "slug": "hwa-yon-lee-354499",
-  "state": "ca",
-  "stateCode": "CA",
-  "stateName": "California",
-  "city": "los-gatos",
-  "cityName": "Los Gatos",
-  "name": "Hwa yon Lee",
-  "barNumber": "354499",
-  "admitted": "Feb 2024",
-  "admittedYear": "2024",
-  "status": "Inactive",
-  "discipline": "See State Bar profile",
-  "lawSchool": "Stanford Univ Law School",
-  "lastVerified": "Oct 28, 2026",
-  "officeZip": "95030"
- },
- {
   "slug": "anna-christine-watterson-354500",
   "state": "ca",
   "stateCode": "CA",
@@ -4197,23 +4044,6 @@
   "lawSchool": "Not listed",
   "lastVerified": "Oct 28, 2026",
   "officeZip": "95816"
- },
- {
-  "slug": "julio-cesar-aguilar-354530",
-  "state": "ca",
-  "stateCode": "CA",
-  "stateName": "California",
-  "city": "miami",
-  "cityName": "Miami",
-  "name": "Julio Cesar Aguilar",
-  "barNumber": "354530",
-  "admitted": "Mar 2024",
-  "admittedYear": "2024",
-  "status": "Inactive",
-  "discipline": "See State Bar profile",
-  "lawSchool": "Univ of Florida COL",
-  "lastVerified": "Oct 28, 2026",
-  "officeZip": "33155"
  },
  {
   "slug": "kenrick-maximillian-shoemaker-354531",
@@ -4964,23 +4794,6 @@
   "officeZip": "92626"
  },
  {
-  "slug": "ashley-ann-donovan-354577",
-  "state": "ca",
-  "stateCode": "CA",
-  "stateName": "California",
-  "city": "anchorage",
-  "cityName": "Anchorage",
-  "name": "Ashley Ann Donovan",
-  "barNumber": "354577",
-  "admitted": "Mar 2024",
-  "admittedYear": "2024",
-  "status": "Inactive",
-  "discipline": "See State Bar profile",
-  "lawSchool": "UC Berkeley SOL",
-  "lastVerified": "Oct 28, 2026",
-  "officeZip": "99501"
- },
- {
   "slug": "jordan-renee-chafetz-354578",
   "state": "ca",
   "stateCode": "CA",
@@ -5149,23 +4962,6 @@
   "lawSchool": "Northwestern Univ SOL",
   "lastVerified": "Oct 28, 2026",
   "officeZip": "60606"
- },
- {
-  "slug": "mathilde-guirado-354590",
-  "state": "ca",
-  "stateCode": "CA",
-  "stateName": "California",
-  "city": "california",
-  "cityName": "California",
-  "name": "Mathilde Guirado",
-  "barNumber": "354590",
-  "admitted": "Jan 2024",
-  "admittedYear": "2024",
-  "status": "Inactive",
-  "discipline": "See State Bar profile",
-  "lawSchool": "UC Hastings COL",
-  "lastVerified": "Oct 28, 2026",
-  "officeZip": ""
  },
  {
   "slug": "beatriz-adriana-luna-354591",
@@ -5489,23 +5285,6 @@
   "lawSchool": "Foreign Law School",
   "lastVerified": "Oct 28, 2026",
   "officeZip": "90230"
- },
- {
-  "slug": "david-christian-rolf-jensen-354610",
-  "state": "ca",
-  "stateCode": "CA",
-  "stateName": "California",
-  "city": "colorado-springs",
-  "cityName": "Colorado Springs",
-  "name": "David Christian Rolf Jensen",
-  "barNumber": "354610",
-  "admitted": "Feb 2024",
-  "admittedYear": "2024",
-  "status": "Inactive",
-  "discipline": "See State Bar profile",
-  "lawSchool": "Univ of Denver COL",
-  "lastVerified": "Oct 28, 2026",
-  "officeZip": "80903"
  },
  {
   "slug": "megan-elizabeth-wilson-354611",
@@ -6035,23 +5814,6 @@
   "officeZip": "94612"
  },
  {
-  "slug": "neilay-b-shah-354644",
-  "state": "ca",
-  "stateCode": "CA",
-  "stateName": "California",
-  "city": "philadelphia",
-  "cityName": "Philadelphia",
-  "name": "Neilay B Shah",
-  "barNumber": "354644",
-  "admitted": "Apr 2024",
-  "admittedYear": "2024",
-  "status": "Not Eligible to Practice Law",
-  "discipline": "See State Bar profile",
-  "lawSchool": "Temple Univ SOL",
-  "lastVerified": "Oct 28, 2026",
-  "officeZip": "19143"
- },
- {
   "slug": "julia-francine-alarcon-354645",
   "state": "ca",
   "stateCode": "CA",
@@ -6256,23 +6018,6 @@
   "officeZip": ""
  },
  {
-  "slug": "brent-webber-354657",
-  "state": "ca",
-  "stateCode": "CA",
-  "stateName": "California",
-  "city": "new-york",
-  "cityName": "New York",
-  "name": "Brent Webber",
-  "barNumber": "354657",
-  "admitted": "Apr 2024",
-  "admittedYear": "2024",
-  "status": "Not Eligible to Practice Law",
-  "discipline": "See State Bar profile",
-  "lawSchool": "Duke Univ SOL",
-  "lastVerified": "Oct 28, 2026",
-  "officeZip": "10005"
- },
- {
   "slug": "jordan-ashley-duncan-smith-354658",
   "state": "ca",
   "stateCode": "CA",
@@ -6460,23 +6205,6 @@
   "officeZip": "90017"
  },
  {
-  "slug": "cade-michael-gibb-weston-354669",
-  "state": "ca",
-  "stateCode": "CA",
-  "stateName": "California",
-  "city": "san-diego",
-  "cityName": "San Diego",
-  "name": "Cade Michael Gibb Weston",
-  "barNumber": "354669",
-  "admitted": "Apr 2024",
-  "admittedYear": "2024",
-  "status": "Not Eligible to Practice Law",
-  "discipline": "See State Bar profile",
-  "lawSchool": "See Registration Card",
-  "lastVerified": "Oct 28, 2026",
-  "officeZip": "92104"
- },
- {
   "slug": "daniel-russer-culhane-354670",
   "state": "ca",
   "stateCode": "CA",
@@ -6526,23 +6254,6 @@
   "lawSchool": "California Southern LS",
   "lastVerified": "Oct 28, 2026",
   "officeZip": "91702"
- },
- {
-  "slug": "ilana-beverly-kornfeld-354673",
-  "state": "ca",
-  "stateCode": "CA",
-  "stateName": "California",
-  "city": "new-york",
-  "cityName": "New York",
-  "name": "Ilana Beverly Kornfeld",
-  "barNumber": "354673",
-  "admitted": "May 2024",
-  "admittedYear": "2024",
-  "status": "Inactive",
-  "discipline": "See State Bar profile",
-  "lawSchool": "Benjamin N Cardozo SOL Yeshiva U",
-  "lastVerified": "Oct 28, 2026",
-  "officeZip": "10128"
  },
  {
   "slug": "nicholas-robert-bourland-354674",
@@ -7565,23 +7276,6 @@
   "officeZip": "44114"
  },
  {
-  "slug": "eleanor-simpson-sowanick-354734",
-  "state": "ca",
-  "stateCode": "CA",
-  "stateName": "California",
-  "city": "california",
-  "cityName": "California",
-  "name": "Eleanor Simpson Sowanick",
-  "barNumber": "354734",
-  "admitted": "May 2024",
-  "admittedYear": "2024",
-  "status": "Inactive",
-  "discipline": "See State Bar profile",
-  "lawSchool": "Univ of Texas SOL",
-  "lastVerified": "Oct 28, 2026",
-  "officeZip": ""
- },
- {
   "slug": "lauren-m-moreno-354735",
   "state": "ca",
   "stateCode": "CA",
@@ -8209,23 +7903,6 @@
   "lawSchool": "UC Hastings COL",
   "lastVerified": "Oct 28, 2026",
   "officeZip": "95670"
- },
- {
-  "slug": "nikole-marie-chumley-354772",
-  "state": "ca",
-  "stateCode": "CA",
-  "stateName": "California",
-  "city": "california",
-  "cityName": "California",
-  "name": "Nikole Marie Chumley",
-  "barNumber": "354772",
-  "admitted": "May 2024",
-  "admittedYear": "2024",
-  "status": "Inactive",
-  "discipline": "See State Bar profile",
-  "lawSchool": "Univ of Nevada Las Vegas, Boyd SOL",
-  "lastVerified": "Oct 28, 2026",
-  "officeZip": ""
  },
  {
   "slug": "suzanna-kay-moran-354773",
@@ -9059,23 +8736,6 @@
   "lawSchool": "Southwestern Univ SOL",
   "lastVerified": "Oct 28, 2026",
   "officeZip": "92660"
- },
- {
-  "slug": "serena-hakim-nazarian-354822",
-  "state": "ca",
-  "stateCode": "CA",
-  "stateName": "California",
-  "city": "los-angeles",
-  "cityName": "Los Angeles",
-  "name": "Serena Hakim Nazarian",
-  "barNumber": "354822",
-  "admitted": "May 2024",
-  "admittedYear": "2024",
-  "status": "Inactive",
-  "discipline": "See State Bar profile",
-  "lawSchool": "UCLA SOL",
-  "lastVerified": "Oct 28, 2026",
-  "officeZip": "90049"
  },
  {
   "slug": "keaton-alexander-choi-354823",
@@ -10776,23 +10436,6 @@
   "lawSchool": "California Western SOL",
   "lastVerified": "Oct 28, 2026",
   "officeZip": "92107"
- },
- {
-  "slug": "melanie-rose-greer-354923",
-  "state": "ca",
-  "stateCode": "CA",
-  "stateName": "California",
-  "city": "california",
-  "cityName": "California",
-  "name": "Melanie Rose Greer",
-  "barNumber": "354923",
-  "admitted": "May 2024",
-  "admittedYear": "2024",
-  "status": "Inactive",
-  "discipline": "See State Bar profile",
-  "lawSchool": "Univ of Mississippi SOL",
-  "lastVerified": "Oct 28, 2026",
-  "officeZip": ""
  },
  {
   "slug": "michael-mihran-marachelian-354924",
@@ -13394,23 +13037,6 @@
   "lawSchool": "Univ of Illinois COL",
   "lastVerified": "Oct 28, 2026",
   "officeZip": "90017"
- },
- {
-  "slug": "kyra-aiyanna-sinclair-355077",
-  "state": "ca",
-  "stateCode": "CA",
-  "stateName": "California",
-  "city": "san-diego",
-  "cityName": "San Diego",
-  "name": "Kyra Aiyanna Sinclair",
-  "barNumber": "355077",
-  "admitted": "May 2024",
-  "admittedYear": "2024",
-  "status": "Inactive",
-  "discipline": "See State Bar profile",
-  "lawSchool": "Tulane Univ Law School",
-  "lastVerified": "Oct 28, 2026",
-  "officeZip": "92101"
  },
  {
   "slug": "athena-speranta-budac-355078",
