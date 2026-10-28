@@ -43,6 +43,20 @@ interface PublicProfile {
   licensed_state?: string | null;
   office_zip?: string | null;
   in_person?: boolean | null;
+  unclaimed_url?: string; // static unclaimed profile (public State Bar record)
+}
+
+type UnclaimedRow = { id: string; n: string; c: string; z: string; a: string; u: string };
+async function loadUnclaimed(): Promise<PublicProfile[]> {
+  try {
+    const res = await fetch('/data/unclaimed-directory.json');
+    if (!res.ok) return [];
+    const data = (await res.json()) as UnclaimedRow[];
+    return data.map((r) => ({
+      id: `ca-${r.id}`, full_name: r.n, practice_areas: [], cities_served: r.c, bio: '', languages: '', contact_link: '',
+      admission_date: r.a, licensed_state: 'CA', office_zip: r.z || null, in_person: null, unclaimed_url: r.u,
+    }));
+  } catch { return []; }
 }
 
 export function DirectoryView() {
@@ -68,23 +82,20 @@ export function DirectoryView() {
 
   useEffect(() => {
     if (demo) { setRows(DEMO_ROWS); return; }
-    if (!supabaseConfigured()) {
-      setRows([]);
-      return;
-    }
-    const supabase = getSupabase();
-    if (!supabase) {
-      setRows([]);
-      return;
-    }
-    const base = 'id, full_name, practice_areas, cities_served, bio, languages, contact_link, admission_date, insured, published_at, created_at';
-    const load = (columns: string) => supabase.from('attorney_profiles').select(columns).eq('published', true);
     void (async () => {
-      let result = await load(`${base}, licensed_state, office_zip, in_person`);
-      if (result.error) result = await load(`${base}, licensed_state`);
-      if (result.error) result = await load(base);
-      if (result.error || !result.data) setRows([]);
-      else setRows(result.data as unknown as PublicProfile[]);
+      const unclaimed = loadUnclaimed();
+      const supabase = supabaseConfigured() ? getSupabase() : null;
+      let claimed: PublicProfile[] = [];
+      if (supabase) {
+        const base = 'id, full_name, practice_areas, cities_served, bio, languages, contact_link, admission_date, insured, published_at, created_at';
+        const load = (columns: string) => supabase.from('attorney_profiles').select(columns).eq('published', true);
+        let result = await load(`${base}, licensed_state, office_zip, in_person`);
+        if (result.error) result = await load(`${base}, licensed_state`);
+        if (result.error) result = await load(base);
+        if (!result.error && result.data) claimed = result.data as unknown as PublicProfile[];
+      }
+      // Claimed (verified) listings first, then unclaimed State Bar records.
+      setRows([...claimed, ...(await unclaimed)]);
     })();
   }, [demo]);
 
@@ -195,9 +206,13 @@ export function DirectoryView() {
               <div className="flex flex-wrap items-start justify-between gap-2">
                 <div>
                   <h2 className="font-display text-2xl font-extrabold">{row.full_name}</h2>
-                  <p className="text-sm text-ink">{row.cities_served}{row.licensed_state ? `, ${row.licensed_state}` : ''} · Admitted {row.admission_date}{dist(row) !== null ? <span data-testid="distance"> · ~{Math.round(dist(row) as number)} mi</span> : null}</p>
+                  <p className="text-sm text-ink">{row.cities_served}{row.licensed_state ? `, ${row.licensed_state}` : ''} · Admitted {row.admission_date.slice(0, 7)}{dist(row) !== null ? <span data-testid="distance"> · ~{Math.round(dist(row) as number)} mi</span> : null}</p>
                 </div>
               </div>
+              {row.unclaimed_url ? (<>
+                <p className="mt-2 inline-flex rounded-full bg-[#F3E9FF] px-3 py-1 text-xs font-bold text-purple">Unclaimed profile · from State Bar records</p>
+                <p className="mt-3"><Link className="font-semibold text-purple" href={row.unclaimed_url}>View {row.full_name}&apos;s profile</Link></p>
+              </>) : (<>
               <div className="mt-2 flex flex-wrap gap-2">
                 <p className="inline-flex rounded-full bg-[#F3E9FF] px-3 py-1 text-xs font-bold text-purple">{joinedLabel(row.published_at || row.created_at)}</p>
                 {row.in_person ? <p className="inline-flex rounded-full bg-[#FFF1F8] px-3 py-1 text-xs font-bold text-[#C2006A]">🤝 In-person</p> : null}
@@ -211,6 +226,7 @@ export function DirectoryView() {
               {PHASE2 ? <Link className="mt-3 inline-flex font-semibold text-purple" href={`/attorneys/profile/?id=${row.id}`}>View profile</Link> : null}
               {publicContactHref(row.contact_link) ? <p className="mt-2 text-sm"><a className="font-semibold text-purple" href={publicContactHref(row.contact_link) ?? undefined}>Website</a></p> : null}
               <MessageAttorneyForm profileId={row.id} />
+              </>)}
             </li>
           ))}
         </ul>
