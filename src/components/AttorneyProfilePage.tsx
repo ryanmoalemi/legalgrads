@@ -12,7 +12,7 @@ function License({ p }: { p: AttorneyProfile }) {
   return (
     <div className="card"><h2>🎓 License (from the State Bar)</h2><div className="lic">
       <div><small>State bar</small><b>{p.stateName}</b></div><div><small>Bar number</small><b><a href={href} target="_blank" rel="nofollow noopener">#{p.barNumber} ↗</a></b></div>
-      <div><small>Admitted</small><b>{p.admitted}</b></div><div><small>Status</small><b className="ok">● {p.status}</b></div>
+      <div><small>Admitted</small><b>{p.admitted}</b></div><div><small>Status</small><b className={p.status === 'Active' ? 'ok' : undefined}>● {p.status}</b></div>
       <div><small>Public discipline</small><b>{p.discipline}</b></div><div><small>Law school</small><b>{p.lawSchool}</b></div></div>
       <p className="verified">✓ Last verified from State Bar of {p.stateName} records on {p.lastVerified}. <a href={href} target="_blank" rel="nofollow noopener">Check the official profile</a></p></div>
   );
