@@ -67,10 +67,10 @@ test('home email pill fits and focus ring follows the pill on small phones', asy
   }
 });
 
-test('directory explains that attorneys are still joining', async ({ page }) => {
+test('directory lists unclaimed State Bar profiles and keeps the waitlist', async ({ page }) => {
   await boot(page, '/find-lawyer/?specialty=contracts');
   await expect(page.getByTestId('filter-state')).toBeVisible();
-  await expect(page.getByTestId('directory-empty')).toContainText('Attorneys joining now — launching soon');
+  await expect(page.getByText('No published attorneys match those filters yet.')).toBeVisible();
   await expect(page.getByLabel('Practice area')).toHaveValue('contracts');
   await page.getByTestId('directory-email').fill('casey@example.com');
   await page.getByTestId('directory-waitlist').click();

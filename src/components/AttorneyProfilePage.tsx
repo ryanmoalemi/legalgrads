@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { type AttorneyProfile, calbarUrl, firstName, initials, profileJsonLd } from '@/lib/profiles';
+import { type AttorneyProfile, calbarUrl, cityPath, firstName, initials, profileJsonLd } from '@/lib/profiles';
 import '@/app/attorneys/profile-template.css';
 import { ProfileViews } from './ProfileViews';
 
@@ -25,7 +25,7 @@ export function AttorneyProfilePage({ p }: { p: AttorneyProfile }) {
     <div className="lgp">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(profileJsonLd(p)) }} />
       <main className="wrap">
-        <nav className="crumbs" aria-label="Breadcrumb"><Link href="/">Home</Link> › <Link href="/find-lawyer/">{p.stateName}</Link> › <Link href="/find-lawyer/">{p.cityName}</Link> › <Link href="/specialties/">Business &amp; contracts</Link> › {p.name}</nav>
+        <nav className="crumbs" aria-label="Breadcrumb"><Link href="/">Home</Link> › <Link href={`/attorneys/${p.state}/`}>{p.stateName}</Link> › <Link href={cityPath(p.state, p.city)}>{p.cityName}</Link> › {c ? <><Link href="/specialties/">Business &amp; contracts</Link> › </> : null}{p.name}</nav>
         <section className="hero">
           {c ? (
             <div style={{ position: 'relative' }}><img className="avatar" src={c.photo} alt={p.name} /><span className="tassel">🎓</span></div>
@@ -83,7 +83,7 @@ export function AttorneyProfilePage({ p }: { p: AttorneyProfile }) {
             <div className="card claim"><h2>Are you this attorney?<br />Claim your free profile 🎉</h2><ul><li>Add your photo, bio &amp; services</li><li>Get a verified bar badge</li><li>Become a Founding Member: always free</li></ul>
               <Link className="btn pink" href="/join/">Claim my free profile</Link>
               <p className="small" style={{ marginTop: 8 }}>We confirm it&apos;s you with a code mailed to your State Bar address.</p></div>
-            <div className="card"><h2>Need a lawyer for your business?</h2><p className="small">Browse newly licensed attorneys who have set up their profiles and contact them directly.</p><Link className="btn out" href="/find-lawyer/">Browse the directory</Link></div>
+            <div className="card"><h2>Need a lawyer for your business?</h2><p className="small">Browse newly licensed attorneys who have set up their profiles and contact them directly.</p><Link className="btn out" href="/find-lawyer/">Browse the directory</Link><p className="small" style={{ marginTop: 10 }}><Link href={cityPath(p.state, p.city)}>More attorneys in {p.cityName}</Link></p></div>
           </aside></div>
         )}
         <div className="sticky">
