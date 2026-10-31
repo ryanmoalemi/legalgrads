@@ -7,54 +7,228 @@
       "abbr": "CA",
       "licensingBody": "State Bar of California",
       "lastVerified": "2026-10-31",
-      "upfront": { "low": 1199, "high": 1498, "label": "Moral character + first license fee" },
+      "upfront": {
+        "low": 900,
+        "high": 1498,
+        "label": "Moral character + first license fee ($0, $299 or $598)"
+      },
       "ube": false,
       "ubeShort": "No",
-      "firstYearCle": { "required": true, "hours": 10, "short": "10 hrs, year 1" },
+      "firstYearCle": {
+        "required": true,
+        "hours": 10,
+        "short": "10 hrs, year 1"
+      },
       "costs": [
-        { "label": "Moral character application", "amount": 900, "note": "General applicant. Often filed before the exam." },
-        { "label": "First license fee, admitted Jan 1 to May 31", "amount": 598, "note": "Due 45 days from invoice." },
-        { "label": "First license fee, admitted Jun 1 to Nov 30", "amount": 299, "note": "Half fee. Due 45 days from invoice." },
-        { "label": "First license fee, admitted in December", "amount": 0, "note": "Waived for that year. Full fee next year." },
-        { "label": "Annual active fee, 2026", "amount": 598, "note": "Due March 30 each year." }
+        {
+          "label": "Moral character application",
+          "amount": 900,
+          "note": "General applicant. Often filed before the exam."
+        },
+        {
+          "label": "First license fee, admitted Jan 1 to May 31",
+          "amount": 598,
+          "note": "Rule 2.12(A). Due 45 days from invoice."
+        },
+        {
+          "label": "First license fee, admitted Jun 1 to Nov 30",
+          "amount": 299,
+          "note": "Rule 2.12(B). Half fee. Due 45 days from invoice."
+        },
+        {
+          "label": "First license fee, admitted in December",
+          "amount": 0,
+          "note": "Rule 2.12(C). Schedule lists the December fee as None. Full fee next year."
+        },
+        {
+          "label": "Annual active fee, 2026",
+          "amount": 598,
+          "note": "Due March 30 each year."
+        },
+        {
+          "label": "Low-income fee scaling (25% off)",
+          "amount": 460.25,
+          "note": "Rule 2.15(B). Individual income under $60,478.35. New licensees admitted after May 31 do not qualify in their first year."
+        },
+        {
+          "label": "Low-income waiver (50% off)",
+          "amount": 323,
+          "note": "Rule 2.16(C). Household income $20,000 or less. Request by the fee deadline."
+        }
       ],
       "timeline": [
-        { "big": "86", "label": "MPRE passing score" },
-        { "big": "6 to 8 mo", "label": "Typical moral character review" },
-        { "big": "45 days", "label": "To pay first license fee" },
-        { "big": "Mar 30", "label": "Annual renewal deadline" }
+        {
+          "big": "1390",
+          "label": "Minimum CA bar score (out of 2000)"
+        },
+        {
+          "big": "86",
+          "label": "MPRE passing score"
+        },
+        {
+          "big": "5 yrs",
+          "label": "Bar score validity (Rule 4.17)"
+        },
+        {
+          "big": "45 days",
+          "label": "To pay first license fee"
+        },
+        {
+          "big": "6 to 8 mo",
+          "label": "Typical moral character review"
+        },
+        {
+          "big": "Mar 30",
+          "label": "Annual renewal deadline"
+        }
       ],
       "cle": {
         "headline": "10 hours",
         "sub": "New Attorney Training, 9 online courses",
         "deadline": "Last day of the month of your 1-year anniversary",
         "breakdown": [
-          { "label": "Legal ethics", "hours": 4 },
-          { "label": "Basic skills", "hours": 3 },
-          { "label": "Competence", "hours": 1.5 },
-          { "label": "Elimination of bias", "hours": 1.5 }
+          {
+            "label": "Legal ethics",
+            "hours": 4
+          },
+          {
+            "label": "Basic skills",
+            "hours": 3
+          },
+          {
+            "label": "Competence",
+            "hours": 1.5
+          },
+          {
+            "label": "Elimination of bias",
+            "hours": 1.5
+          }
         ],
-        "notes": ["Only the State Bar's own courses count.", "Hours can also count toward your first MCLE period.", "Miss it and you can be enrolled inactive."]
+        "notes": [
+          "Only the State Bar's own courses count.",
+          "Hours can also count toward your first MCLE period.",
+          "Miss it and you can be enrolled inactive."
+        ]
       },
       "portability": {
         "headline": "Not a UBE state",
-        "points": ["UBE and MBE scores do not transfer in.", "You take California's own bar exam.", "A California score does not transfer out as a UBE score."]
+        "points": [
+          "UBE and MBE scores do not transfer in.",
+          "You take California's own bar exam.",
+          "A California score does not transfer out as a UBE score."
+        ]
       },
       "faq": [
-        { "q": "How much does it cost to get licensed in California after the bar?", "a": "Plan on $1,199 to $1,498: the $900 general applicant moral character fee plus a first license fee of $299 or $598, depending on your admission date. Admission in December waives that year's fee." },
-        { "q": "Does California have a first-year CLE requirement?", "a": "Yes. New attorneys must finish the State Bar's 10-hour New Attorney Training by the last day of the month of their one-year anniversary." },
-        { "q": "Can I transfer a UBE score to California?", "a": "No. California does not accept transferred UBE or MBE scores." },
-        { "q": "What MPRE score does California require?", "a": "86." }
+        {
+          "q": "How much does it cost to get licensed in California after the bar?",
+          "a": "Plan on $900 to $1,498: the $900 general applicant moral character fee plus a first license fee of $0, $299, or $598, depending on your admission month (Rule 2.12)."
+        },
+        {
+          "q": "Is it cheaper to get sworn in to the California bar in December?",
+          "a": "Yes. Under Rule 2.12, admission between June 1 and November 30 means a $299 half-year fee. Admission in December carries no first license fee for that year. Either way the full $598 annual fee is due March 30."
+        },
+        {
+          "q": "Can a notary swear me in to the California bar?",
+          "a": "Yes. A notary public can administer the attorney's oath, but California notaries can only do it in person, not virtually. Print your DocuSign form so the notary can sign and seal it."
+        },
+        {
+          "q": "How long is a passing California bar score valid?",
+          "a": "Five years from the last day of the exam you passed (Rule 4.17). You must take the oath and register within that window."
+        },
+        {
+          "q": "Does California have a first-year CLE requirement?",
+          "a": "Yes. New attorneys must finish the State Bar's 10-hour New Attorney Training by the last day of the month of their one-year anniversary."
+        },
+        {
+          "q": "Can I transfer a UBE score to California?",
+          "a": "No. California does not accept transferred UBE or MBE scores."
+        }
       ],
       "sources": [
-        { "label": "Schedule of Charges and Deadlines (fees)", "url": "https://www.calbar.ca.gov/sites/default/files/2026-06/Rules_Appendix_A_Sched_Chgs-deadlines.pdf" },
-        { "label": "Rule 2.12, new licensee fees", "url": "https://www.calbar.ca.gov/legal-professionals/rules/rules-state-bar/title-2-rights-and-responsibilities-licensees/division-2-annual-license-fees-and-penalties" },
-        { "label": "Moral character", "url": "https://www.calbar.ca.gov/admissions/moral-character" },
-        { "label": "New Attorney Training Program", "url": "https://www.calbar.ca.gov/legal-professionals/maintaining-compliance/mcle/new-attorney-training-program" },
-        { "label": "New Attorney Training FAQ (hour breakdown)", "url": "https://info.calbar.ca.gov/knowledge/en/your-new-attorney-training-requirement" },
-        { "label": "MPRE in California", "url": "https://www.calbar.ca.gov/admissions/examinations/multistate-professional-responsibility-examination" },
-        { "label": "NCBE: California (UBE status)", "url": "https://www.ncbex.org/jurisdictions/CA" }
-      ]
+        {
+          "label": "Schedule of Charges and Deadlines (fees)",
+          "url": "https://www.calbar.ca.gov/sites/default/files/2026-06/Rules_Appendix_A_Sched_Chgs-deadlines.pdf"
+        },
+        {
+          "label": "Rule 2.12, new licensee fees",
+          "url": "https://www.calbar.ca.gov/legal-professionals/rules/rules-state-bar/title-2-rights-and-responsibilities-licensees/division-2-annual-license-fees-and-penalties"
+        },
+        {
+          "label": "Moral character",
+          "url": "https://www.calbar.ca.gov/admissions/moral-character"
+        },
+        {
+          "label": "New Attorney Training Program",
+          "url": "https://www.calbar.ca.gov/legal-professionals/maintaining-compliance/mcle/new-attorney-training-program"
+        },
+        {
+          "label": "New Attorney Training FAQ (hour breakdown)",
+          "url": "https://info.calbar.ca.gov/knowledge/en/your-new-attorney-training-requirement"
+        },
+        {
+          "label": "MPRE in California",
+          "url": "https://www.calbar.ca.gov/admissions/examinations/multistate-professional-responsibility-examination"
+        },
+        {
+          "label": "NCBE: California (UBE status)",
+          "url": "https://www.ncbex.org/jurisdictions/CA"
+        },
+        {
+          "label": "Rule 2.15 and 2.16, fee scaling and waivers",
+          "url": "https://www.calbar.ca.gov/legal-professionals/rules/rules-state-bar/title-2-rights-and-responsibilities-licensees/division-2-annual-license-fees-and-penalties"
+        },
+        {
+          "label": "Bar exam grading (1390 score)",
+          "url": "https://www.calbar.ca.gov/admissions/examinations/california-bar-examination/california-bar-exam-grading"
+        },
+        {
+          "label": "Rule 4.17, five-year score limit",
+          "url": "https://www.calbar.ca.gov/legal-professionals/rules/rules-state-bar/title-4-admissions-and-educational-standards"
+        },
+        {
+          "label": "Attorney's oath, authorized officials",
+          "url": "https://www.calbar.ca.gov/admissions/examinations/california-bar-examination/attorneys-oath"
+        },
+        {
+          "label": "Virtual oath packet FAQ",
+          "url": "https://info.calbar.ca.gov/knowledge/en/frequently-asked-questions"
+        }
+      ],
+      "oath": {
+        "who": [
+          "A judge or justice of any court of record",
+          "The clerk of any court of record",
+          "A court commissioner",
+          "A notary public (in person only, never virtual)",
+          "A shorthand court reporter",
+          "Judges of the State Bar Court and administrative law judges"
+        ],
+        "steps": [
+          {
+            "t": "Wait for the Supreme Court order",
+            "d": "You cannot be sworn in until your name is on the order and the DocuSign oath form arrives."
+          },
+          {
+            "t": "Pick who swears you in",
+            "d": "A law school or bar ceremony, or one of the officials listed here."
+          },
+          {
+            "t": "Notary? Print it",
+            "d": "Fill in registration online, then Print & Sign. Notaries need paper and must place their seal."
+          },
+          {
+            "t": "Sign, date, upload",
+            "d": "You and the officer sign and date it the day of the oath. That date is your admission date."
+          }
+        ],
+        "faqUrl": "https://info.calbar.ca.gov/knowledge/en/frequently-asked-questions",
+        "oathUrl": "https://www.calbar.ca.gov/admissions/examinations/california-bar-examination/attorneys-oath"
+      },
+      "page": true,
+      "feeRelief": true,
+      "feeReliefShort": "Scaling 25%, waiver 50%",
+      "cleTax": 10,
+      "upfrontNote": "Moral character + first license fee ($0, $299 or $598)"
     },
     {
       "slug": "new-york",
@@ -62,48 +236,385 @@
       "abbr": "NY",
       "licensingBody": "NY State Board of Law Examiners and Appellate Division",
       "lastVerified": "2026-10-31",
-      "upfront": { "low": 375, "high": 375, "label": "Attorney registration, due before your oath" },
+      "upfront": {
+        "low": 375,
+        "high": 375,
+        "label": "Attorney registration, due before your oath"
+      },
       "ube": true,
       "ubeShort": "Yes",
-      "firstYearCle": { "required": true, "hours": 16, "short": "16 hrs, year 1" },
+      "firstYearCle": {
+        "required": true,
+        "hours": 16,
+        "short": "16 hrs, year 1"
+      },
       "costs": [
-        { "label": "Initial attorney registration", "amount": 375, "note": "Paid before the oath. Then every 2 years." },
-        { "label": "Transferred UBE score application", "amount": 250, "note": "Only if you sat the UBE elsewhere. ABA JD." },
-        { "label": "NCBE score transcript", "amount": 25, "note": "Only for a UBE score transfer." }
+        {
+          "label": "Initial attorney registration",
+          "amount": 375,
+          "note": "Paid before the oath. Then every 2 years."
+        },
+        {
+          "label": "Transferred UBE score application",
+          "amount": 250,
+          "note": "Only if you sat the UBE elsewhere. ABA JD."
+        },
+        {
+          "label": "NCBE score transcript",
+          "amount": 25,
+          "note": "Only for a UBE score transfer."
+        }
       ],
       "timeline": [
-        { "big": "266", "label": "UBE passing score" },
-        { "big": "85", "label": "MPRE passing score" },
-        { "big": "50 hrs", "label": "Pro bono before admission" },
-        { "big": "3 yrs", "label": "To file with the Appellate Division" }
+        {
+          "big": "266",
+          "label": "UBE passing score"
+        },
+        {
+          "big": "85",
+          "label": "MPRE passing score"
+        },
+        {
+          "big": "50 hrs",
+          "label": "Pro bono before admission"
+        },
+        {
+          "big": "3 yrs",
+          "label": "To file with the Appellate Division"
+        }
       ],
       "cle": {
         "headline": "16 hours",
         "sub": "Transitional CLE in year 1 (32 over 2 years)",
         "deadline": "Within 1 year of admission, then 16 more in year 2",
         "breakdown": [
-          { "label": "Practice mgmt / practice areas", "hours": 7 },
-          { "label": "Skills", "hours": 6 },
-          { "label": "Ethics and professionalism", "hours": 3 }
+          {
+            "label": "Practice mgmt / practice areas",
+            "hours": 7
+          },
+          {
+            "label": "Skills",
+            "hours": 6
+          },
+          {
+            "label": "Ethics and professionalism",
+            "hours": 3
+          }
         ],
-        "notes": ["Skills: live classroom or fully interactive video only.", "At least 1 cybersecurity credit across the 2 years.", "Up to 8 extra year 1 credits carry to year 2."]
+        "notes": [
+          "Skills: live classroom or fully interactive video only.",
+          "At least 1 cybersecurity credit across the 2 years.",
+          "Up to 8 extra year 1 credits carry to year 2."
+        ]
       },
       "portability": {
         "headline": "UBE state",
-        "points": ["Bring a UBE score of 266 or higher.", "Scores are accepted for 3 years from the exam.", "You still need the NYLC course and NYLE exam."]
+        "points": [
+          "Bring a UBE score of 266 or higher.",
+          "Scores are accepted for 3 years from the exam.",
+          "You still need the NYLC course and NYLE exam."
+        ]
       },
       "faq": [
-        { "q": "How much does it cost to get admitted in New York after the bar?", "a": "The required post-bar fee is the $375 attorney registration, paid before you take the oath. Transferring a UBE score from another state adds a $250 application fee and a $25 NCBE transcript fee." },
-        { "q": "How many CLE credits do newly admitted New York attorneys need?", "a": "32 transitional credits over the first two years, 16 each year: 7 practice management or practice areas, 6 skills, and 3 ethics and professionalism." },
-        { "q": "Can I transfer a UBE score to New York?", "a": "Yes. New York accepts a UBE score of 266 or higher for three years from the exam date. You must also complete the NYLC and pass the NYLE." },
-        { "q": "Do I need pro bono hours to be admitted in New York?", "a": "Yes. Applicants admitted by exam must complete 50 hours of qualifying pro bono work before applying for admission." }
+        {
+          "q": "How much does it cost to get admitted in New York after the bar?",
+          "a": "The required post-bar fee is the $375 attorney registration, paid before you take the oath. Transferring a UBE score from another state adds a $250 application fee and a $25 NCBE transcript fee."
+        },
+        {
+          "q": "How many CLE credits do newly admitted New York attorneys need?",
+          "a": "32 transitional credits over the first two years, 16 each year: 7 practice management or practice areas, 6 skills, and 3 ethics and professionalism."
+        },
+        {
+          "q": "Can I transfer a UBE score to New York?",
+          "a": "Yes. New York accepts a UBE score of 266 or higher for three years from the exam date. You must also complete the NYLC and pass the NYLE."
+        },
+        {
+          "q": "Do I need pro bono hours to be admitted in New York?",
+          "a": "Yes. Applicants admitted by exam must complete 50 hours of qualifying pro bono work before applying for admission."
+        }
       ],
       "sources": [
-        { "label": "22 NYCRR Part 118, attorney registration", "url": "https://www.nycourts.gov/rules/part-118-registration-attorneys-house-counsel-and-foreign-legal-consultants" },
-        { "label": "Biennial attorney registration", "url": "https://www.nycourts.gov/biennial-attorney-registration/biennial-attorney-registration" },
-        { "label": "CLE FAQs for newly admitted attorneys", "url": "https://www.nycourts.gov/continuing-legal-education-cle/faqs-newly-admitted-attorneys" },
-        { "label": "Application by transferred UBE score", "url": "https://www.nybarexam.org/TUBE.html" },
-        { "label": "Admission and pro bono requirement", "url": "https://www.nybarexam.org/admission/admission.htm" }
+        {
+          "label": "22 NYCRR Part 118, attorney registration",
+          "url": "https://www.nycourts.gov/rules/part-118-registration-attorneys-house-counsel-and-foreign-legal-consultants"
+        },
+        {
+          "label": "Biennial attorney registration",
+          "url": "https://www.nycourts.gov/biennial-attorney-registration/biennial-attorney-registration"
+        },
+        {
+          "label": "CLE FAQs for newly admitted attorneys",
+          "url": "https://www.nycourts.gov/continuing-legal-education-cle/faqs-newly-admitted-attorneys"
+        },
+        {
+          "label": "Application by transferred UBE score",
+          "url": "https://www.nybarexam.org/TUBE.html"
+        },
+        {
+          "label": "Admission and pro bono requirement",
+          "url": "https://www.nybarexam.org/admission/admission.htm"
+        }
+      ],
+      "page": true,
+      "feeRelief": false,
+      "feeReliefShort": "",
+      "cleTax": 16,
+      "upfrontNote": "Attorney registration, due before your oath"
+    },
+    {
+      "slug": "texas",
+      "name": "Texas",
+      "abbr": "TX",
+      "page": false,
+      "ube": true,
+      "ubeShort": "Yes",
+      "upfront": {
+        "low": 127,
+        "high": 201,
+        "label": "Dues $37 to $111 by month + $25 license fee + $65 legal services fee"
+      },
+      "upfrontNote": "Dues $37 to $111 by month + $25 license fee + $65 legal services fee",
+      "firstYearCle": {
+        "required": true,
+        "hours": 4,
+        "short": "4 hrs ethics, year 1 (Baker course)"
+      },
+      "cleTax": 4,
+      "feeRelief": true,
+      "feeReliefShort": "Dues halved after Dec 1",
+      "lastVerified": "2026-10-31",
+      "sources": [
+        {
+          "label": "State Bar of Texas 2026-2027 new lawyer fees",
+          "url": "https://www.texasbar.com/AM/Template.cfm?ContentID=29060&Section=New_Lawyer_Forms_and_Fees1&Template=%2FCM%2FContentDisplay.cfm"
+        },
+        {
+          "label": "Justice James A. Baker ethics course",
+          "url": "https://www.legalethicstexas.com/cle-courses/justice-james-a-baker-guide-to-ethics-and-professionalism-in-texas/"
+        }
+      ]
+    },
+    {
+      "slug": "florida",
+      "name": "Florida",
+      "abbr": "FL",
+      "page": false,
+      "ube": false,
+      "ubeShort": "No",
+      "upfront": {
+        "low": 0,
+        "high": 265,
+        "label": "$265 membership fee, $0 if admitted Apr 1 to Jun 30"
+      },
+      "upfrontNote": "$265 membership fee, $0 if admitted Apr 1 to Jun 30",
+      "firstYearCle": {
+        "required": true,
+        "hours": 8,
+        "short": "8 hrs PWP, year 1"
+      },
+      "cleTax": 8,
+      "feeRelief": true,
+      "feeReliefShort": "$0 if admitted Apr to Jun",
+      "lastVerified": "2026-10-31",
+      "sources": [
+        {
+          "label": "Rule 1-7.3, membership fees for new members",
+          "url": "https://www-media.floridabar.org/uploads/2026/06/2026_12-JUNE-Chapter-1-RRTFB-1.pdf"
+        },
+        {
+          "label": "Basic Skills Course Requirement FAQ",
+          "url": "https://www.floridabar.org/member/cle/general-cle-info-and-requirements/bscr-faq/"
+        }
+      ]
+    },
+    {
+      "slug": "illinois",
+      "name": "Illinois",
+      "abbr": "IL",
+      "page": false,
+      "ube": true,
+      "ubeShort": "Yes",
+      "upfront": {
+        "low": 0,
+        "high": 0,
+        "label": "No ARDC fee for lawyers admitted since Jan 1, 2025"
+      },
+      "upfrontNote": "No ARDC fee for lawyers admitted since Jan 1, 2025",
+      "firstYearCle": {
+        "required": true,
+        "hours": 15,
+        "short": "15 hrs incl. 6 Basic Skills, year 1"
+      },
+      "cleTax": 15,
+      "feeRelief": true,
+      "feeReliefShort": "No fee for new admittees",
+      "lastVerified": "2026-10-31",
+      "sources": [
+        {
+          "label": "ARDC 2026 fee schedule",
+          "url": "https://registration.iardc.org/attyreg/Registration/Registration_Department/FAQs/Registration/regdept/2026_Fee_Schedule.aspx"
+        },
+        {
+          "label": "MCLE Board: newly admitted requirements",
+          "url": "https://www.mcleboard.org/files/FAQs/Attorney_FAQs/Post_Transcript_NAA_Requirements/As_a_newly_admitted_attorney_what_are_my_MCLE_requirements_and_deadlines.aspx"
+        }
+      ]
+    },
+    {
+      "slug": "district-of-columbia",
+      "name": "District of Columbia",
+      "abbr": "DC",
+      "page": false,
+      "ube": true,
+      "ubeShort": "Yes",
+      "upfront": {
+        "low": 0,
+        "high": 357,
+        "label": "$357 if admitted Jul to Dec, $178.50 Jan to Apr, $0 after Apr 30"
+      },
+      "upfrontNote": "$357 if admitted Jul to Dec, $178.50 Jan to Apr, $0 after Apr 30",
+      "firstYearCle": {
+        "required": true,
+        "hours": null,
+        "short": "Mandatory D.C. Rules course, year 1"
+      },
+      "cleTax": 0,
+      "feeRelief": true,
+      "feeReliefShort": "Half or $0 by admission month",
+      "lastVerified": "2026-10-31",
+      "sources": [
+        {
+          "label": "DC Bar membership classes and fees",
+          "url": "https://dcbar.org/for-lawyers/membership/membership-classes-fees"
+        },
+        {
+          "label": "DC Bar new members",
+          "url": "https://dcbar.org/for-lawyers/membership/new-members"
+        },
+        {
+          "label": "DC Bar mandatory course",
+          "url": "https://www.dcbar.org/for-lawyers/mandatory-course"
+        }
+      ]
+    },
+    {
+      "slug": "new-jersey",
+      "name": "New Jersey",
+      "abbr": "NJ",
+      "page": false,
+      "ube": true,
+      "ubeShort": "Yes",
+      "upfront": {
+        "low": 0,
+        "high": 0,
+        "label": "Attorneys admitted in 2026 exempt from the 2026 registration fee"
+      },
+      "upfrontNote": "Attorneys admitted in 2026 exempt from the 2026 registration fee",
+      "firstYearCle": {
+        "required": true,
+        "hours": null,
+        "short": "NJ core curriculum in 1st CLE cycle"
+      },
+      "cleTax": 0,
+      "feeRelief": true,
+      "feeReliefShort": "Exempt in admission year",
+      "lastVerified": "2026-10-31",
+      "sources": [
+        {
+          "label": "NJ annual attorney registration",
+          "url": "https://www.njcourts.gov/attorneys/attorney-registration"
+        },
+        {
+          "label": "CLE requirements for attorneys admitted in 2026",
+          "url": "https://www.njcourts.gov/sites/default/files/attorneys/continuing-legal-education/cleadmitted2026.pdf"
+        }
+      ]
+    },
+    {
+      "slug": "pennsylvania",
+      "name": "Pennsylvania",
+      "abbr": "PA",
+      "page": false,
+      "ube": true,
+      "ubeShort": "Yes",
+      "upfront": {
+        "low": 0,
+        "high": 0,
+        "label": "License fee waived for the registration year of admission"
+      },
+      "upfrontNote": "License fee waived for the registration year of admission",
+      "firstYearCle": {
+        "required": true,
+        "hours": null,
+        "short": "Bridge the Gap course, 1st compliance period"
+      },
+      "cleTax": 0,
+      "feeRelief": true,
+      "feeReliefShort": "Waived in admission year",
+      "lastVerified": "2026-10-31",
+      "sources": [
+        {
+          "label": "Disciplinary Board attorney resources",
+          "url": "https://padisciplinaryboard.org/for-attorneys/resources"
+        },
+        {
+          "label": "PA CLE Board FAQ (Bridge the Gap)",
+          "url": "https://www.pacle.org/faq"
+        }
+      ]
+    },
+    {
+      "slug": "georgia",
+      "name": "Georgia",
+      "abbr": "GA",
+      "page": false,
+      "ube": false,
+      "ubeShort": "No",
+      "upfront": null,
+      "upfrontNote": "First-year dues prorated by swearing-in month (amount not listed publicly)",
+      "firstYearCle": {
+        "required": true,
+        "hours": 12,
+        "short": "12 hrs TILPP incl. mentoring"
+      },
+      "cleTax": 12,
+      "feeRelief": false,
+      "feeReliefShort": "Prorated dues",
+      "lastVerified": "2026-10-31",
+      "sources": [
+        {
+          "label": "Transition Into Law Practice Program",
+          "url": "https://www.gabar.org/programs/transition-into-law-practice-program"
+        },
+        {
+          "label": "New membership (by exam) enrollment",
+          "url": "https://www.gabar.org/lawyers/how-to-join-the-bar/new-membership-(by-exam)-enrollment-information"
+        }
+      ]
+    },
+    {
+      "slug": "massachusetts",
+      "name": "Massachusetts",
+      "abbr": "MA",
+      "page": false,
+      "ube": true,
+      "ubeShort": "Yes",
+      "upfront": null,
+      "upfrontNote": "BBO registration fee applies on the annual cycle",
+      "firstYearCle": {
+        "required": false,
+        "hours": 0,
+        "short": "None (Rule 3:16 repealed 2024)"
+      },
+      "cleTax": 0,
+      "feeRelief": false,
+      "feeReliefShort": "",
+      "lastVerified": "2026-10-31",
+      "sources": [
+        {
+          "label": "SJC repeals Rule 3:16 (Practicing with Professionalism)",
+          "url": "https://www.mass.gov/news/supreme-judicial-court-repeals-rule-316-requiring-newly-admitted-lawyers-to-complete-practicing-with-professionalism-course"
+        }
       ]
     }
   ]
