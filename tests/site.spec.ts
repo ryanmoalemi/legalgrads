@@ -1,3 +1,4 @@
+import { readFile } from 'node:fs/promises';
 import { expect, test } from '@playwright/test';
 import { boot, noOverflow } from './helpers';
 
@@ -363,11 +364,23 @@ test('CA calculator compares now vs Dec 1 and honors Fee Scaling rules', async (
   await expect(page.getByTestId('relief-note')).toContainText('stays at $299');
   await page.getByTestId('fee-waiver').check();
   await expect(page.getByTestId('annual-amount')).toContainText('$323');
+  await expect(page.getByTestId('fee-due')).toContainText('not a payment deadline');
+  await expect(page.getByTestId('ca-budget')).toContainText('$55');
+  await expect(page.getByTestId('nat-mcle')).toContainText('separate requirement');
+  const downloadPromise = page.waitForEvent('download');
+  await page.getByTestId('ics-download').click();
+  const download = await downloadPromise;
+  const icsPath = await download.path();
+  expect(icsPath).toBeTruthy();
+  const ics = await readFile(icsPath!, 'utf8');
+  expect(ics).toContain('Check for your CA State Bar fee invoice');
+  expect(ics).not.toContain('Pay CA State Bar initial license fee');
+  expect(ics).not.toContain('DTSTART;VALUE=DATE:20261220');
+  expect(ics).not.toContain('DTSTART;VALUE=DATE:20270104');
   await calc.getByRole('button', { name: 'Dec 1, 2026' }).click();
   await expect(page.getByTestId('cost-compare')).toHaveCount(0);
   await expect(page.getByTestId('decision-engine')).toHaveCount(0);
   await expect(page.getByTestId('calc-result')).toContainText('$0 first license fee');
-  await expect(page.getByTestId('ics-download')).toBeVisible();
 });
 
 test('CA decision engine uses live pay and bonus, and the page drops the duplicate fee list', async ({ page }) => {
@@ -438,10 +451,13 @@ test('CA embed HTML has no site chrome and includes calculator labels', async ({
   expect(body).not.toMatch(/<div[^>]*role="group"[^>]*>\s*<\/div>/);
   expect(body).toContain('Nov 20, 2026');
   expect(body).toContain('Hourly pay increase upon admission');
+  expect(body).toContain('Paid hours a day affected by the raise');
   expect(body).toContain('Mar 30, 2028');
-  expect(body).toContain('48.3%');
+  expect(body).toContain('Estimated using 2026 fees');
   expect(body).toContain('TBA / check school');
-  expect(body).toContain('about 2.5 times New York');
+  expect(body).not.toContain('about 2.5 times New York');
+  const retake = await (await request.get('/resources/post-bar-licensing-tracker/california/retake/')).text();
+  expect(retake).toContain('48.3%');
 });
 
 test('CA calculator link keeps oath date, pay, and MCLE group', async ({ page }) => {

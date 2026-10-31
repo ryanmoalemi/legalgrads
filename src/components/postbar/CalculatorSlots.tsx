@@ -33,6 +33,11 @@ export function CalculatorHead() {
         <span className="text-xs font-bold uppercase tracking-wide text-ink/70">Or pick any swearing-in date</span>
         <input type="date" name="oath" defaultValue="2026-11-20" data-field="date" className="mt-2 block min-h-12 w-full max-w-xs rounded-2xl border border-navy/15 bg-cream px-4 font-display text-lg font-bold text-navy" data-testid="oath-date" />
       </label>
+      <label className="mt-4 block">
+        <span className="text-xs font-bold uppercase tracking-wide text-ink/70">Invoice date, if you have it</span>
+        <input type="date" name="invoice" data-field="invoice" className="mt-2 block min-h-12 w-full max-w-xs rounded-2xl border border-navy/15 bg-cream px-4 font-display text-lg font-bold text-navy" data-testid="invoice-date" />
+        <span className="mt-1 block text-xs text-ink/70">Rule 2.12 starts the 45 days on the invoice date. Leave this blank and the calendar only says to check for the invoice.</span>
+      </label>
       <fieldset className="mt-5 grid gap-2 sm:grid-cols-2" data-testid="fee-relief">
         <legend className="mb-2 text-xs font-bold uppercase tracking-wide text-ink/70">Low-income fee relief (optional)</legend>
         <label className="flex cursor-pointer items-start gap-3 rounded-2xl bg-cream p-3 text-sm text-ink">
@@ -70,7 +75,15 @@ export function CalculatorDecision() {
           <span className="font-bold text-navy">One-time bar passage bonus ($)</span>
           <input type="number" name="bonus" min={0} step={1} defaultValue={DEFAULT_BONUS} data-field="bonus" className="mt-2 block h-11 w-full rounded-xl bg-cream px-3 font-display text-lg font-bold text-navy outline-none ring-1 ring-navy/15" data-testid="bonus-input" />
         </label>
-        <p className="text-xs text-ink sm:col-span-2">These two numbers apply when you pick Raise on admission. Count the bonus only if waiting until December 1 means you lose it. If you get the same bonus either way, leave it at $0.</p>
+        <label className="block rounded-2xl bg-white p-3 text-sm text-ink ring-1 ring-navy/10">
+          <span className="font-bold text-navy">Paid hours a day affected by the raise</span>
+          <input type="number" name="hours" min={0} step={1} defaultValue={8} data-field="hours" className="mt-2 block h-11 w-full rounded-xl bg-cream px-3 font-display text-lg font-bold text-navy outline-none ring-1 ring-navy/15" data-testid="hours-input" />
+        </label>
+        <label className="block rounded-2xl bg-white p-3 text-sm text-ink ring-1 ring-navy/10">
+          <span className="font-bold text-navy">Employer effective date</span>
+          <input type="date" name="effective" data-field="effective" className="mt-2 block h-11 w-full rounded-xl bg-cream px-3 font-display text-lg font-bold text-navy outline-none ring-1 ring-navy/15" data-testid="effective-date" />
+        </label>
+        <p className="text-xs text-ink sm:col-span-2">Used when you pick Raise on admission. Leave the effective date blank if the raise starts the day you are sworn in. Count the bonus only if waiting until December 1 means you lose it.</p>
       </div>
     </>
   );

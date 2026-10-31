@@ -8,6 +8,9 @@ export const WAIVER_HOUSEHOLD = 20000;
 export const HOURS_PER_DAY = 8;
 export const DEFAULT_HOURLY = 18;
 export const DEFAULT_BONUS = 0;
+export const MORAL_CHARACTER = 900;
+export const NAT_BUNDLE = 55;
+export const FEE_YEAR_LABEL = 'Estimated using 2026 fees';
 
 export type Relief = 'none' | 'scaling' | 'waiver';
 export const annualFor = (relief: Relief) => (relief === 'waiver' ? WAIVED_ANNUAL : relief === 'scaling' ? SCALED_ANNUAL : ANNUAL);

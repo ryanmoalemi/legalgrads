@@ -44,21 +44,29 @@ export function mcleFor(oath: Date, g: McleGroup) {
   return { start, end, report: addDays(end, 1), months, hours };
 }
 
-export function icsDownload(r: NonNullable<ReturnType<typeof calc>>) {
+export function icsText(r: NonNullable<ReturnType<typeof calc>>, invoice: string | null) {
   const stamp = new Date().toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
   const ev = (d: Date, title: string, desc: string, id: string) => [
     'BEGIN:VEVENT', `UID:${id}-${ymd(d)}@legalgrads.com`, `DTSTAMP:${stamp}`, `DTSTART;VALUE=DATE:${ymd(d)}`, `DTEND;VALUE=DATE:${ymd(addDays(d, 1))}`,
     `SUMMARY:${title}`, `DESCRIPTION:${desc}`, 'BEGIN:VALARM', 'TRIGGER:-P3D', 'ACTION:DISPLAY', `DESCRIPTION:${title}`, 'END:VALARM', 'END:VEVENT',
   ];
+  const invoiceDate = invoice ? calc(invoice)?.oath ?? null : null;
+  const feeEvent = r.fee === 0 ? [] : invoiceDate
+    ? ev(addDays(invoiceDate, 45), `Pay CA State Bar initial license fee (${usd(r.fee)})`, 'Rule 2.12: due 45 days from the invoice date you entered. Estimated using 2026 fees. legalgrads.com/resources/post-bar-licensing-tracker/california/', 'calbar-fee')
+    : ev(r.oath, 'Check for your CA State Bar fee invoice', 'Rule 2.12: the initial license fee is due 45 days from the invoice date, not from the oath. This reminder is not a payment deadline. Enter the invoice date on the Legalgrads calculator to export the real due date. Estimated using 2026 fees.', 'calbar-fee-check');
   const lines = [
     'BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//Legalgrads//Post-Bar Tracker//EN', 'CALSCALE:GREGORIAN',
-    ...ev(addDays(r.oath, 30), `Pay CA State Bar initial license fee (${usd(r.fee)})`, 'Rule 2.12: due 45 days from your invoice date. Check your invoice for the exact date. legalgrads.com/resources/post-bar-licensing-tracker/california/', 'calbar-fee'),
-    ...ev(new Date(r.oath.getFullYear(), r.oath.getMonth() + 11, r.oath.getDate()), 'Finish 10-hour CalBar New Attorney Training', `Deadline: ${fmt(r.natp)} (last day of the month of your 1-year anniversary).`, 'calbar-natp-reminder'),
-    ...ev(r.natp, 'DEADLINE: CalBar New Attorney Training (10 hrs)', 'Miss it and you can be enrolled inactive.', 'calbar-natp'),
-    ...ev(r.annual, 'CA State Bar annual license fee due', 'Annual fees are due March 30. 2026 active rate: $598.', 'calbar-annual'),
+    ...feeEvent,
+    ...ev(new Date(r.oath.getFullYear(), r.oath.getMonth() + 11, r.oath.getDate()), 'Finish 10-hour CalBar New Attorney Training', `Deadline: ${fmt(r.natp)} (last day of the month of your 1-year anniversary). This is New Attorney Training, not your MCLE report.`, 'calbar-natp-reminder'),
+    ...ev(r.natp, 'DEADLINE: CalBar New Attorney Training (10 hrs, $55 bundle)', 'Separate from MCLE. Hours can count toward your first MCLE period if you finish them in that period. Miss it and you can be enrolled inactive.', 'calbar-natp'),
+    ...ev(r.annual, 'CA State Bar annual license fee due', 'Annual fees are due March 30. Estimated using 2026 fees: $598 active rate. Confirm the schedule for that year before you pay.', 'calbar-annual'),
     'END:VCALENDAR',
   ];
-  const blob = new Blob([lines.join('\r\n')], { type: 'text/calendar' });
+  return lines.join('\r\n');
+}
+
+export function icsDownload(r: NonNullable<ReturnType<typeof calc>>, invoice: string | null) {
+  const blob = new Blob([icsText(r, invoice)], { type: 'text/calendar' });
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
   a.download = 'california-bar-deadlines.ics';
