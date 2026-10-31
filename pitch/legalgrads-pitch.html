@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<title>Legalgrads — For attorneys</title>
+<style>
+@page{size:1600px 900px;margin:0}
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--navy:#0B0B3B;--purple:#7A00FF;--pink:#FF008A;--orange:#FF6B22;--cream:#FFF8F1;--mint:#00C5A2;--ink:#4A4E72;
+--grad:linear-gradient(90deg,#7A00FF 0%,#FF008A 55%,#FF6B22 100%)}
+html,body{width:1600px;height:900px}
+body{font-family:'Inter',sans-serif;color:var(--navy);background:var(--cream);-webkit-print-color-adjust:exact;print-color-adjust:exact;overflow:hidden}
+.page{position:relative;width:1600px;height:900px;padding:38px 56px 0;overflow:hidden}
+.blob{position:absolute;border-radius:50%;filter:blur(70px);opacity:.35;z-index:0}
+.b1{width:520px;height:520px;background:#FF008A;right:-160px;top:-200px;opacity:.18}
+.b2{width:460px;height:460px;background:#7A00FF;left:-180px;bottom:-200px;opacity:.14}
+.b3{width:300px;height:300px;background:#FF6B22;left:640px;top:-170px;opacity:.12}
+.z{position:relative;z-index:1}
+h1,h2,h3,.disp{font-family:'Plus Jakarta Sans',sans-serif}
+.top{display:flex;align-items:center;justify-content:space-between}
+.top img{height:54px}
+.pills{display:flex;gap:10px;align-items:center}
+.pill{font-family:'Plus Jakarta Sans';font-weight:700;font-size:16px;padding:10px 20px;border-radius:999px;white-space:nowrap}
+.pill.pk{background:var(--pink);color:#fff;box-shadow:0 8px 22px rgba(255,0,138,.28)}
+.pill.lv{background:#EFE3FF;color:var(--purple)}
+.grid{display:grid;grid-template-columns:1fr 520px;gap:40px;margin-top:22px}
+h1{font-weight:800;font-size:64px;line-height:1.04;letter-spacing:-.035em}
+.u{position:relative;display:inline-block}
+.u:after{content:"";position:absolute;left:-2%;width:104%;height:8px;bottom:-3px;background:var(--purple);border-radius:50%/100%;transform:rotate(-1.2deg)}
+.gt{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+.tag{font-size:23px;color:var(--ink);margin-top:14px;line-height:1.35;font-weight:500}
+.hand{font-family:'Caveat';font-weight:700;color:var(--mint)}
+.ps{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:26px}
+.card{background:#fff;border-radius:24px;padding:20px 22px;box-shadow:0 18px 50px rgba(11,11,59,.09)}
+.lab{display:inline-block;font-family:'Plus Jakarta Sans';font-weight:800;font-size:13px;letter-spacing:.09em;text-transform:uppercase;padding:5px 12px;border-radius:999px;margin-bottom:10px}
+.lab.o{background:#FFEDE3;color:#E2540F}.lab.p{background:#EFE3FF;color:var(--purple)}.lab.m{background:#DDF8F2;color:#00977C}
+.card h3{font-size:22px;font-weight:800;letter-spacing:-.02em;line-height:1.2;margin-bottom:6px}
+.card p{font-size:17.5px;line-height:1.45;color:var(--ink)}
+.why{margin-top:20px}
+.chips{display:flex;flex-wrap:wrap;gap:9px;margin-top:12px}
+.chip{display:flex;align-items:center;gap:9px;background:#FFF8F1;border:1px solid #F1E6DA;border-radius:16px;padding:6px 13px 6px 6px;font-weight:600;font-size:16px}
+.chip img{width:32px;height:32px}
+/* right */
+.att{background:var(--navy);color:#fff;border-radius:30px;padding:26px 30px 24px;position:relative;overflow:hidden;box-shadow:0 24px 60px rgba(11,11,59,.28)}
+.att:before{content:"";position:absolute;right:-90px;top:-90px;width:260px;height:260px;border-radius:50%;background:var(--grad);opacity:.35;filter:blur(30px)}
+.att h2{font-size:31px;font-weight:800;letter-spacing:-.03em;line-height:1.1;position:relative}
+.att h2 .gt{background-image:linear-gradient(90deg,#C08BFF,#FF5DB4 55%,#FF9A62)}
+.ben{list-style:none;margin-top:16px;display:grid;gap:12px;position:relative}
+.ben li{display:flex;gap:12px;align-items:flex-start;font-size:18px;line-height:1.35;color:#D9DAF0}
+.ben b{color:#fff;font-weight:700}
+.ck{flex:none;width:26px;height:26px;border-radius:50%;background:var(--grad);display:flex;align-items:center;justify-content:center;margin-top:-1px}
+.ck svg{width:14px;height:14px}
+.prof{position:absolute;right:30px;bottom:-6px}
+/* sample profile card */
+.pc{position:absolute;right:56px;top:96px;width:0}
+.sample{background:#fff;border-radius:22px;padding:14px;width:250px;box-shadow:0 18px 50px rgba(11,11,59,.16);transform:rotate(3deg)}
+.av{height:118px;border-radius:16px;background:linear-gradient(135deg,#7A00FF,#FF008A 60%,#FF6B22);display:flex;align-items:center;justify-content:center;font-family:'Plus Jakarta Sans';font-weight:800;font-size:58px;color:#fff;position:relative}
+.sl{position:absolute;top:9px;left:9px;background:#fff;color:var(--purple);font-size:10.5px;font-weight:800;letter-spacing:.06em;padding:4px 9px;border-radius:999px;font-family:'Plus Jakarta Sans'}
+.jb{position:absolute;bottom:9px;left:9px;background:#fff;color:var(--navy);font-size:12px;font-weight:700;padding:4px 10px;border-radius:999px}
+.sample h4{font-family:'Plus Jakarta Sans';font-weight:800;font-size:19px;margin-top:10px}
+.sample .loc{font-size:13px;color:var(--ink)}
+.tg{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap}
+.tg span{font-size:11.5px;font-weight:600;color:var(--purple);background:#F3EAFF;border-radius:999px;padding:4px 9px}
+/* steps */
+.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:18px}
+.st{background:#fff;border-radius:20px;padding:14px 16px;box-shadow:0 10px 30px rgba(11,11,59,.07)}
+.num{width:34px;height:34px;border-radius:12px;background:var(--grad);color:#fff;font-family:'Plus Jakarta Sans';font-weight:800;font-size:18px;display:flex;align-items:center;justify-content:center;margin-bottom:8px}
+.st h4{font-family:'Plus Jakarta Sans';font-weight:800;font-size:18px;line-height:1.2}
+.st p{font-size:15.5px;color:var(--ink);line-height:1.38;margin-top:4px}
+.hw{display:flex;align-items:baseline;justify-content:space-between;margin-top:18px}
+.hw h3{font-size:20px;font-weight:800;letter-spacing:-.02em}
+/* cta */
+.cta{position:absolute;left:0;right:0;bottom:0;height:96px;background:var(--grad);display:flex;align-items:center;justify-content:space-between;padding:0 56px;color:#fff;z-index:2}
+.cta .l{font-family:'Plus Jakarta Sans';font-weight:800;font-size:30px;letter-spacing:-.02em}
+.cta .l small{display:block;font-family:'Inter';font-weight:500;font-size:16px;opacity:.92;letter-spacing:0;margin-top:2px}
+.btn{background:#fff;color:var(--navy);font-family:'Plus Jakarta Sans';font-weight:800;font-size:26px;padding:16px 30px;border-radius:999px;box-shadow:0 10px 30px rgba(11,11,59,.25);white-space:nowrap}
+.btn span{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+.fine{position:absolute;left:56px;right:56px;bottom:106px;font-size:11.5px;color:#7A7E9E;z-index:1}
+.spark{position:absolute;z-index:1}
+</style></head>
+<body><div class="page">
+<div class="blob b1"></div><div class="blob b2"></div><div class="blob b3"></div>
+
+<div class="top z">
+  <img src="assets/legalgrads_horizontal.svg" alt="Legalgrads">
+  <div class="pills"><span class="pill lv">✦ A directory for newly licensed attorneys</span><span class="pill pk">Attorneys: join free</span></div>
+</div>
+
+<div class="grid z">
+ <div>
+  <h1><span class="u">Fresh</span> out of law school.<br><span class="gt">Ready to work for you.</span></h1>
+  <p class="tag">Hire newly licensed attorneys who are ready to build their practices. <span class="hand" style="font-size:30px;white-space:nowrap"><span style="font-family:Inter;font-weight:600;font-size:22px">←</span> that's you!</span></p>
+
+  <div class="ps">
+   <div class="card"><span class="lab o">The problem</span>
+    <h3>Legal help feels out of reach</h3>
+    <p>For small business owners and everyday people, a traditional big-firm lawyer often feels too expensive or intimidating, so many skip legal help altogether and hope for the best.</p></div>
+   <div class="card"><span class="lab p">The solution</span>
+    <h3>A directory of fresh, verified attorneys</h3>
+    <p>Newly licensed attorneys build their own profiles and set their own rates. Small business owners and individuals browse, find a fit, and reach out directly.</p></div>
+  </div>
+
+  <div class="card why"><span class="lab m">Why it matters for small businesses</span>
+   <p>Everyday legal work that keeps a small business protected, from an attorney they can actually reach:</p>
+   <div class="chips">
+    <span class="chip"><img src="assets/contracts.svg">Contracts</span>
+    <span class="chip"><img src="assets/start_business.svg">LLC setup</span>
+    <span class="chip"><img src="assets/real_estate.svg">Leases</span>
+    <span class="chip"><img src="assets/consumer_rights.svg">Demand letters</span>
+    <span class="chip"><img src="assets/employment.svg">Employment docs</span>
+    <span class="chip"><img src="assets/intellectual_property.svg">Trademarks</span>
+   </div>
+  </div>
+ </div>
+
+ <div>
+  <div class="att">
+   <h2>What's in it for <span class="gt">you</span></h2>
+   <ul class="ben">
+    <li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7"/></svg></span><span><b>Join free.</b> No cost to be listed.</span></li>
+    <li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7"/></svg></span><span><b>Set your own rates.</b> You decide what you charge.</span></li>
+    <li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7"/></svg></span><span><b>Keep 100% of your fees.</b> Legalgrads takes no referral fee and no share of legal fees.</span></li>
+    <li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7"/></svg></span><span><b>Own your profile.</b> Your bio, your practice areas, your voice.</span></li>
+    <li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7"/></svg></span><span><b>“Joined 2026” badge</b> on a shareable profile link for your socials, email and site.</span></li>
+   </ul>
+  </div>
+
+  <div class="hw"><h3>How it works</h3><span class="hand" style="font-size:24px;color:var(--pink)">3 easy steps ✨</span></div>
+  <div class="steps">
+   <div class="st"><div class="num">1</div><h4>Sign up</h4><p>Apply free at legalgrads.com/join.</p></div>
+   <div class="st"><div class="num">2</div><h4>Verify your bar number</h4><p>We check it with your state bar before anything goes live.</p></div>
+   <div class="st"><div class="num">3</div><h4>Publish &amp; get found</h4><p>Go live and share your profile link.</p></div>
+  </div>
+ </div>
+</div>
+
+<p class="fine">Legalgrads is a directory, not a law firm or lawyer referral service. Clients browse and choose attorneys themselves; Legalgrads does not match, recommend or refer, and does not guarantee clients or results.</p>
+
+<div class="cta">
+  <div class="l">Build your practice your way.<small>Newly licensed? Create your free profile and put your practice on the map.</small></div>
+  <div class="btn"><span>legalgrads.com/join <b style="font-family:Inter;-webkit-text-fill-color:#FF008A">→</b></span></div>
+</div>
+</div></body></html>
