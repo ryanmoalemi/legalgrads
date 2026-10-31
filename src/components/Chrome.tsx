@@ -75,7 +75,9 @@ const FOOTER = [
     ['/how-it-works/', 'How It Works'],
     ['/about/', 'About'],
     ['/faq/', 'FAQ'],
+    ['/how-we-build-legalgrads/', 'How we build Legalgrads'],
     ['/contact/', 'Contact'],
+    ['/sitemap/', 'Site map'],
   ]],
   ['Attorneys', [
     ['/for-attorneys/', 'For Attorneys'],
