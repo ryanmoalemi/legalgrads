@@ -31,14 +31,8 @@ export function Header() {
             <Link key={item.href} href={item.href} className="font-display text-sm font-semibold text-navy/80 hover:text-navy">{item.label}</Link>
           ))}
           <Link href="/join/" data-testid="nav-join" className={joinClass}>Attorneys: join free</Link>
-          <span className="inline-flex items-center gap-2 rounded-full bg-[#F3E9FF] px-4 py-2 font-display text-sm font-semibold text-purple">
-            <Rocket /> Launching soon
-          </span>
         </nav>
         <div className="ml-auto flex items-center gap-2 lg:hidden">
-          <span className="inline-flex items-center gap-1 rounded-full bg-[#F3E9FF] px-3 py-2 font-display text-xs font-semibold text-purple">
-            <Rocket /> Launching soon
-          </span>
           <button type="button" className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-xl text-navy" aria-label="Menu" aria-expanded={open} data-testid="nav-toggle" onClick={() => setOpen((v) => !v)}>
             <svg width="26" height="20" viewBox="0 0 26 20" fill="none" aria-hidden="true">
               <path d="M1 2h24M1 10h24M1 18h24" stroke="#0B0B3B" strokeWidth="2.4" strokeLinecap="round" />
@@ -56,15 +50,6 @@ export function Header() {
         </nav>
       ) : null}
     </header>
-  );
-}
-
-function Rocket() {
-  return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <path d="M14 4c3 1 5 4 6 7-3 1-6 1-8 0-1-2-1-5 2-7Z" stroke="#7A00FF" strokeWidth="1.7" />
-      <path d="M9 15 4 20M8 10 4 9l2 4M14 16l1 4-4-2" stroke="#7A00FF" strokeWidth="1.7" strokeLinecap="round" />
-    </svg>
   );
 }
 
@@ -128,7 +113,7 @@ export function Footer() {
           </div>
         ))}
       </div>
-      <p className="border-t border-white/10 px-4 py-4 text-center text-xs text-white/60">© 2026 Legalgrads. Draft — pending legal review. October 21, 2026.</p>
+      <p className="border-t border-white/10 px-4 py-4 text-center text-xs text-white/60">© 2026 Legalgrads. Informational resource only; not legal advice.</p>
     </footer>
   );
 }
