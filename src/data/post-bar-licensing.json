@@ -121,11 +121,11 @@
       "faq": [
         {
           "q": "How much does it cost to get licensed in California after the bar?",
-          "a": "Plan on $900 to $1,498: the $900 general applicant moral character fee plus a first license fee of $0, $299, or $598, depending on your admission month (Rule 2.12)."
+          "a": "Do not treat $900 to $1,498 as one new bill. The $900 moral character fee is often paid during law school. What is still due after the oath is the first license fee of $0, $299, or $598 (Rule 2.12, 2026 schedule) plus the separate $55 New Attorney Training bundle. The next annual fee is $598 on March 30. Estimated using 2026 fees. The 2027 schedule is not verified here."
         },
         {
           "q": "Is it cheaper to get sworn in to the California bar in December?",
-          "a": "Yes. Under Rule 2.12, admission between June 1 and November 30 means a $299 half-year fee. Admission in December carries no first license fee for that year. Either way the full $598 annual fee is due March 30."
+          "a": "On the 2026 schedule, yes. Admission between June 1 and November 30 means a $299 half-year fee, due 45 days from the invoice date, not from a date guessed off the oath. Admission in December lists no first license fee. Either way the next annual fee is due March 30. Estimated using 2026 fees."
         },
         {
           "q": "Can a notary swear me in to the California bar?",
@@ -137,7 +137,7 @@
         },
         {
           "q": "Does California have a first-year CLE requirement?",
-          "a": "Yes. New attorneys must finish the State Bar's 10-hour New Attorney Training by the last day of the month of their one-year anniversary."
+          "a": "New Attorney Training and MCLE are different. NAT is 10 hours of State Bar courses and a $55 bundle, due the last day of the month of your one-year anniversary. CalBar published that $55 price effective May 26, 2025. MCLE is the separate 25-hour compliance period, with a report date based on your last name. NAT hours can count toward that first MCLE period if you finish them during it. License and annual totals on this page are estimated using 2026 fees."
         },
         {
           "q": "Can I transfer a UBE score to California?",
@@ -160,6 +160,10 @@
         {
           "label": "New Attorney Training Program",
           "url": "https://www.calbar.ca.gov/legal-professionals/maintaining-compliance/mcle/new-attorney-training-program"
+        },
+        {
+          "label": "New Attorney Training cost and MCLE credit (help center)",
+          "url": "https://info.calbar.ca.gov/knowledge/en/your-new-attorney-training-requirement"
         },
         {
           "label": "New Attorney Training FAQ (hour breakdown)",

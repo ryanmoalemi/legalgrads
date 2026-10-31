@@ -1,7 +1,7 @@
 'use client';
 import { useEffect, useMemo, useState, type ChangeEvent, type MouseEvent, type ReactNode } from 'react';
-import { ANNUAL, DEFAULT_BONUS, DEFAULT_HOURLY, HOURS_PER_DAY, SCALED_ANNUAL, WAIVED_ANNUAL, annualFor, type Relief } from '@/lib/caFees';
-import { CA_PLAN_PATH, calc, fmt, icsDownload, mcleFor, planSearch, usd, workdaysBetween, type McleGroup } from '@/lib/caCalc';
+import { ANNUAL, DEFAULT_BONUS, DEFAULT_HOURLY, FEE_YEAR_LABEL, HOURS_PER_DAY, SCALED_ANNUAL, WAIVED_ANNUAL, annualFor, type Relief } from '@/lib/caFees';
+import { CA_PLAN_PATH, addDays, calc, fmt, icsDownload, mcleFor, planSearch, usd, workdaysBetween, type McleGroup } from '@/lib/caCalc';
 
 export type Who = 'solo' | 'bump' | 'reimb';
 
@@ -63,6 +63,9 @@ export function CalculatorLive({
   const [hourly, setHourly] = useState(DEFAULT_HOURLY);
   const [bonus, setBonus] = useState(DEFAULT_BONUS);
   const [group, setGroup] = useState('');
+  const [hours, setHours] = useState(HOURS_PER_DAY);
+  const [effective, setEffective] = useState('');
+  const [invoice, setInvoice] = useState('');
   const [scaling, setScaling] = useState(false);
   const [waiver, setWaiver] = useState(false);
   const [hydrated, setHydrated] = useState(false);
@@ -76,8 +79,11 @@ export function CalculatorLive({
   const decAnnual = dec1 ? new Date(dec1.getFullYear() + 1, 2, 30) : null;
   const daysToDec = r && dec1 ? Math.round((dec1.getTime() - r.oath.getTime()) / 86400000) : 0;
   const showDecision = !!r && !!dec1 && r.band === 'half' && r.oath.getMonth() === 10;
-  const workdays = r && dec1 && showDecision ? workdaysBetween(r.oath, dec1) : 0;
-  const wageLoss = who === 'bump' ? Math.round(hourly * HOURS_PER_DAY * workdays) : 0;
+  const effectiveDate = effective ? calc(effective)?.oath ?? null : null;
+  const raiseStartNow = r && dec1 ? (effectiveDate && effectiveDate > r.oath ? effectiveDate : r.oath) : null;
+  const raiseStartWait = dec1 ? (effectiveDate && effectiveDate > dec1 ? effectiveDate : dec1) : null;
+  const workdays = raiseStartNow && raiseStartWait && raiseStartNow < raiseStartWait ? workdaysBetween(raiseStartNow, raiseStartWait) : 0;
+  const wageLoss = who === 'bump' ? Math.round(hourly * hours * workdays) : 0;
   const bonusLoss = who === 'bump' ? bonus : 0;
   const feeSaved = !r || who === 'reimb' ? 0 : r.fee;
   const net = feeSaved - wageLoss - bonusLoss;
@@ -123,11 +129,17 @@ export function CalculatorLive({
     if (hourlyInput && document.activeElement !== hourlyInput) hourlyInput.value = String(hourly);
     const bonusInput = root.querySelector<HTMLInputElement>('[data-field="bonus"]');
     if (bonusInput && document.activeElement !== bonusInput) bonusInput.value = String(bonus);
+    const hoursInput = root.querySelector<HTMLInputElement>('[data-field="hours"]');
+    if (hoursInput && document.activeElement !== hoursInput) hoursInput.value = String(hours);
+    const effectiveInput = root.querySelector<HTMLInputElement>('[data-field="effective"]');
+    if (effectiveInput && document.activeElement !== effectiveInput && effectiveInput.value !== effective) effectiveInput.value = effective;
+    const invoiceInput = root.querySelector<HTMLInputElement>('[data-field="invoice"]');
+    if (invoiceInput && document.activeElement !== invoiceInput && invoiceInput.value !== invoice) invoiceInput.value = invoice;
     const scale = root.querySelector<HTMLInputElement>('[data-field="scaling"]');
     if (scale) scale.checked = scaling;
     const waive = root.querySelector<HTMLInputElement>('[data-field="waiver"]');
     if (waive) waive.checked = waiver;
-  }, [date, who, group, hourly, bonus, scaling, waiver]);
+  }, [date, who, group, hourly, bonus, hours, effective, invoice, scaling, waiver]);
 
   useEffect(() => {
     if (!hydrated) return;
@@ -148,6 +160,9 @@ export function CalculatorLive({
     if (t.dataset.field === 'date' && calc(t.value)) setDate(t.value);
     if (t.dataset.field === 'hourly') setHourly(Math.max(0, Number(t.value) || 0));
     if (t.dataset.field === 'bonus') setBonus(Math.max(0, Number(t.value) || 0));
+    if (t.dataset.field === 'hours') setHours(Math.max(0, Number(t.value) || 0));
+    if (t.dataset.field === 'effective') setEffective(t.value);
+    if (t.dataset.field === 'invoice') setInvoice(t.value);
     if (t.dataset.field === 'scaling') setScaling(t.checked);
     if (t.dataset.field === 'waiver') setWaiver(t.checked);
   }
@@ -163,9 +178,9 @@ export function CalculatorLive({
       {r && (
         <>
           <div className={`mt-6 rounded-3xl p-5 ring-1 sm:p-6 ${tone}`} data-testid="calc-result">
-            {r.band === 'dec' && (<><p className="font-display text-3xl font-extrabold">$0 first license fee</p><p className="mt-1 font-semibold">December admission. Rule 2.12(C) and the fee schedule list no first-year license fee. Your first bill is the {usd(annual)} annual fee on {fmt(r.annual)}.</p></>)}
-            {r.band === 'half' && (<><p className="font-display text-3xl font-extrabold">{r.waitDays <= 31 ? `Wait ${r.waitDays} days, save $299` : '$299 half-year fee'}</p><p className="mt-1 font-semibold">Admitted June 1 to November 30 means a $299 half-year fee, due 45 days from your invoice, then {usd(annual)} more on {fmt(r.annual)} ({usd(299 + annual)} total). Take the oath on December 1 or later and the first-year fee is $0.</p></>)}
-            {r.band === 'full' && (<><p className="font-display text-3xl font-extrabold">$598 full-year fee</p><p className="mt-1 font-semibold">Admitted January 1 to May 31 means the full annual fee, due 45 days from your invoice. Then {usd(annual)} on {fmt(r.annual)}.</p></>)}
+            {r.band === 'dec' && (<><p className="font-display text-3xl font-extrabold">$0 first license fee</p><p className="mt-1 font-semibold">December admission. Rule 2.12(C) and the 2026 fee schedule list no first-year license fee. Your next bill is the {usd(annual)} annual fee on {fmt(r.annual)}. {FEE_YEAR_LABEL}.</p></>)}
+            {r.band === 'half' && (<><p className="font-display text-3xl font-extrabold">{r.waitDays <= 31 ? `Wait ${r.waitDays} days, save $299` : '$299 half-year fee'}</p><p className="mt-1 font-semibold">Admitted June 1 to November 30 means a $299 half-year fee, due 45 days from the invoice date, then {usd(annual)} more on {fmt(r.annual)} ({usd(299 + annual)} total). {FEE_YEAR_LABEL}. Take the oath on December 1 or later and the first-year fee on the 2026 schedule is $0.</p></>)}
+            {r.band === 'full' && (<><p className="font-display text-3xl font-extrabold">$598 full-year fee</p><p className="mt-1 font-semibold">Admitted January 1 to May 31 means the full annual fee on the 2026 schedule, due 45 days from the invoice date. Then {usd(annual)} on {fmt(r.annual)}. {FEE_YEAR_LABEL}.</p></>)}
           </div>
           {showCompare && dec1 && decAnnual && (
             <div className="mt-4" data-testid="cost-compare">
@@ -184,7 +199,8 @@ export function CalculatorLive({
               <div className={`mt-4 rounded-2xl p-4 ring-1 ${wait ? 'bg-mint/15 text-[#00735E] ring-mint/40' : 'bg-pink/10 text-[#B0124F] ring-pink/40'}`} data-testid="verdict">
                 <p className="font-display text-2xl font-extrabold sm:text-3xl">{wait ? 'Verdict: wait until December 1' : 'Verdict: swear in now'}</p>
                 {who === 'solo' && <p className="mt-1 font-semibold">You keep {usd(r.fee)} in cash, and waiting {daysToDec} days costs $0 in lost wages.</p>}
-                {who === 'bump' && <p className="mt-1 font-semibold" data-testid="verdict-net">Waiting saves {usd(r.fee)} in fees but costs {usd(wageLoss + bonusLoss)} ({workdays} workdays × {HOURS_PER_DAY} hrs × ${hourly}/hr + {usd(bonus)} bonus). Net if you wait: {net >= 0 ? '+' : '-'}{usd(Math.abs(net))}.</p>}
+                {who === 'bump' && <p className="mt-1 font-semibold" data-testid="verdict-net">Waiting saves {usd(r.fee)} in fees but costs {usd(wageLoss + bonusLoss)} ({workdays} workdays × {hours} hrs × ${hourly}/hr + {usd(bonus)} bonus). Net if you wait: {net >= 0 ? '+' : '-'}{usd(Math.abs(net))}.</p>}
+                {who === 'bump' && <p className="mt-2 text-sm" data-testid="verdict-assumptions">Assumptions: weekdays only, not court holidays. The raise applies to {hours} paid hours a day and does not start before {effectiveDate ? fmt(effectiveDate) : 'the day you are sworn in'}. The bonus counts only if waiting means you lose it. License amounts: {FEE_YEAR_LABEL}.</p>}
                 {who === 'reimb' && <p className="mt-1 font-semibold">Your employer covers the {usd(r.fee)}, so waiting saves you $0 and pushes back your admission date and seniority.</p>}
               </div>
             </div>
@@ -224,12 +240,12 @@ export function CalculatorLive({
       {r && (
         <>
           <dl className="mt-4 grid gap-3 sm:grid-cols-3">
-            <div className="rounded-2xl bg-cream p-4"><dt className="text-xs font-bold uppercase tracking-wide text-ink/70">First license fee</dt><dd className="mt-1 font-display text-3xl font-extrabold text-navy">{usd(r.fee)}</dd><dd className="text-sm text-ink">Due 45 days from invoice. If invoiced on oath day: {fmt(r.invoiceEst)}</dd></div>
-            <div className="rounded-2xl bg-cream p-4"><dt className="text-xs font-bold uppercase tracking-wide text-ink/70">New Attorney Training</dt><dd className="mt-1 font-display text-2xl font-extrabold text-navy" data-testid="natp-deadline">{fmt(r.natp)}</dd><dd className="text-sm text-ink">10 hours. Last day of the month of your 1-year anniversary.</dd></div>
-            <div className="rounded-2xl bg-cream p-4"><dt className="text-xs font-bold uppercase tracking-wide text-ink/70">Next annual fee</dt><dd className="mt-1 font-display text-2xl font-extrabold text-navy">{fmt(r.annual)}</dd><dd className="text-sm text-ink" data-testid="annual-amount">{usd(annual)}{relief === 'none' ? ' at the 2026 active rate.' : relief === 'scaling' ? ' with 25% Fee Scaling.' : ' with the 50% waiver.'}</dd></div>
+            <div className="rounded-2xl bg-cream p-4"><dt className="text-xs font-bold uppercase tracking-wide text-ink/70">First license fee</dt><dd className="mt-1 font-display text-3xl font-extrabold text-navy">{usd(r.fee)}</dd><dd className="text-sm text-ink" data-testid="fee-due">{invoice && calc(invoice) ? `Due ${fmt(addDays(calc(invoice)!.oath, 45))}, 45 days after the invoice date you entered. ${FEE_YEAR_LABEL}.` : 'Due 45 days from the invoice date. No invoice date yet, so this is not a payment deadline.'}</dd></div>
+            <div className="rounded-2xl bg-cream p-4"><dt className="text-xs font-bold uppercase tracking-wide text-ink/70">New Attorney Training</dt><dd className="mt-1 font-display text-2xl font-extrabold text-navy" data-testid="natp-deadline">{fmt(r.natp)}</dd><dd className="text-sm text-ink">10 hours. $55 State Bar bundle. Not your MCLE report. Last day of the month of your 1-year anniversary.</dd></div>
+            <div className="rounded-2xl bg-cream p-4"><dt className="text-xs font-bold uppercase tracking-wide text-ink/70">Next annual fee</dt><dd className="mt-1 font-display text-2xl font-extrabold text-navy">{fmt(r.annual)}</dd><dd className="text-sm text-ink" data-testid="annual-amount">{usd(annual)}{relief === 'none' ? ' at the 2026 active rate.' : relief === 'scaling' ? ' with 25% Fee Scaling.' : ' with the 50% waiver.'} {FEE_YEAR_LABEL}.</dd></div>
           </dl>
           <div className="mt-5 flex flex-wrap gap-3">
-            <button type="button" onClick={() => icsDownload(r)} className="inline-flex min-h-12 items-center rounded-full bg-pink px-6 font-display font-bold text-white shadow-pill hover:opacity-90" data-testid="ics-download">+ Add deadlines to Google / Apple Calendar (.ics)</button>
+            <button type="button" onClick={() => icsDownload(r, invoice || null)} className="inline-flex min-h-12 items-center rounded-full bg-pink px-6 font-display font-bold text-white shadow-pill hover:opacity-90" data-testid="ics-download">+ Add deadlines to Google / Apple Calendar (.ics)</button>
             <button type="button" onClick={copyPlan} className="inline-flex min-h-12 items-center rounded-full bg-navy px-6 font-display font-bold text-white" data-testid="copy-plan">{copied ? 'Copied' : 'Copy link to my custom 1st-year plan'}</button>
           </div>
           <p className="mt-3 text-xs text-ink/70">No email needed. The file is built in your browser. The link stores your date, MCLE group, pay inputs, and fee relief in the URL.</p>
