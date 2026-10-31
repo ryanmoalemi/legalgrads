@@ -192,6 +192,14 @@
         {
           "label": "Virtual oath packet FAQ",
           "url": "https://info.calbar.ca.gov/knowledge/en/frequently-asked-questions"
+        },
+        {
+          "label": "NCBE MPRE registration ($185 test fee)",
+          "url": "https://www.ncbex.org/exams/mpre/registration"
+        },
+        {
+          "label": "Rule 2.53, new licensee compliance period",
+          "url": "https://www.calbar.ca.gov/legal-professionals/rules/rules-state-bar/title-2-rights-and-responsibilities-licensees/division-4-minimum-continuing-legal-education"
         }
       ],
       "oath": {
@@ -228,7 +236,93 @@
       "feeRelief": true,
       "feeReliefShort": "Scaling 25%, waiver 50%",
       "cleTax": 10,
-      "upfrontNote": "Moral character + first license fee ($0, $299 or $598)"
+      "upfrontNote": "Moral character + first license fee ($0, $299 or $598)",
+      "receipt": {
+        "items": [
+          {
+            "label": "Registration as a general applicant",
+            "amount": 155,
+            "rule": "Rule 4.16",
+            "when": "1L to 3L"
+          },
+          {
+            "label": "MPRE test fee (NCBE, 2026 and 2027)",
+            "amount": 185,
+            "rule": "NCBE",
+            "when": "Usually 2L or 3L"
+          },
+          {
+            "label": "Moral character determination",
+            "amount": 900,
+            "rule": "Rule 4.41(B)",
+            "when": "Before or after the exam"
+          },
+          {
+            "label": "California Bar Exam application, general applicant",
+            "amount": 878,
+            "rule": "Rule 4.61(A)",
+            "when": "Before the exam"
+          },
+          {
+            "label": "Laptop computer fee",
+            "amount": 153,
+            "rule": "Rules 4.58 / 4.61",
+            "when": "If you type the exam"
+          }
+        ],
+        "license": {
+          "low": 0,
+          "high": 598,
+          "note": "First license fee: $0 December, $299 Jun to Nov, $598 Jan to May (Rule 2.12)"
+        },
+        "excluded": [
+          "Bar prep course",
+          "Fingerprinting (Live Scan, vendor price varies)",
+          "Late filing fees",
+          "Travel and hotel for the exam",
+          "Law school tuition"
+        ],
+        "sources": [
+          {
+            "label": "CalBar Schedule of Charges and Deadlines (2026)",
+            "url": "https://www.calbar.ca.gov/sites/default/files/2026-06/Rules_Appendix_A_Sched_Chgs-deadlines.pdf"
+          },
+          {
+            "label": "NCBE MPRE registration ($185)",
+            "url": "https://www.ncbex.org/exams/mpre/registration"
+          }
+        ]
+      },
+      "mcle": {
+        "groups": [
+          {
+            "id": "1",
+            "letters": "A-G",
+            "periodEnd": "2028-03-29",
+            "report": "2028-03-30"
+          },
+          {
+            "id": "2",
+            "letters": "H-M",
+            "periodEnd": "2027-03-29",
+            "report": "2027-03-30"
+          },
+          {
+            "id": "3",
+            "letters": "N-Z",
+            "periodEnd": "2029-03-29",
+            "report": "2029-03-30"
+          }
+        ],
+        "source": {
+          "label": "CalBar Schedule of Charges, MCLE compliance groups (footnote 5)",
+          "url": "https://www.calbar.ca.gov/sites/default/files/2026-06/Rules_Appendix_A_Sched_Chgs-deadlines.pdf"
+        },
+        "ruleSource": {
+          "label": "Rule 2.53, new licensee compliance period",
+          "url": "https://www.calbar.ca.gov/legal-professionals/rules/rules-state-bar/title-2-rights-and-responsibilities-licensees/division-4-minimum-continuing-legal-education"
+        }
+      }
     },
     {
       "slug": "new-york",
@@ -570,8 +664,12 @@
       "page": false,
       "ube": false,
       "ubeShort": "No",
-      "upfront": null,
-      "upfrontNote": "First-year dues prorated by swearing-in month (amount not listed publicly)",
+      "upfront": {
+        "low": 211,
+        "high": 260,
+        "label": "Active license fee prorated by swearing-in month, incl. $15 mandatory assessments"
+      },
+      "upfrontNote": "$260 Sep, $235 Oct, $211 Nov (active, incl. $15 assessments). Enroll within 60 days or pay $100 late fee.",
       "firstYearCle": {
         "required": true,
         "hours": 12,
@@ -582,6 +680,10 @@
       "feeReliefShort": "Prorated dues",
       "lastVerified": "2026-10-31",
       "sources": [
+        {
+          "label": "State Bar of Georgia new member license fee notice + proration chart",
+          "url": "https://www.gabar.org/docs/default-source/membership/join/licensefeenoticeprorationschedule.pdf"
+        },
         {
           "label": "Transition Into Law Practice Program",
           "url": "https://www.gabar.org/programs/transition-into-law-practice-program"
@@ -599,8 +701,12 @@
       "page": false,
       "ube": true,
       "ubeShort": "Yes",
-      "upfront": null,
-      "upfrontNote": "BBO registration fee applies on the annual cycle",
+      "upfront": {
+        "low": 220,
+        "high": 271,
+        "label": "BBO annual registration, admitted 5 or fewer years"
+      },
+      "upfrontNote": "$220 active, or $271 with the voluntary $51 Access to Justice fee. Not prorated. Register within 3 months of admission.",
       "firstYearCle": {
         "required": false,
         "hours": 0,
@@ -611,6 +717,18 @@
       "feeReliefShort": "",
       "lastVerified": "2026-10-31",
       "sources": [
+        {
+          "label": "BBO registration fees (5 or fewer years: $271 / $220)",
+          "url": "https://bbopublic.blob.core.windows.net/web/f/InHouseInitial.pdf"
+        },
+        {
+          "label": "SJC Rule 4:02, register within three months",
+          "url": "https://www.mass.gov/supreme-judicial-court-rules/supreme-judicial-court-rule-402-periodic-registration-of-attorneys"
+        },
+        {
+          "label": "SJC Rule 4:03, $51 fee is voluntary",
+          "url": "https://www.mass.gov/supreme-judicial-court-rules/supreme-judicial-court-rule-403-periodic-assessment-of-attorneys"
+        },
         {
           "label": "SJC repeals Rule 3:16 (Practicing with Professionalism)",
           "url": "https://www.mass.gov/news/supreme-judicial-court-repeals-rule-316-requiring-newly-admitted-lawyers-to-complete-practicing-with-professionalism-course"

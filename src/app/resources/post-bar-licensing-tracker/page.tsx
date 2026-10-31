@@ -39,7 +39,7 @@ export default function Page() {
       <section className="mt-14 rounded-3xl bg-white shadow-pill ring-1 ring-navy/5">
         <h2 className="px-6 pt-6 font-display text-xl font-extrabold text-navy">All {ALL_STATES.length} jurisdictions, side by side</h2>
         <NationalTable states={ALL_STATES} base={TRACKER_PATH} />
-        <p className="px-6 pb-6 pt-2 text-xs text-ink/70">"Not verified" means the amount is prorated or the official page did not state a fixed number. We only publish figures we could confirm.</p>
+        <p className="px-6 pb-6 pt-2 text-xs text-ink/70">Every figure links back to an official bar or court source below. Ranges reflect swearing-in month or optional fees.</p>
       </section>
 
       <EmbedBox pageUrl={`https://legalgrads.com${TRACKER_PATH}`} title={title} />
