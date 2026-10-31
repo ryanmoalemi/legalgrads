@@ -226,6 +226,20 @@ export const DOCS: Record<string, LegalDoc> = {
       },
     ],
   },
+  'how-we-build-legalgrads': {
+    slug: 'how-we-build-legalgrads',
+    title: 'How We Build Legalgrads',
+    description: 'Where our attorney data comes from, how listings are checked, and what we will never do with rankings or ads.',
+    updated,
+    sections: [
+      { heading: 'Who runs the site', paragraphs: ['Legalgrads is built and run by Ryan Moalemi. Questions about any page go to ' + CONTACT_EMAIL + '.'] },
+      { heading: 'Where attorney data comes from', paragraphs: ['Unclaimed attorney pages are built from public State Bar of California license records for attorneys with Active status. We show the name, bar number, license status, admission date, and public contact location that the bar publishes. Each page links to the official State Bar record so you can check it yourself.'] },
+      { heading: 'How listings are checked', paragraphs: ['A claimed listing goes live only after a manual check against the attorney state bar record. If a record changes or an attorney asks us to fix or remove a page, we update it as soon as we can.'] },
+      { heading: 'What we do not do', paragraphs: ['Legalgrads is a browse-only directory. We do not match you with an attorney, we do not sell placement or ranking, and we do not show ratings or reviews on unclaimed pages. Results are ordered by neutral rules such as location and name, never by payment.', 'Legalgrads is not a law firm and is not a state-bar-certified lawyer referral service. Nothing on the site is legal advice.'] },
+      { heading: 'Advertising', paragraphs: ['If the site shows ads, they are labeled and kept separate from directory listings. Advertisers never affect which attorneys appear or in what order. See our Privacy and Cookies pages for how ad cookies work and how to opt out.'] },
+      { heading: 'Corrections', paragraphs: ['Spot a mistake? Email ' + CONTACT_EMAIL + ' with the page link and what is wrong.'] },
+    ],
+  },
   accessibility: {
     slug: 'accessibility',
     title: 'Accessibility',
@@ -267,4 +281,6 @@ export const LEGAL_LINKS: { href: string; title: string }[] = [
   { href: '/security/', title: 'Security' },
   { href: '/do-not-sell-or-share/', title: 'Do Not Sell or Share' },
   { href: '/accessibility/', title: 'Accessibility' },
+  { href: '/how-we-build-legalgrads/', title: 'How We Build Legalgrads' },
+  { href: '/sitemap/', title: 'Site map' },
 ];

@@ -5,7 +5,7 @@ export const dynamic = 'force-static';
 const B = 'https://legalgrads.com';
 const STATIC = ['/', '/find-lawyer/', '/for-attorneys/', '/how-it-works/', '/pricing/', '/faq/', '/about/', '/specialties/', '/join/', '/contact/', '/cookie-settings/', '/privacy-request/', '/do-not-sell-or-share/', '/attorney-advertising/',
   '/privacy/', '/terms/', '/disclaimers/', '/directory-disclosure/', '/attorney-terms/',
-  '/accessibility/', '/security/', '/cookies/', '/legal/', '/data-deletion/', '/report-abuse/'];
+  '/accessibility/', '/security/', '/cookies/', '/legal/', '/data-deletion/', '/report-abuse/', '/how-we-build-legalgrads/', '/sitemap/'];
 export default function sitemap(): MetadataRoute.Sitemap {
   const groups = cityGroups();
   return [
