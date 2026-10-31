@@ -444,8 +444,16 @@ test('CA embed HTML has no site chrome and includes calculator labels', async ({
   expect(html).toContain('Mar 30, 2028');
   expect(html).toContain('Mar 30, 2027');
   expect(html).toContain('Mar 30, 2029');
-  expect(html).not.toMatch(/<div[^>]*role="group"[^>]*>\s*<\/div>/);
+  expect(html).not.toMatch(/<(div|fieldset)[^>]*role="group"[^>]*>\s*<\/\1>/);
   expect(html).not.toContain('Launching soon');
+  const embedBody = html.replace(/<script[\s\S]*?<\/script>/g, '');
+  for (const label of ['Quick dates', 'Low-income fee relief', 'Your situation', 'Last name']) {
+    const group = embedBody.match(new RegExp(`<(div|fieldset)[^>]*(?:role="group"[^>]*aria-label="${label}"|aria-label="${label}"[^>]*role="group")[^>]*>[\\s\\S]*?</\\1>`));
+    expect(group, `embed ${label}`).toBeTruthy();
+    expect(group![0]).toMatch(/<(button|input)\b/);
+  }
+  expect(embedBody).toContain('Verdict: swear in now');
+  expect(embedBody).toContain('7<!-- --> workdays');
   const pageHtml = await (await request.get('/resources/post-bar-licensing-tracker/california/')).text();
   const body = pageHtml.replace(/<script[\s\S]*?<\/script>/g, '');
   expect(body).not.toMatch(/<div[^>]*role="group"[^>]*>\s*<\/div>/);
@@ -453,8 +461,20 @@ test('CA embed HTML has no site chrome and includes calculator labels', async ({
   expect(body).toContain('Hourly pay increase upon admission');
   expect(body).toContain('Paid hours a day affected by the raise');
   expect(body).toContain('Mar 30, 2028');
+  expect(body).toContain('Verdict: swear in now');
+  expect(body).toContain('7<!-- --> workdays');
   expect(body).toContain('Estimated using 2026 fees');
-  expect(body).toContain('TBA / check school');
+  expect(body).toContain('48.3% passed');
+  expect(body).toContain('Florida is on that list');
+  expect(body).toContain('D.C. and Colorado are not');
+  expect(body).toContain('>TBA<');
+  expect(body).toContain('Dec. 2, 2026');
+  expect(body).toContain('Bovard Auditorium');
+  for (const label of ['Quick dates', 'Low-income fee relief', 'Your situation', 'Last name']) {
+    const group = body.match(new RegExp(`<(div|fieldset)[^>]*(?:role="group"[^>]*aria-label="${label}"|aria-label="${label}"[^>]*role="group")[^>]*>[\\s\\S]*?</\\1>`));
+    expect(group, label).toBeTruthy();
+    expect(group![0]).toMatch(/<(button|input)\b/);
+  }
   expect(body).not.toContain('about 2.5 times New York');
   const retake = await (await request.get('/resources/post-bar-licensing-tracker/california/retake/')).text();
   expect(retake).toContain('48.3%');
