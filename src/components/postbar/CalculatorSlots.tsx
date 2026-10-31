@@ -38,7 +38,7 @@ export function CalculatorHead() {
         <input type="date" name="invoice" data-field="invoice" className="mt-2 block min-h-12 w-full max-w-xs rounded-2xl border border-navy/15 bg-cream px-4 font-display text-lg font-bold text-navy" data-testid="invoice-date" />
         <span className="mt-1 block text-xs text-ink/70">Rule 2.12 starts the 45 days on the invoice date. Leave this blank and the calendar only says to check for the invoice.</span>
       </label>
-      <fieldset className="mt-5 grid gap-2 sm:grid-cols-2" data-testid="fee-relief">
+      <fieldset className="mt-5 grid gap-2 sm:grid-cols-2" role="group" aria-label="Low-income fee relief" data-testid="fee-relief">
         <legend className="mb-2 text-xs font-bold uppercase tracking-wide text-ink/70">Low-income fee relief (optional)</legend>
         <label className="flex cursor-pointer items-start gap-3 rounded-2xl bg-cream p-3 text-sm text-ink">
           <input type="checkbox" name="scale" data-field="scaling" className="mt-1 h-4 w-4 accent-pink" data-testid="fee-scaling" />
