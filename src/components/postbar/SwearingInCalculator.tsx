@@ -1,18 +1,21 @@
 'use client';
 import { useMemo, useState } from 'react';
+import { ANNUAL, DEFAULT_BONUS, DEFAULT_HOURLY, HOURS_PER_DAY, SCALED_ANNUAL, WAIVED_ANNUAL, annualFor, type Relief } from '@/lib/caFees';
 
 const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+const SHORT_MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 const fmt = (d: Date) => `${MONTHS[d.getMonth()]} ${d.getDate()}, ${d.getFullYear()}`;
 const ymd = (d: Date) => `${d.getFullYear()}${String(d.getMonth() + 1).padStart(2, '0')}${String(d.getDate()).padStart(2, '0')}`;
 const addDays = (d: Date, n: number) => new Date(d.getFullYear(), d.getMonth(), d.getDate() + n);
 const usd = (n: number) => (n === 0 ? '$0' : `$${n.toLocaleString('en-US', { minimumFractionDigits: n % 1 ? 2 : 0, maximumFractionDigits: 2 })}`);
+const reportLabel = (iso: string) => {
+  const [y, m, d] = iso.split('-').map(Number);
+  if (!y || !m || !d) return iso;
+  return `${SHORT_MONTHS[m - 1]} ${d}, ${y}`;
+};
 
-// CA fee relief, from src/data/post-bar-licensing.json (Rules 2.15(B), 2.16(C)).
-export const ANNUAL = 598;
-export const SCALED_ANNUAL = 460.25; // Rule 2.15(B), 25% fee scaling, individual income under $60,478.35
-export const WAIVED_ANNUAL = 323; // Rule 2.16(C), 50% waiver, household income $20,000 or less
-export type Relief = 'none' | 'scaling' | 'waiver';
-export const annualFor = (relief: Relief) => (relief === 'waiver' ? WAIVED_ANNUAL : relief === 'scaling' ? SCALED_ANNUAL : ANNUAL);
+export { ANNUAL, SCALED_ANNUAL, WAIVED_ANNUAL, annualFor };
+export type { Relief };
 
 export function calc(input: string) {
   const [y, m, day] = input.split('-').map(Number);
@@ -26,7 +29,7 @@ export function calc(input: string) {
   const natp = new Date(oath.getFullYear() + 1, oath.getMonth() + 1, 0);
   const dec1 = new Date(oath.getFullYear(), 11, 1);
   const waitDays = band === 'half' ? Math.round((dec1.getTime() - oath.getTime()) / 86400000) : 0;
-  return { oath, fee, band, invoiceEst, annual, natp, waitDays, total: fee + 598 };
+  return { oath, fee, band, invoiceEst, annual, natp, waitDays, total: fee + ANNUAL };
 }
 
 function ics(r: NonNullable<ReturnType<typeof calc>>) {
@@ -50,7 +53,6 @@ function ics(r: NonNullable<ReturnType<typeof calc>>) {
   a.click();
   URL.revokeObjectURL(a.href);
 }
-
 
 export type Who = 'solo' | 'bump' | 'reimb';
 export function workdaysBetween(a: Date, b: Date) {
@@ -102,7 +104,8 @@ function Bar({ label, sub, first, annual, max, accent, testid }: { label: string
 export function SwearingInCalculator({ mcle, compact = false }: { mcle?: { groups: McleGroup[]; source: { label: string; url: string } }; compact?: boolean } = {}) {
   const [date, setDate] = useState('2026-11-20');
   const [who, setWho] = useState<Who>('bump');
-  const [raise, setRaise] = useState(18);
+  const [hourly, setHourly] = useState(DEFAULT_HOURLY);
+  const [bonus, setBonus] = useState(DEFAULT_BONUS);
   const [group, setGroup] = useState<string>('');
   const [scaling, setScaling] = useState(false);
   const [waiver, setWaiver] = useState(false);
@@ -114,6 +117,13 @@ export function SwearingInCalculator({ mcle, compact = false }: { mcle?: { group
   const showCompare = !!r && r.band !== 'dec';
   const decAnnual = dec1 ? new Date(dec1.getFullYear() + 1, 2, 30) : null;
   const daysToDec = r && dec1 ? Math.round((dec1.getTime() - r.oath.getTime()) / 86400000) : 0;
+  const showDecision = !!r && !!dec1 && r.band === 'half' && r.oath.getMonth() === 10;
+  const workdays = r && dec1 && showDecision ? workdaysBetween(r.oath, dec1) : 0;
+  const wageLoss = who === 'bump' ? Math.round(hourly * HOURS_PER_DAY * workdays) : 0;
+  const bonusLoss = who === 'bump' ? bonus : 0;
+  const feeSaved = !r || who === 'reimb' ? 0 : r.fee;
+  const net = feeSaved - wageLoss - bonusLoss;
+  const wait = who !== 'reimb' && net > 0;
   return (
     <section id="swearing-in-calculator" className={compact ? 'rounded-3xl bg-white p-4 sm:p-6' : 'mt-8 rounded-3xl bg-white p-6 shadow-card ring-1 ring-navy/5 sm:p-8'} data-testid="swearing-in-calculator">
       <p className="font-display text-xs font-bold uppercase tracking-wide text-purple">December swearing-in fee optimizer</p>
@@ -132,11 +142,11 @@ export function SwearingInCalculator({ mcle, compact = false }: { mcle?: { group
         <legend className="mb-2 text-xs font-bold uppercase tracking-wide text-ink/70">Low-income fee relief (optional)</legend>
         <label className="flex cursor-pointer items-start gap-3 rounded-2xl bg-cream p-3 text-sm text-ink">
           <input type="checkbox" checked={scaling} onChange={(e) => setScaling(e.target.checked)} className="mt-1 h-4 w-4 accent-pink" data-testid="fee-scaling" />
-          <span><b className="text-navy">My individual income is under $60,478</b><br />Solo, part-time, or lower paid. 25% Fee Scaling, Rule 2.15(B).</span>
+          <span><b className="text-navy">25% Fee Scaling</b><br />Individual income under $60,478.35. March 30 annual fee becomes {usd(SCALED_ANNUAL)} (Rule 2.15(B)).</span>
         </label>
         <label className="flex cursor-pointer items-start gap-3 rounded-2xl bg-cream p-3 text-sm text-ink">
           <input type="checkbox" checked={waiver} onChange={(e) => setWaiver(e.target.checked)} className="mt-1 h-4 w-4 accent-pink" data-testid="fee-waiver" />
-          <span><b className="text-navy">My household income is $20,000 or less</b><br />50% waiver, Rule 2.16(C).</span>
+          <span><b className="text-navy">50% Fee Waiver</b><br />Household income $20,000 or less. March 30 annual fee becomes {usd(WAIVED_ANNUAL)} (Rule 2.16(C)).</span>
         </label>
       </fieldset>
       {r && (
@@ -158,76 +168,84 @@ export function SwearingInCalculator({ mcle, compact = false }: { mcle?: { group
             </div>
           )}
 
-          {r.band === 'half' && dec1 && (() => {
-            const days = workdaysBetween(r.oath, dec1);
-            const lost = who === 'bump' ? Math.round(raise * 8 * days) : 0;
-            const save = who === 'reimb' ? 0 : r.fee;
-            const net = save - lost;
-            const wait = who === 'solo' || (who === 'bump' && net > 0);
-            return (
-              <div className="mt-4 rounded-3xl bg-cream p-5 sm:p-6" data-testid="decision-engine">
-                <p className="font-display text-xs font-bold uppercase tracking-wide text-purple">Decision engine</p>
-                <p className="mt-1 font-display text-lg font-extrabold text-navy">Who pays your dues, and does admission bump your pay?</p>
-                <div className="mt-3 grid gap-2 sm:grid-cols-3" role="group" aria-label="Your situation" data-testid="who-toggle">
-                  {WHO.map((w) => (
-                    <button key={w.id} type="button" onClick={() => setWho(w.id)} aria-pressed={who === w.id} data-testid={`who-${w.id}`} className={`rounded-2xl p-3 text-left ring-1 transition ${who === w.id ? 'bg-navy text-white ring-navy' : 'bg-white text-navy ring-navy/10 hover:ring-navy/40'}`}>
-                      <span className="block font-display text-sm font-bold">{w.label}</span><span className={`block text-xs ${who === w.id ? 'text-white/80' : 'text-ink'}`}>{w.sub}</span>
-                    </button>
-                  ))}
-                </div>
-                {who === 'bump' && (
-                  <label className="mt-3 flex flex-wrap items-center gap-3 text-sm text-ink">
-                    <span className="font-bold text-navy">Raise when licensed</span>
-                    <span className="inline-flex items-center rounded-2xl bg-white px-3 ring-1 ring-navy/15">+$<input type="number" min={0} step={1} value={raise} onChange={(e) => setRaise(Math.max(0, Number(e.target.value) || 0))} className="h-11 w-16 bg-transparent font-display text-lg font-bold text-navy outline-none" data-testid="raise-input" />/hr</span>
-                    <span>× 8 hrs × {days} workdays until Dec 1</span>
-                  </label>
-                )}
-                <div className={`mt-4 rounded-2xl p-4 ring-1 ${wait ? 'bg-mint/15 text-[#00735E] ring-mint/40' : 'bg-pink/10 text-[#B0124F] ring-pink/40'}`} data-testid="verdict">
-                  <p className="font-display text-2xl font-extrabold sm:text-3xl">{wait ? 'Verdict: wait until December 1' : 'Verdict: swear in now'}</p>
-                  {who === 'solo' && <p className="mt-1 font-semibold">You keep {usd(r.fee)} in cash, and waiting {daysToDec} days costs $0 in lost wages.</p>}
-                  {who === 'bump' && <p className="mt-1 font-semibold" data-testid="verdict-net">Waiting saves {usd(r.fee)} in fees but costs {usd(lost)} in pay ({days} workdays × 8 hrs × ${raise}/hr). Net if you wait: {net >= 0 ? '+' : '-'}{usd(Math.abs(net))}.</p>}
-                  {who === 'reimb' && <p className="mt-1 font-semibold">Your employer covers the {usd(r.fee)}, so waiting saves you $0 and pushes back your admission date and seniority.</p>}
-                </div>
+          {showDecision && (
+            <div className="mt-4 rounded-3xl bg-cream p-5 sm:p-6" data-testid="decision-engine">
+              <p className="font-display text-xs font-bold uppercase tracking-wide text-purple">Decision engine</p>
+              <p className="mt-1 font-display text-lg font-extrabold text-navy">Who pays your dues, and does admission bump your pay?</p>
+              <div className="mt-3 grid gap-2 sm:grid-cols-3" role="group" aria-label="Your situation" data-testid="who-toggle">
+                {WHO.map((w) => (
+                  <button key={w.id} type="button" onClick={() => setWho(w.id)} aria-pressed={who === w.id} data-testid={`who-${w.id}`} className={`rounded-2xl p-3 text-left ring-1 transition ${who === w.id ? 'bg-navy text-white ring-navy' : 'bg-white text-navy ring-navy/10 hover:ring-navy/40'}`}>
+                    <span className="block font-display text-sm font-bold">{w.label}</span><span className={`block text-xs ${who === w.id ? 'text-white/80' : 'text-ink'}`}>{w.sub}</span>
+                  </button>
+                ))}
               </div>
-            );
-          })()}
+              {who === 'bump' && (
+                <div className="mt-3 grid gap-3 sm:grid-cols-2">
+                  <label className="block rounded-2xl bg-white p-3 text-sm text-ink ring-1 ring-navy/10">
+                    <span className="font-bold text-navy">Hourly pay increase upon admission ($/hr)</span>
+                    <input type="number" min={0} step={1} value={hourly} onChange={(e) => setHourly(Math.max(0, Number(e.target.value) || 0))} className="mt-2 block h-11 w-full rounded-xl bg-cream px-3 font-display text-lg font-bold text-navy outline-none ring-1 ring-navy/15" data-testid="hourly-input" />
+                  </label>
+                  <label className="block rounded-2xl bg-white p-3 text-sm text-ink ring-1 ring-navy/10">
+                    <span className="font-bold text-navy">One-time bar passage bonus ($)</span>
+                    <input type="number" min={0} step={1} value={bonus} onChange={(e) => setBonus(Math.max(0, Number(e.target.value) || 0))} className="mt-2 block h-11 w-full rounded-xl bg-cream px-3 font-display text-lg font-bold text-navy outline-none ring-1 ring-navy/15" data-testid="bonus-input" />
+                  </label>
+                  <p className="text-xs text-ink sm:col-span-2">Count the bonus only if waiting until December 1 means you lose it. If you get the same bonus either way, leave it at $0. Pay given up uses {workdays} workdays × {HOURS_PER_DAY} hrs × ${hourly}/hr + {usd(bonus)} bonus.</p>
+                </div>
+              )}
+              <div className={`mt-4 rounded-2xl p-4 ring-1 ${wait ? 'bg-mint/15 text-[#00735E] ring-mint/40' : 'bg-pink/10 text-[#B0124F] ring-pink/40'}`} data-testid="verdict">
+                <p className="font-display text-2xl font-extrabold sm:text-3xl">{wait ? 'Verdict: wait until December 1' : 'Verdict: swear in now'}</p>
+                {who === 'solo' && <p className="mt-1 font-semibold">You keep {usd(r.fee)} in cash, and waiting {daysToDec} days costs $0 in lost wages.</p>}
+                {who === 'bump' && <p className="mt-1 font-semibold" data-testid="verdict-net">Waiting saves {usd(r.fee)} in fees but costs {usd(wageLoss + bonusLoss)} ({workdays} workdays × {HOURS_PER_DAY} hrs × ${hourly}/hr + {usd(bonus)} bonus). Net if you wait: {net >= 0 ? '+' : '-'}{usd(Math.abs(net))}.</p>}
+                {who === 'reimb' && <p className="mt-1 font-semibold">Your employer covers the {usd(r.fee)}, so waiting saves you $0 and pushes back your admission date and seniority.</p>}
+              </div>
+            </div>
+          )}
           {relief !== 'none' && (
             <div className="mt-4 rounded-2xl bg-purple/5 p-4 text-sm text-ink ring-1 ring-purple/20" data-testid="relief-note">
               {relief === 'waiver' ? (
-                <p><b className="text-navy">50% waiver: March 30 annual fee drops from $598 to $323.</b> Request it by the fee deadline (Rule 2.16(C)) with the State Bar.</p>
+                <p><b className="text-navy">50% Fee Waiver: March 30 annual fee drops from $598 to {usd(WAIVED_ANNUAL)}.</b> Request it by the fee deadline (Rule 2.16(C)) with the State Bar.</p>
               ) : (
-                <p><b className="text-navy">Fee Scaling: March 30 annual fee drops from $598 to $460.25.</b> Request it by the March 30 fee deadline (Rule 2.15(B)) with the State Bar.</p>
+                <p><b className="text-navy">25% Fee Scaling: March 30 annual fee drops from $598 to {usd(SCALED_ANNUAL)}.</b> Request it by the March 30 fee deadline (Rule 2.15(B)) with the State Bar.</p>
               )}
               {r.band === 'half' && <p className="mt-2">Your $299 first license fee stays at $299. CalBar says new licensees admitted after May 31 do not qualify for Fee Scaling in their first year.</p>}
               {r.band === 'dec' && <p className="mt-2">Your first license fee is already $0, so relief only matters for the March 30 annual fee.</p>}
               {r.band === 'full' && <p className="mt-2">Admitted January to May? Ask CalBar whether relief also applies to your $598 first license fee before it is due. We do not discount it here.</p>}
             </div>
           )}
+        </>
+      )}
 
-          {mcle && (
-            <div className="mt-4 rounded-3xl bg-white p-5 ring-1 ring-navy/10 sm:p-6" data-testid="mcle-group">
-              <p className="font-display text-xs font-bold uppercase tracking-wide text-purple">MCLE compliance group</p>
-              <p className="mt-1 font-display text-lg font-extrabold text-navy">First letter of your last name</p>
-              <div className="mt-3 flex flex-wrap gap-2" role="group" aria-label="Last name">
-                {mcle.groups.map((g) => (
-                  <button key={g.id} type="button" onClick={() => setGroup(g.id)} aria-pressed={group === g.id} data-testid={`mcle-${g.id}`} className={`min-h-11 rounded-full px-5 font-display text-sm font-bold ring-1 transition ${group === g.id ? 'bg-purple text-white ring-purple' : 'bg-cream text-navy ring-navy/15 hover:ring-navy/40'}`}>{g.letters}</button>
-                ))}
+      {mcle && (
+        <div className="mt-4 rounded-3xl bg-white p-5 ring-1 ring-navy/10 sm:p-6" data-testid="mcle-group">
+          <p className="font-display text-xs font-bold uppercase tracking-wide text-purple">MCLE compliance group</p>
+          <p className="mt-1 font-display text-lg font-extrabold text-navy">First letter of your last name</p>
+          <div className="mt-3 grid gap-3 sm:grid-cols-3" role="group" aria-label="Last name" data-testid="mcle-cards">
+            {mcle.groups.map((g) => (
+              <button key={g.id} type="button" onClick={() => setGroup(g.id)} aria-pressed={group === g.id} data-testid={`mcle-${g.id}`} className={`rounded-2xl p-4 text-left ring-1 transition ${group === g.id ? 'bg-purple text-white ring-purple' : 'bg-cream text-navy ring-navy/15 hover:ring-navy/40'}`}>
+                <span className={`block text-xs font-bold uppercase tracking-wide ${group === g.id ? 'text-white/80' : 'text-ink/70'}`}>Last names</span>
+                <span className="mt-1 block font-display text-3xl font-extrabold">{g.letters}</span>
+                <span className="mt-1 block text-sm font-semibold">Report due {reportLabel(g.report)}</span>
+              </button>
+            ))}
+          </div>
+          {r && (() => {
+            const g = mcle.groups.find((x) => x.id === group);
+            if (!g) return <p className="mt-3 text-sm text-ink">Select a group to see prorated hours for this oath date. The report dates above are the group deadlines.</p>;
+            const m = mcleFor(r.oath, g);
+            return (
+              <div className="mt-4 grid gap-3 sm:grid-cols-3" data-testid="mcle-result">
+                <div className="rounded-2xl bg-cream p-4"><p className="text-xs font-bold uppercase tracking-wide text-ink/70">Your group</p><p className="mt-1 font-display text-3xl font-extrabold text-navy">Group {g.id}</p><p className="text-sm text-ink">Last names {g.letters}</p></div>
+                <div className="rounded-2xl bg-cream p-4"><p className="text-xs font-bold uppercase tracking-wide text-ink/70">First report due</p><p className="mt-1 font-display text-2xl font-extrabold text-navy" data-testid="mcle-report">{fmt(m.report)}</p><p className="text-sm text-ink">Period {fmt(m.start)} to {fmt(m.end)}</p></div>
+                <div className="rounded-2xl bg-cream p-4"><p className="text-xs font-bold uppercase tracking-wide text-ink/70">Prorated hours, est.</p><p className="mt-1 font-display text-3xl font-extrabold text-navy" data-testid="mcle-hours">~{m.hours} of 25</p><p className="text-sm text-ink">{m.months} months in your first period</p></div>
+                <p className="text-sm text-ink sm:col-span-3">{m.hours <= 10 ? 'Good news: your 10 hours of New Attorney Training can count toward this first period, so it may cover you entirely.' : 'Your 10 hours of New Attorney Training can count toward this first period, which cuts what is left.'} Estimate uses 25 hours × months ÷ 36 (Rule 2.53). CalBar&apos;s proportional chart controls. <a className="text-purple underline" href={mcle.source.url} target="_blank" rel="noopener noreferrer">Group dates source</a></p>
               </div>
-              {(() => {
-                const g = mcle.groups.find((x) => x.id === group);
-                if (!g) return <p className="mt-3 text-sm text-ink">Pick a letter range to see your group, your first reporting deadline and an estimate of the hours you owe.</p>;
-                const m = mcleFor(r.oath, g);
-                return (
-                  <div className="mt-4 grid gap-3 sm:grid-cols-3" data-testid="mcle-result">
-                    <div className="rounded-2xl bg-cream p-4"><p className="text-xs font-bold uppercase tracking-wide text-ink/70">Your group</p><p className="mt-1 font-display text-3xl font-extrabold text-navy">Group {g.id}</p><p className="text-sm text-ink">Last names {g.letters}</p></div>
-                    <div className="rounded-2xl bg-cream p-4"><p className="text-xs font-bold uppercase tracking-wide text-ink/70">First report due</p><p className="mt-1 font-display text-2xl font-extrabold text-navy" data-testid="mcle-report">{fmt(m.report)}</p><p className="text-sm text-ink">Period {fmt(m.start)} to {fmt(m.end)}</p></div>
-                    <div className="rounded-2xl bg-cream p-4"><p className="text-xs font-bold uppercase tracking-wide text-ink/70">Prorated hours, est.</p><p className="mt-1 font-display text-3xl font-extrabold text-navy" data-testid="mcle-hours">~{m.hours} of 25</p><p className="text-sm text-ink">{m.months} months in your first period</p></div>
-                    <p className="text-sm text-ink sm:col-span-3">{m.hours <= 10 ? 'Good news: your 10 hours of New Attorney Training can count toward this first period, so it may cover you entirely.' : 'Your 10 hours of New Attorney Training can count toward this first period, which cuts what is left.'} Estimate uses 25 hours × months ÷ 36 (Rule 2.53). CalBar&apos;s proportional chart controls. <a className="text-purple underline" href={mcle.source.url} target="_blank" rel="noopener noreferrer">Group dates source</a></p>
-                  </div>
-                );
-              })()}
-            </div>
-          )}
+            );
+          })()}
+        </div>
+      )}
+
+      {r && (
+        <>
           <dl className="mt-4 grid gap-3 sm:grid-cols-3">
             <div className="rounded-2xl bg-cream p-4"><dt className="text-xs font-bold uppercase tracking-wide text-ink/70">First license fee</dt><dd className="mt-1 font-display text-3xl font-extrabold text-navy">{usd(r.fee)}</dd><dd className="text-sm text-ink">Due 45 days from invoice. If invoiced on oath day: {fmt(r.invoiceEst)}</dd></div>
             <div className="rounded-2xl bg-cream p-4"><dt className="text-xs font-bold uppercase tracking-wide text-ink/70">New Attorney Training</dt><dd className="mt-1 font-display text-2xl font-extrabold text-navy" data-testid="natp-deadline">{fmt(r.natp)}</dd><dd className="text-sm text-ink">10 hours. Last day of the month of your 1-year anniversary.</dd></div>

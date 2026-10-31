@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { type AttorneyProfile, calbarUrl, cityPath, firstName, initials, profileJsonLd } from '@/lib/profiles';
-import '@/app/attorneys/profile-template.css';
+import '@/app/(site)/attorneys/profile-template.css';
 import { ProfileViews } from './ProfileViews';
 
 const Disclaimer = () => (
