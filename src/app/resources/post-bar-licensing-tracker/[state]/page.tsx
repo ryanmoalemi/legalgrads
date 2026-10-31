@@ -3,17 +3,19 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { SwearingInCalculator } from '@/components/postbar/SwearingInCalculator';
 import { EmbedBox } from '@/components/postbar/EmbedBox';
-import { POST_BAR_STATES, TRACKER_PATH, money, prettyDate, range, stateBySlug } from '@/lib/postBar';
+import { StateStub } from '@/components/postbar/StateStub';
+import { CaReceipt } from '@/components/postbar/CaReceipt';
+import { ALL_STATES, CA_EMBED_PATH, TRACKER_PATH, money, prettyDate, range, stateBySlug } from '@/lib/postBar';
 
 export const dynamicParams = false;
-export function generateStaticParams() { return POST_BAR_STATES.map((s) => ({ state: s.slug })); }
+export function generateStaticParams() { return ALL_STATES.map((s) => ({ state: s.slug })); }
 
 type Props = { params: Promise<{ state: string }> };
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const s = stateBySlug((await params).state);
   if (!s) return {};
   const title = s.slug === 'california' ? 'California Post-Bar Licensing Costs, Deadlines & 1st-Year CLE (2026-2027)' : `${s.name} Swearing-In Fees & First-Year CLE 2026-2027`;
-  const description = `${s.name} post-bar costs (${range(s)} upfront), ${s.cle?.headline} of first-year CLE, and UBE rules. Verified against official sources.`;
+  const description = `${s.name} post-bar costs (${range(s)} upfront), ${s.cle?.headline ?? s.firstYearCle.short} of first-year CLE, and UBE rules. Verified against official sources.`;
   const path = `${TRACKER_PATH}${s.slug}/`;
   return { title, description, alternates: { canonical: path }, openGraph: { title, description, url: path } };
 }
@@ -30,7 +32,9 @@ function Card({ n, title, children }: { n: string; title: string; children: Reac
 
 export default async function Page({ params }: Props) {
   const s = stateBySlug((await params).state);
-  if (!s || !s.cle || !s.costs || !s.timeline || !s.portability || !s.faq) notFound();
+  if (!s) notFound();
+  if (!s.costs) return <StateStub s={s} />;
+  if (!s.cle || !s.costs || !s.timeline || !s.portability || !s.faq) notFound();
   const cle = s.cle, portability = s.portability, faq = s.faq;
   const faqLd = { '@context': 'https://schema.org', '@type': 'FAQPage', mainEntity: faq.map((f) => ({ '@type': 'Question', name: f.q, acceptedAnswer: { '@type': 'Answer', text: f.a } })) };
   const crumbLd = { '@context': 'https://schema.org', '@type': 'BreadcrumbList', itemListElement: [
@@ -53,7 +57,8 @@ export default async function Page({ params }: Props) {
         <div className="rounded-3xl bg-purple p-4 text-white sm:p-6"><p className="text-xs font-bold uppercase tracking-wide text-white/80">UBE</p><p className="mt-1 font-display text-3xl font-extrabold sm:text-4xl">{s.ubeShort}</p></div>
       </div>
 
-      {s.slug === 'california' && <SwearingInCalculator />}
+      {s.slug === 'california' && <SwearingInCalculator mcle={s.mcle} />}
+      {s.receipt && <CaReceipt r={s.receipt} />}
 
       <div className="mt-8 grid gap-6 lg:grid-cols-2">
         <Card n="01" title="Costs">
@@ -117,7 +122,7 @@ export default async function Page({ params }: Props) {
         <p className="mt-5 text-sm text-ink">Bar exam fees not included. Fees change, so confirm before you pay. General information, not legal advice.</p>
       </section>
 
-      <EmbedBox pageUrl={`https://legalgrads.com${TRACKER_PATH}${s.slug}/`} title={`${s.name} Post-Bar Licensing Costs & 1st-Year CLE (2026-2027)`} />
+      <EmbedBox {...(s.slug === 'california' ? { src: `https://legalgrads.com${CA_EMBED_PATH}`, height: 420, label: 'California December 1 swearing-in fee and deadline calculator', heading: 'Embed the California fee calculator' } : {})} pageUrl={`https://legalgrads.com${TRACKER_PATH}${s.slug}/`} title={`${s.name} Post-Bar Licensing Costs & 1st-Year CLE (2026-2027)`} />
 
       <div className="mt-10 flex flex-wrap gap-3">
         <Link href={TRACKER_PATH} className="inline-flex min-h-11 items-center rounded-full bg-white px-5 font-display text-sm font-semibold text-navy ring-1 ring-navy/10">Compare states</Link>

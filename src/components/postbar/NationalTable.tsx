@@ -34,7 +34,7 @@ export function NationalTable({ states, base, embed = false }: { states: PostBar
             {rows.map((s) => (
               <tr key={s.slug} className="border-t border-navy/5 align-top" data-testid={`row-${s.slug}`}>
                 <th className="px-6 py-4 font-display font-bold text-navy">
-                  {s.page ? <Link target={embed ? '_blank' : undefined} className="underline decoration-purple/40 hover:text-purple" href={`${base}${s.slug}/`}>{s.name}</Link> : s.name}
+                  <Link target={embed ? '_blank' : undefined} className="underline decoration-purple/40 hover:text-purple" href={`${base}${s.slug}/`} data-testid={`row-link-${s.slug}`}>{s.name}</Link>
                   <span className="ml-2 rounded-lg bg-cream px-2 py-0.5 text-xs text-navy/70">{s.abbr}</span>
                 </th>
                 <td className="px-6 py-4"><p className="font-display font-extrabold text-navy">{range(s)}</p><p className="text-xs text-ink">{s.upfrontNote}</p></td>

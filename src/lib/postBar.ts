@@ -13,6 +13,8 @@ export type PostBarState = {
   portability?: { headline: string; points: string[] };
   faq?: { q: string; a: string }[];
   oath?: { who: string[]; steps: { t: string; d: string }[]; faqUrl: string; oathUrl: string };
+  receipt?: { items: { label: string; amount: number; rule: string; when: string }[]; license: { low: number; high: number; note: string }; excluded: string[]; sources: Src[] };
+  mcle?: { groups: { id: string; letters: string; periodEnd: string; report: string }[]; source: Src; ruleSource: Src };
   sources: Src[];
 };
 export const POST_BAR = data as unknown as { lastVerified: string; states: PostBarState[] };
@@ -23,4 +25,5 @@ export const EMBED_PATH = '/embed/post-bar-licensing-tracker/';
 export const money = (n: number) => (n === 0 ? '$0' : `$${n.toLocaleString('en-US', { maximumFractionDigits: 2 })}`);
 export const range = (s: PostBarState) => (!s.upfront ? 'Not verified' : s.upfront.low === s.upfront.high ? money(s.upfront.low) : `${money(s.upfront.low)} to ${money(s.upfront.high)}`);
 export const prettyDate = (d: string) => new Date(`${d}T12:00:00Z`).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', timeZone: 'UTC' });
-export const stateBySlug = (slug: string) => POST_BAR_STATES.find((s) => s.slug === slug);
+export const stateBySlug = (slug: string) => ALL_STATES.find((s) => s.slug === slug);
+export const CA_EMBED_PATH = '/embed/california-fee-calculator/';
