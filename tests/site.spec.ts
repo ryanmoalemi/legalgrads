@@ -433,4 +433,28 @@ test('CA embed HTML has no site chrome and includes calculator labels', async ({
   expect(html).toContain('Mar 30, 2029');
   expect(html).not.toMatch(/<div[^>]*role="group"[^>]*>\s*<\/div>/);
   expect(html).not.toContain('Launching soon');
+  const pageHtml = await (await request.get('/resources/post-bar-licensing-tracker/california/')).text();
+  const body = pageHtml.replace(/<script[\s\S]*?<\/script>/g, '');
+  expect(body).not.toMatch(/<div[^>]*role="group"[^>]*>\s*<\/div>/);
+  expect(body).toContain('Nov 20, 2026');
+  expect(body).toContain('Hourly pay increase upon admission');
+  expect(body).toContain('Mar 30, 2028');
+  expect(body).toContain('48.3%');
+  expect(body).toContain('TBA / check school');
+  expect(body).toContain('about 2.5 times New York');
+});
+
+test('CA calculator link keeps oath date, pay, and MCLE group', async ({ page }) => {
+  await page.context().grantPermissions(['clipboard-read', 'clipboard-write']);
+  await page.goto('/resources/post-bar-licensing-tracker/california/?oath=2026-11-20&who=bump&hourly=5&bonus=0&mcle=2');
+  await expect(page.getByTestId('verdict')).toContainText('Verdict: wait until December 1');
+  await expect(page.getByTestId('mcle-2')).toHaveAttribute('aria-pressed', 'true');
+  await page.getByTestId('bonus-input').fill('3000');
+  await expect(page.getByTestId('verdict')).toContainText('swear in now');
+  await expect(page).toHaveURL(/bonus=3000/);
+  await page.getByTestId('copy-plan').click();
+  const copied = await page.evaluate(() => navigator.clipboard.readText());
+  expect(copied).toContain('/resources/post-bar-licensing-tracker/california/');
+  expect(copied).toContain('oath=2026-11-20');
+  expect(copied).toContain('mcle=2');
 });

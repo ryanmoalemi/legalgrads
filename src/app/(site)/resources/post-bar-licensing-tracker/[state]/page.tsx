@@ -6,6 +6,9 @@ import { EmbedBox } from '@/components/postbar/EmbedBox';
 import { StateStub } from '@/components/postbar/StateStub';
 import { CaReceipt } from '@/components/postbar/CaReceipt';
 import { OathRejectionBox } from '@/components/postbar/OathRejectionBox';
+import { BillComparison } from '@/components/postbar/BillComparison';
+import { CaLawSchools } from '@/components/postbar/CaLawSchools';
+import { JulyRetake } from '@/components/postbar/JulyRetake';
 import { ALL_STATES, CA_EMBED_PATH, TRACKER_PATH, money, prettyDate, range, stateBySlug } from '@/lib/postBar';
 
 export const dynamicParams = false;
@@ -61,6 +64,7 @@ export default async function Page({ params }: Props) {
 
       {s.slug === 'california' && <SwearingInCalculator mcle={s.mcle} />}
       {s.receipt && <CaReceipt r={s.receipt} />}
+      {ca && <BillComparison />}
 
       <div className="mt-8 grid gap-6 lg:grid-cols-2">
         {!ca && (
@@ -93,10 +97,17 @@ export default async function Page({ params }: Props) {
           </ul>
           <ul className="mt-4 space-y-1 text-sm text-ink">{cle.notes.map((n) => <li key={n}>• {n}</li>)}</ul>
         </Card>
-        <Card n={ca ? '03' : '04'} title="UBE portability" className={ca ? 'lg:col-span-2' : ''}>
-          <p className={`inline-flex rounded-full px-4 py-2 font-display text-lg font-extrabold ${s.ube ? 'bg-mint/15 text-[#00735E]' : 'bg-navy/5 text-navy'}`}>{portability.headline}</p>
-          <ul className="mt-5 space-y-3">{portability.points.map((p) => <li key={p} className="flex gap-3 text-navy"><span className="mt-2 h-2 w-2 shrink-0 rounded-full bg-purple" />{p}</li>)}</ul>
-        </Card>
+        {ca ? (
+          <Card n="03" title="Scored under 1390 on the July 2026 bar?" className="lg:col-span-2">
+            <p className="mb-4 font-display text-lg font-extrabold text-navy">February 2027 retake costs, deadlines, and MBE score transfers</p>
+            <JulyRetake />
+          </Card>
+        ) : (
+          <Card n="04" title="UBE portability">
+            <p className={`inline-flex rounded-full px-4 py-2 font-display text-lg font-extrabold ${s.ube ? 'bg-mint/15 text-[#00735E]' : 'bg-navy/5 text-navy'}`}>{portability.headline}</p>
+            <ul className="mt-5 space-y-3">{portability.points.map((p) => <li key={p} className="flex gap-3 text-navy"><span className="mt-2 h-2 w-2 shrink-0 rounded-full bg-purple" />{p}</li>)}</ul>
+          </Card>
+        )}
         {s.oath && (
           <Card n={ca ? '04' : '05'} title="Who can swear you in" className="lg:col-span-2">
             <ul className="flex flex-wrap gap-2">{s.oath.who.map((w) => <li key={w} className="rounded-full bg-cream px-3 py-1 text-sm font-semibold text-navy">{w}</li>)}</ul>
@@ -106,6 +117,8 @@ export default async function Page({ params }: Props) {
           </Card>
         )}
       </div>
+
+      {ca && <CaLawSchools />}
 
       <section className="mt-12">
         <h2 className="font-display text-2xl font-extrabold text-navy">Quick answers</h2>
