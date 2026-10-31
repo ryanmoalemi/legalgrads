@@ -349,3 +349,22 @@ test('layout holds at 375px', async ({ page }) => {
     await noOverflow(page);
   }
 });
+
+test('CA calculator compares now vs Dec 1 and honors Fee Scaling rules', async ({ page }) => {
+  await page.goto('/resources/post-bar-licensing-tracker/california/');
+  const calc = page.getByTestId('swearing-in-calculator');
+  await expect(calc.getByRole('heading', { name: 'Should I wait until December 1?' })).toBeVisible();
+  await calc.getByRole('button', { name: 'Nov 20, 2026' }).click();
+  await expect(page.getByTestId('compare-now')).toContainText('$897');
+  await expect(page.getByTestId('compare-dec1')).toContainText('$598');
+  await expect(page.getByTestId('compare-savings')).toContainText('Waiting 11 days saves $299');
+  await page.getByTestId('fee-scaling').check();
+  await expect(page.getByTestId('annual-amount')).toContainText('$460.25');
+  await expect(page.getByTestId('relief-note')).toContainText('stays at $299');
+  await page.getByTestId('fee-waiver').check();
+  await expect(page.getByTestId('annual-amount')).toContainText('$323');
+  await calc.getByRole('button', { name: 'Dec 1, 2026' }).click();
+  await expect(page.getByTestId('cost-compare')).toHaveCount(0);
+  await expect(page.getByTestId('calc-result')).toContainText('$0 first license fee');
+  await expect(page.getByTestId('ics-download')).toBeVisible();
+});
