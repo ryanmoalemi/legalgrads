@@ -1,6 +1,5 @@
 import type { Metadata } from 'next';
 import localFont from 'next/font/local';
-import { CookieBanner, Footer, Header } from '@/components/Chrome';
 import './globals.css';
 
 const jakarta = localFont({
@@ -68,10 +67,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en" className={`${jakarta.variable} ${inter.variable} ${caveat.variable}`}>
       <body className="font-sans antialiased">
         <a className="skip-link" href="#main">Skip to content</a>
-        <Header />
-        <main id="main">{children}</main>
-        <Footer />
-        <CookieBanner />
+        {children}
       </body>
     </html>
   );

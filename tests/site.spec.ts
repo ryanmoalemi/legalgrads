@@ -365,6 +365,72 @@ test('CA calculator compares now vs Dec 1 and honors Fee Scaling rules', async (
   await expect(page.getByTestId('annual-amount')).toContainText('$323');
   await calc.getByRole('button', { name: 'Dec 1, 2026' }).click();
   await expect(page.getByTestId('cost-compare')).toHaveCount(0);
+  await expect(page.getByTestId('decision-engine')).toHaveCount(0);
   await expect(page.getByTestId('calc-result')).toContainText('$0 first license fee');
   await expect(page.getByTestId('ics-download')).toBeVisible();
+});
+
+test('CA decision engine uses live pay and bonus, and the page drops the duplicate fee list', async ({ page }) => {
+  await page.goto('/resources/post-bar-licensing-tracker/california/');
+  await expect(page.getByRole('heading', { name: 'Costs', exact: true })).toHaveCount(0);
+  await expect(page.getByTestId('receipt-relief')).toContainText('25% Fee Scaling');
+  await expect(page.getByTestId('receipt-relief')).toContainText('$460.25');
+  await expect(page.getByTestId('receipt-relief')).toContainText('50% Fee Waiver');
+  await expect(page.getByTestId('receipt-relief')).toContainText('$323');
+  const oath = page.getByTestId('oath-rejection');
+  await expect(oath).toContainText("Don't get your Oath Packet rejected");
+  await expect(oath).toContainText('Date trap');
+  await expect(oath).toContainText('Electronic seal trap');
+  await expect(oath.getByRole('link', { name: 'Los Angeles Superior Court' })).toHaveAttribute('href', /lacourt\.ca\.gov/);
+  await expect(oath.getByRole('link', { name: 'Sacramento Superior Court' })).toHaveAttribute('href', /saccourt\.ca\.gov/);
+  await expect(page.getByTestId('embed-box')).toContainText('height="680"');
+  await expect(page.locator('body')).not.toContainText('Launching soon');
+
+  await page.getByTestId('hourly-input').fill('0');
+  await page.getByTestId('bonus-input').fill('0');
+  await expect(page.getByTestId('verdict')).toContainText('Verdict: wait until December 1');
+  await page.getByTestId('bonus-input').fill('1000');
+  await expect(page.getByTestId('verdict')).toContainText('Verdict: swear in now');
+  await expect(page.getByTestId('verdict-net')).toContainText('$1,000 bonus');
+  await page.getByTestId('bonus-input').fill('0');
+  await page.getByTestId('hourly-input').fill('18');
+  await expect(page.getByTestId('verdict-net')).toContainText('7 workdays × 8 hrs × $18/hr');
+  await expect(page.getByTestId('verdict')).toContainText('Verdict: swear in now');
+
+  await page.getByTestId('oath-date').fill('2026-07-15');
+  await expect(page.getByTestId('decision-engine')).toHaveCount(0);
+  await expect(page.getByTestId('cost-compare')).toBeVisible();
+  await expect(page.getByTestId('mcle-cards')).toContainText('A-G');
+  await expect(page.getByTestId('mcle-cards')).toContainText('Mar 30, 2028');
+  await expect(page.getByTestId('mcle-cards')).toContainText('H-M');
+  await expect(page.getByTestId('mcle-cards')).toContainText('Mar 30, 2027');
+  await expect(page.getByTestId('mcle-cards')).toContainText('N-Z');
+  await expect(page.getByTestId('mcle-cards')).toContainText('Mar 30, 2029');
+});
+
+test('CA embed HTML has no site chrome and includes calculator labels', async ({ request }) => {
+  const html = await (await request.get('/embed/california-fee-calculator/')).text();
+  expect(html).not.toMatch(/<header[\s>]/i);
+  expect(html).not.toMatch(/<footer[\s>]/i);
+  expect(html).not.toMatch(/<nav[\s>]/i);
+  expect(html).toContain('Source:');
+  expect(html).toContain('Legalgrads.com');
+  expect(html).toContain('Nov 20, 2026');
+  expect(html).toContain('Dec 1, 2026');
+  expect(html).toContain('Jan 5, 2027');
+  expect(html).toContain('25% Fee Scaling');
+  expect(html).toContain('50% Fee Waiver');
+  expect(html).toContain('Paying myself');
+  expect(html).toContain('Raise on admission');
+  expect(html).toContain('Employer pays dues');
+  expect(html).toContain('Hourly pay increase upon admission');
+  expect(html).toContain('One-time bar passage bonus');
+  expect(html).toContain('A-G');
+  expect(html).toContain('H-M');
+  expect(html).toContain('N-Z');
+  expect(html).toContain('Mar 30, 2028');
+  expect(html).toContain('Mar 30, 2027');
+  expect(html).toContain('Mar 30, 2029');
+  expect(html).not.toMatch(/<div[^>]*role="group"[^>]*>\s*<\/div>/);
+  expect(html).not.toContain('Launching soon');
 });

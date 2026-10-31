@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { cityGroups, cityPath, profilePath } from '@/lib/profiles';
-import '@/app/attorneys/profile-template.css';
+import '@/app/(site)/attorneys/profile-template.css';
 
 type Params = { state: string; city: string };
 export const dynamicParams = false;

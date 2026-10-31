@@ -5,6 +5,7 @@ import { SwearingInCalculator } from '@/components/postbar/SwearingInCalculator'
 import { EmbedBox } from '@/components/postbar/EmbedBox';
 import { StateStub } from '@/components/postbar/StateStub';
 import { CaReceipt } from '@/components/postbar/CaReceipt';
+import { OathRejectionBox } from '@/components/postbar/OathRejectionBox';
 import { ALL_STATES, CA_EMBED_PATH, TRACKER_PATH, money, prettyDate, range, stateBySlug } from '@/lib/postBar';
 
 export const dynamicParams = false;
@@ -20,9 +21,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return { title, description, alternates: { canonical: path }, openGraph: { title, description, url: path } };
 }
 
-function Card({ n, title, children }: { n: string; title: string; children: React.ReactNode }) {
+function Card({ n, title, children, className = '' }: { n: string; title: string; children: React.ReactNode; className?: string }) {
   return (
-    <section className="rounded-3xl bg-white p-6 shadow-card ring-1 ring-navy/5 sm:p-8">
+    <section className={`rounded-3xl bg-white p-6 shadow-card ring-1 ring-navy/5 sm:p-8 ${className}`}>
       <p className="font-display text-xs font-bold uppercase tracking-wide text-purple">{n}</p>
       <h2 className="mt-1 font-display text-2xl font-extrabold text-navy">{title}</h2>
       <div className="mt-5">{children}</div>
@@ -36,6 +37,7 @@ export default async function Page({ params }: Props) {
   if (!s.costs) return <StateStub s={s} />;
   if (!s.cle || !s.costs || !s.timeline || !s.portability || !s.faq) notFound();
   const cle = s.cle, portability = s.portability, faq = s.faq;
+  const ca = s.slug === 'california';
   const faqLd = { '@context': 'https://schema.org', '@type': 'FAQPage', mainEntity: faq.map((f) => ({ '@type': 'Question', name: f.q, acceptedAnswer: { '@type': 'Answer', text: f.a } })) };
   const crumbLd = { '@context': 'https://schema.org', '@type': 'BreadcrumbList', itemListElement: [
     { '@type': 'ListItem', position: 1, name: 'Post-Bar Licensing Tracker', item: `https://legalgrads.com${TRACKER_PATH}` },
@@ -61,24 +63,26 @@ export default async function Page({ params }: Props) {
       {s.receipt && <CaReceipt r={s.receipt} />}
 
       <div className="mt-8 grid gap-6 lg:grid-cols-2">
-        <Card n="01" title="Costs">
-          <ul className="divide-y divide-navy/5">
-            {s.costs.map((c) => (
-              <li key={c.label} className="flex items-start justify-between gap-4 py-3">
-                <div><p className="font-semibold text-navy">{c.label}</p><p className="text-sm text-ink">{c.note}</p></div>
-                <p className="shrink-0 font-display text-2xl font-extrabold text-navy">{money(c.amount)}</p>
-              </li>
-            ))}
-          </ul>
-        </Card>
-        <Card n="02" title="Timelines and scores">
+        {!ca && (
+          <Card n="01" title="Costs">
+            <ul className="divide-y divide-navy/5">
+              {s.costs.map((c) => (
+                <li key={c.label} className="flex items-start justify-between gap-4 py-3">
+                  <div><p className="font-semibold text-navy">{c.label}</p><p className="text-sm text-ink">{c.note}</p></div>
+                  <p className="shrink-0 font-display text-2xl font-extrabold text-navy">{money(c.amount)}</p>
+                </li>
+              ))}
+            </ul>
+          </Card>
+        )}
+        <Card n={ca ? '01' : '02'} title="Timelines and scores">
           <div className="grid grid-cols-2 gap-3">
             {s.timeline.map((t) => (
               <div key={t.label} className="rounded-2xl bg-cream p-4"><p className="font-display text-3xl font-extrabold text-navy">{t.big}</p><p className="mt-1 text-sm text-ink">{t.label}</p></div>
             ))}
           </div>
         </Card>
-        <Card n="03" title="First-year CLE">
+        <Card n={ca ? '02' : '03'} title="First-year CLE">
           <p className="font-display text-5xl font-extrabold text-pink">{cle.headline}</p>
           <p className="mt-1 font-semibold text-navy">{cle.sub}</p>
           <p className="mt-1 text-sm text-ink">Deadline: {cle.deadline}</p>
@@ -89,15 +93,16 @@ export default async function Page({ params }: Props) {
           </ul>
           <ul className="mt-4 space-y-1 text-sm text-ink">{cle.notes.map((n) => <li key={n}>• {n}</li>)}</ul>
         </Card>
-        <Card n="04" title="UBE portability">
+        <Card n={ca ? '03' : '04'} title="UBE portability" className={ca ? 'lg:col-span-2' : ''}>
           <p className={`inline-flex rounded-full px-4 py-2 font-display text-lg font-extrabold ${s.ube ? 'bg-mint/15 text-[#00735E]' : 'bg-navy/5 text-navy'}`}>{portability.headline}</p>
           <ul className="mt-5 space-y-3">{portability.points.map((p) => <li key={p} className="flex gap-3 text-navy"><span className="mt-2 h-2 w-2 shrink-0 rounded-full bg-purple" />{p}</li>)}</ul>
         </Card>
         {s.oath && (
-          <Card n="05" title="Who can swear you in">
+          <Card n={ca ? '04' : '05'} title="Who can swear you in" className="lg:col-span-2">
             <ul className="flex flex-wrap gap-2">{s.oath.who.map((w) => <li key={w} className="rounded-full bg-cream px-3 py-1 text-sm font-semibold text-navy">{w}</li>)}</ul>
             <ol className="mt-5 space-y-3">{s.oath.steps.map((st, i) => <li key={st.t} className="flex gap-3"><span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-purple font-display text-sm font-bold text-white">{i + 1}</span><div><p className="font-semibold text-navy">{st.t}</p><p className="text-sm text-ink">{st.d}</p></div></li>)}</ol>
             <div className="mt-5 flex flex-wrap gap-3 text-sm"><a className="font-semibold text-purple underline" href={s.oath.oathUrl} target="_blank" rel="noopener noreferrer">CalBar attorney oath page</a><a className="font-semibold text-purple underline" href={s.oath.faqUrl} target="_blank" rel="noopener noreferrer">CalBar oath FAQ</a></div>
+            {ca && <OathRejectionBox />}
           </Card>
         )}
       </div>
@@ -122,7 +127,7 @@ export default async function Page({ params }: Props) {
         <p className="mt-5 text-sm text-ink">Bar exam fees not included. Fees change, so confirm before you pay. General information, not legal advice.</p>
       </section>
 
-      <EmbedBox {...(s.slug === 'california' ? { src: `https://legalgrads.com${CA_EMBED_PATH}`, height: 420, label: 'California December 1 swearing-in fee and deadline calculator', heading: 'Embed the California fee calculator' } : {})} pageUrl={`https://legalgrads.com${TRACKER_PATH}${s.slug}/`} title={`${s.name} Post-Bar Licensing Costs & 1st-Year CLE (2026-2027)`} />
+      <EmbedBox {...(ca ? { src: `https://legalgrads.com${CA_EMBED_PATH}`, height: 680, label: 'California December 1 swearing-in fee and deadline calculator', heading: 'Embed the California fee calculator' } : {})} pageUrl={`https://legalgrads.com${TRACKER_PATH}${s.slug}/`} title={`${s.name} Post-Bar Licensing Costs & 1st-Year CLE (2026-2027)`} />
 
       <div className="mt-10 flex flex-wrap gap-3">
         <Link href={TRACKER_PATH} className="inline-flex min-h-11 items-center rounded-full bg-white px-5 font-display text-sm font-semibold text-navy ring-1 ring-navy/10">Compare states</Link>

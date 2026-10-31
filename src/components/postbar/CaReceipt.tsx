@@ -1,6 +1,7 @@
 import type { PostBarState } from '@/lib/postBar';
+import { ANNUAL, SCALED_ANNUAL, SCALING_INCOME, WAIVED_ANNUAL, WAIVER_HOUSEHOLD } from '@/lib/caFees';
 
-const usd = (n: number) => `$${n.toLocaleString('en-US')}`;
+const usd = (n: number) => `$${n.toLocaleString('en-US', { minimumFractionDigits: n % 1 ? 2 : 0, maximumFractionDigits: 2 })}`;
 
 export function CaReceipt({ r }: { r: NonNullable<PostBarState['receipt']> }) {
   const base = r.items.reduce((a, i) => a + i.amount, 0);
@@ -23,6 +24,15 @@ export function CaReceipt({ r }: { r: NonNullable<PostBarState['receipt']> }) {
           <li className="flex items-start justify-between gap-3"><span><span className="font-sans font-semibold">First license fee</span><br /><span className="font-sans text-xs text-ink/70">{r.license.note}</span></span><span className="shrink-0 font-bold">{usd(r.license.low)} to {usd(r.license.high)}</span></li>
         </ul>
         <div className="mt-3 flex justify-between font-bold"><span>Total</span><span>{usd(low)} to {usd(high)}</span></div>
+        <div className="mt-4 rounded-xl bg-cream p-3 font-sans text-xs text-ink" data-testid="receipt-relief">
+          <p className="font-display text-sm font-bold text-navy">March 30 annual fee, if you qualify</p>
+          <ul className="mt-2 space-y-2">
+            <li><span className="font-semibold text-navy">Standard 2026 active fee:</span> {usd(ANNUAL)}</li>
+            <li><span className="font-semibold text-navy">25% Fee Scaling, Rule 2.15(B):</span> {usd(SCALED_ANNUAL)} when individual income is under {usd(SCALING_INCOME)}. New licensees admitted after May 31 do not qualify in the first year.</li>
+            <li><span className="font-semibold text-navy">50% Fee Waiver, Rule 2.16(C):</span> {usd(WAIVED_ANNUAL)} when household income is {usd(WAIVER_HOUSEHOLD)} or less. Request it by the fee deadline.</li>
+          </ul>
+          <p className="mt-2 text-ink/70">These change the March 30 annual fee. They are not added on top of the total above. The same choice is in the calculator.</p>
+        </div>
         <details className="mt-4 font-sans text-xs text-ink">
           <summary className="cursor-pointer font-semibold text-navy">Not included</summary>
           <ul className="mt-2 list-disc pl-5">{r.excluded.map((x) => <li key={x}>{x}</li>)}</ul>
