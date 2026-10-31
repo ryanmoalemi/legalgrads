@@ -291,7 +291,7 @@ test('policies name Legalgrads and do not charge a referral fee', async ({ page 
   await expect(page.locator('main')).toContainText('messages are screened automatically for spam');
   await page.goto('/terms/');
   await expect(page.getByRole('heading', { level: 1 })).toHaveText('Terms of Service');
-  await expect(page.getByText('Draft — pending legal review. October 21, 2026.')).toBeVisible();
+  await expect(page.getByText('© 2026 Legalgrads. Informational resource only; not legal advice.')).toBeVisible();
   await page.goto('/pricing/');
   const pricing = await page.locator('main').innerText();
   expect(pricing).toMatch(/flat fee for extra visibility/i);
