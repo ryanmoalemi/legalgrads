@@ -39,7 +39,7 @@ export function JulyRetake() {
       </div>
       <div>
         <h3 className="font-display text-lg font-extrabold text-navy">Where a California MBE score can be sent</h3>
-        <p className="mt-2">NCBE lists California as a state that lets NCBE transfer an MBE score out. NCBE&apos;s separate list of places that accept a transferred MBE score, updated June 3, 2026, is below. This is not a UBE transfer, and it is not a promise that your score will qualify. Each place sets its own minimum and how old a score can be. An official transcript is $30 from NCBE. Ask the destination before you rely on it.</p>
+        <p className="mt-2">NCBE lists California as a state that lets NCBE transfer an MBE score out. NCBE&apos;s separate list of places that accept a transferred MBE score, updated June 3, 2026, is below. Florida is on that list. Oklahoma is the only one marked concurrent only. Michigan is reciprocal only. Washington, D.C. and Colorado are not on that accept list (they are on a different NCBE list, for sending their own scores out). This is not a UBE transfer, and it is not a promise that your score will qualify. Each place sets its own minimum and how old a score can be. An official transcript is $30 from NCBE. Ask the destination before you rely on it.</p>
         <ul className="mt-3 flex flex-wrap gap-2">
           {MBE_IN.map(([name, note]) => (
             <li key={name} className="rounded-full bg-cream px-3 py-1 text-sm font-semibold text-navy">{name}{note ? ` (${note})` : ''}</li>

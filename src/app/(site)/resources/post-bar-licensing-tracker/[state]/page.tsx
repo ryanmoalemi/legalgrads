@@ -9,6 +9,7 @@ import { OathRejectionBox } from '@/components/postbar/OathRejectionBox';
 import { CaBudget } from '@/components/postbar/CaBudget';
 import { CaLawSchools } from '@/components/postbar/CaLawSchools';
 import { CaStatus } from '@/components/postbar/CaStatus';
+import { RetakeHighlight } from '@/components/postbar/RetakeHighlight';
 import { ALL_STATES, CA_EMBED_PATH, TRACKER_PATH, money, prettyDate, range, stateBySlug } from '@/lib/postBar';
 
 export const dynamicParams = false;
@@ -126,9 +127,8 @@ export default async function Page({ params }: Props) {
           )}
         </Card>
         {ca ? (
-          <Card n="04" title="Scored under 1390?" className="lg:col-span-2">
-            <p className="text-ink">Pass rates, February 2027 filing deadlines, and the NCBE list of MBE transfer destinations are on their own page so this one stays on the oath in front of you.</p>
-            <p className="mt-4"><Link className="font-semibold text-purple underline" href={`${TRACKER_PATH}california/retake/`}>February 2027 retake costs, deadlines, and MBE transfers</Link></p>
+          <Card n="04" title="July 2026 pass rate, retake, and MBE transfer" className="lg:col-span-2">
+            <RetakeHighlight />
           </Card>
         ) : (
           <Card n="04" title="UBE portability">

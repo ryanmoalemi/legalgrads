@@ -452,6 +452,8 @@ test('CA embed HTML has no site chrome and includes calculator labels', async ({
     expect(group, `embed ${label}`).toBeTruthy();
     expect(group![0]).toMatch(/<(button|input)\b/);
   }
+  expect(embedBody).toContain('Verdict: swear in now');
+  expect(embedBody).toContain('7<!-- --> workdays');
   const pageHtml = await (await request.get('/resources/post-bar-licensing-tracker/california/')).text();
   const body = pageHtml.replace(/<script[\s\S]*?<\/script>/g, '');
   expect(body).not.toMatch(/<div[^>]*role="group"[^>]*>\s*<\/div>/);
@@ -459,7 +461,12 @@ test('CA embed HTML has no site chrome and includes calculator labels', async ({
   expect(body).toContain('Hourly pay increase upon admission');
   expect(body).toContain('Paid hours a day affected by the raise');
   expect(body).toContain('Mar 30, 2028');
+  expect(body).toContain('Verdict: swear in now');
+  expect(body).toContain('7<!-- --> workdays');
   expect(body).toContain('Estimated using 2026 fees');
+  expect(body).toContain('48.3% passed');
+  expect(body).toContain('Florida is on that list');
+  expect(body).toContain('D.C. and Colorado are not');
   expect(body).toContain('>TBA<');
   expect(body).toContain('Dec. 2, 2026');
   expect(body).toContain('Bovard Auditorium');
