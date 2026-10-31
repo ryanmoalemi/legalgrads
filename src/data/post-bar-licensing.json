@@ -1,0 +1,110 @@
+{
+  "lastVerified": "2026-10-31",
+  "states": [
+    {
+      "slug": "california",
+      "name": "California",
+      "abbr": "CA",
+      "licensingBody": "State Bar of California",
+      "lastVerified": "2026-10-31",
+      "upfront": { "low": 1199, "high": 1498, "label": "Moral character + first license fee" },
+      "ube": false,
+      "ubeShort": "No",
+      "firstYearCle": { "required": true, "hours": 10, "short": "10 hrs, year 1" },
+      "costs": [
+        { "label": "Moral character application", "amount": 900, "note": "General applicant. Often filed before the exam." },
+        { "label": "First license fee, admitted Jan 1 to May 31", "amount": 598, "note": "Due 45 days from invoice." },
+        { "label": "First license fee, admitted Jun 1 to Nov 30", "amount": 299, "note": "Half fee. Due 45 days from invoice." },
+        { "label": "First license fee, admitted in December", "amount": 0, "note": "Waived for that year. Full fee next year." },
+        { "label": "Annual active fee, 2026", "amount": 598, "note": "Due March 30 each year." }
+      ],
+      "timeline": [
+        { "big": "86", "label": "MPRE passing score" },
+        { "big": "6 to 8 mo", "label": "Typical moral character review" },
+        { "big": "45 days", "label": "To pay first license fee" },
+        { "big": "Mar 30", "label": "Annual renewal deadline" }
+      ],
+      "cle": {
+        "headline": "10 hours",
+        "sub": "New Attorney Training, 9 online courses",
+        "deadline": "Last day of the month of your 1-year anniversary",
+        "breakdown": [
+          { "label": "Legal ethics", "hours": 4 },
+          { "label": "Basic skills", "hours": 3 },
+          { "label": "Competence", "hours": 1.5 },
+          { "label": "Elimination of bias", "hours": 1.5 }
+        ],
+        "notes": ["Only the State Bar's own courses count.", "Hours can also count toward your first MCLE period.", "Miss it and you can be enrolled inactive."]
+      },
+      "portability": {
+        "headline": "Not a UBE state",
+        "points": ["UBE and MBE scores do not transfer in.", "You take California's own bar exam.", "A California score does not transfer out as a UBE score."]
+      },
+      "faq": [
+        { "q": "How much does it cost to get licensed in California after the bar?", "a": "Plan on $1,199 to $1,498: the $900 general applicant moral character fee plus a first license fee of $299 or $598, depending on your admission date. Admission in December waives that year's fee." },
+        { "q": "Does California have a first-year CLE requirement?", "a": "Yes. New attorneys must finish the State Bar's 10-hour New Attorney Training by the last day of the month of their one-year anniversary." },
+        { "q": "Can I transfer a UBE score to California?", "a": "No. California does not accept transferred UBE or MBE scores." },
+        { "q": "What MPRE score does California require?", "a": "86." }
+      ],
+      "sources": [
+        { "label": "Schedule of Charges and Deadlines (fees)", "url": "https://www.calbar.ca.gov/sites/default/files/2026-06/Rules_Appendix_A_Sched_Chgs-deadlines.pdf" },
+        { "label": "Rule 2.12, new licensee fees", "url": "https://www.calbar.ca.gov/legal-professionals/rules/rules-state-bar/title-2-rights-and-responsibilities-licensees/division-2-annual-license-fees-and-penalties" },
+        { "label": "Moral character", "url": "https://www.calbar.ca.gov/admissions/moral-character" },
+        { "label": "New Attorney Training Program", "url": "https://www.calbar.ca.gov/legal-professionals/maintaining-compliance/mcle/new-attorney-training-program" },
+        { "label": "New Attorney Training FAQ (hour breakdown)", "url": "https://info.calbar.ca.gov/knowledge/en/your-new-attorney-training-requirement" },
+        { "label": "MPRE in California", "url": "https://www.calbar.ca.gov/admissions/examinations/multistate-professional-responsibility-examination" },
+        { "label": "NCBE: California (UBE status)", "url": "https://www.ncbex.org/jurisdictions/CA" }
+      ]
+    },
+    {
+      "slug": "new-york",
+      "name": "New York",
+      "abbr": "NY",
+      "licensingBody": "NY State Board of Law Examiners and Appellate Division",
+      "lastVerified": "2026-10-31",
+      "upfront": { "low": 375, "high": 375, "label": "Attorney registration, due before your oath" },
+      "ube": true,
+      "ubeShort": "Yes",
+      "firstYearCle": { "required": true, "hours": 16, "short": "16 hrs, year 1" },
+      "costs": [
+        { "label": "Initial attorney registration", "amount": 375, "note": "Paid before the oath. Then every 2 years." },
+        { "label": "Transferred UBE score application", "amount": 250, "note": "Only if you sat the UBE elsewhere. ABA JD." },
+        { "label": "NCBE score transcript", "amount": 25, "note": "Only for a UBE score transfer." }
+      ],
+      "timeline": [
+        { "big": "266", "label": "UBE passing score" },
+        { "big": "85", "label": "MPRE passing score" },
+        { "big": "50 hrs", "label": "Pro bono before admission" },
+        { "big": "3 yrs", "label": "To file with the Appellate Division" }
+      ],
+      "cle": {
+        "headline": "16 hours",
+        "sub": "Transitional CLE in year 1 (32 over 2 years)",
+        "deadline": "Within 1 year of admission, then 16 more in year 2",
+        "breakdown": [
+          { "label": "Practice mgmt / practice areas", "hours": 7 },
+          { "label": "Skills", "hours": 6 },
+          { "label": "Ethics and professionalism", "hours": 3 }
+        ],
+        "notes": ["Skills: live classroom or fully interactive video only.", "At least 1 cybersecurity credit across the 2 years.", "Up to 8 extra year 1 credits carry to year 2."]
+      },
+      "portability": {
+        "headline": "UBE state",
+        "points": ["Bring a UBE score of 266 or higher.", "Scores are accepted for 3 years from the exam.", "You still need the NYLC course and NYLE exam."]
+      },
+      "faq": [
+        { "q": "How much does it cost to get admitted in New York after the bar?", "a": "The required post-bar fee is the $375 attorney registration, paid before you take the oath. Transferring a UBE score from another state adds a $250 application fee and a $25 NCBE transcript fee." },
+        { "q": "How many CLE credits do newly admitted New York attorneys need?", "a": "32 transitional credits over the first two years, 16 each year: 7 practice management or practice areas, 6 skills, and 3 ethics and professionalism." },
+        { "q": "Can I transfer a UBE score to New York?", "a": "Yes. New York accepts a UBE score of 266 or higher for three years from the exam date. You must also complete the NYLC and pass the NYLE." },
+        { "q": "Do I need pro bono hours to be admitted in New York?", "a": "Yes. Applicants admitted by exam must complete 50 hours of qualifying pro bono work before applying for admission." }
+      ],
+      "sources": [
+        { "label": "22 NYCRR Part 118, attorney registration", "url": "https://www.nycourts.gov/rules/part-118-registration-attorneys-house-counsel-and-foreign-legal-consultants" },
+        { "label": "Biennial attorney registration", "url": "https://www.nycourts.gov/biennial-attorney-registration/biennial-attorney-registration" },
+        { "label": "CLE FAQs for newly admitted attorneys", "url": "https://www.nycourts.gov/continuing-legal-education-cle/faqs-newly-admitted-attorneys" },
+        { "label": "Application by transferred UBE score", "url": "https://www.nybarexam.org/TUBE.html" },
+        { "label": "Admission and pro bono requirement", "url": "https://www.nybarexam.org/admission/admission.htm" }
+      ]
+    }
+  ]
+}

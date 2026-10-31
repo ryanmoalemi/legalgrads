@@ -82,6 +82,7 @@ const FOOTER = [
   ['Attorneys', [
     ['/for-attorneys/', 'For Attorneys'],
     ['/join/', 'Join free'],
+    ['/resources/post-bar-licensing-tracker/', 'Post-bar licensing tracker'],
     ['/attorney-terms/', 'Attorney Terms'],
     ['/attorney-advertising/', 'Attorney advertising'],
     ['/directory-disclosure/', 'Directory disclosure'],
