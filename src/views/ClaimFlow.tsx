@@ -8,6 +8,10 @@ import {
   type MailCopy,
   type OwnerClaim,
   type ClaimOptions,
+  ATTESTATION,
+  loadClaim as loadOwnerClaim,
+  readProofFile,
+  uploadClaimProof,
   confirmClaimCode,
   claimHref,
   fetchClaimOptions,
@@ -46,6 +50,9 @@ export function ClaimView() {
   const [reportEmail, setReportEmail] = useState('');
   const [reportNote, setReportNote] = useState('');
   const [reported, setReported] = useState(false);
+  const [barTyped, setBarTyped] = useState('');
+  const [attest, setAttest] = useState(false);
+  const [needsProof, setNeedsProof] = useState(false);
 
   useEffect(() => {
     if (!profilePath) return;
@@ -108,7 +115,7 @@ export function ClaimView() {
     setError('');
     setWelcome(null);
     const useBar = Boolean(options?.barEmailMasked) && !otherEmail;
-    const result = await requestClaimCode(listing, email, { useBarEmail: useBar, maskedBarEmail: options?.barEmailMasked });
+    const result = await requestClaimCode(listing, email, { useBarEmail: useBar, maskedBarEmail: options?.barEmailMasked, barTyped, attest });
     setBusy(false);
     setStatus(result.message);
     if (!result.ok) {
@@ -133,6 +140,7 @@ export function ClaimView() {
       return;
     }
     setWelcome(result.welcome);
+    setNeedsProof(result.approved === false);
     setEditHref(editorHref(listing.profilePath));
     setShownCode('');
     setCodeStep(false);
@@ -171,6 +179,13 @@ export function ClaimView() {
       ) : null}
       {listing && !welcome && (!reportMode || reported) ? (
         <form className="mt-6 grid gap-3" onSubmit={(event) => void sendCode(event)}>
+          <label className="text-sm font-medium">Your bar number
+            <input data-testid="claim-bar-number" required autoComplete="off" value={barTyped} onChange={(event) => setBarTyped(event.target.value)} className="mt-1 w-full rounded-2xl border border-navy/10 px-3 py-3" />
+          </label>
+          <label className="flex items-start gap-2 text-sm">
+            <input data-testid="claim-attest" type="checkbox" required checked={attest} onChange={(event) => setAttest(event.target.checked)} className="mt-1" />
+            <span>{ATTESTATION}</span>
+          </label>
           {options?.barEmailMasked && !otherEmail ? (
             <>
               <p data-testid="claim-bar-email" className="text-sm">The State Bar lists an email for this attorney: <b>{options.barEmailMasked}</b>. We send the code only to that address, which verifies you right away.</p>
@@ -210,7 +225,60 @@ export function ClaimView() {
           <p className="mt-3" role="status">{status}</p>
         </div>
       ) : null}
+      {welcome && needsProof && listing ? <ProofUpload profilePath={listing.profilePath} /> : null}
     </div>
+  );
+}
+
+function ProofUpload({ profilePath }: { profilePath: string }) {
+  const [card, setCard] = useState('');
+  const [selfie, setSelfie] = useState('');
+  const [busy, setBusy] = useState(false);
+  const [message, setMessage] = useState('');
+  const [done, setDone] = useState(false);
+
+  async function pick(file: File | undefined, set: (value: string) => void) {
+    if (!file) return;
+    setMessage('');
+    try {
+      set(await readProofFile(file));
+    } catch (reason) {
+      setMessage(reason instanceof Error ? reason.message : 'Could not read that image.');
+    }
+  }
+
+  async function submit(event: FormEvent) {
+    event.preventDefault();
+    const claim = loadOwnerClaim(profilePath);
+    if (!claim || !card || !selfie) {
+      setMessage('Add both photos first.');
+      return;
+    }
+    setBusy(true);
+    const result = await uploadClaimProof(claim, card, selfie);
+    setBusy(false);
+    setMessage(result.message);
+    setDone(result.ok);
+  }
+
+  return (
+    <form data-testid="proof-form" className="mt-6 grid gap-3 rounded-3xl bg-white p-4 text-sm" onSubmit={(event) => void submit(event)}>
+      <p className="font-semibold">Speed up your review</p>
+      <p>Upload two photos: your bar card or law license, and a photo of you holding it next to your face. Photos are stored privately, seen only by our reviewer, and deleted once we decide on your claim.</p>
+      <p>Please do not send a screenshot of the State Bar lookup page. Anyone can take one, so it does not prove who you are.</p>
+      {done ? null : (
+        <>
+          <label className="font-medium">Bar card or license
+            <input data-testid="proof-card" type="file" accept="image/*" className="mt-1 block w-full" onChange={(event) => void pick(event.target.files?.[0], setCard)} />
+          </label>
+          <label className="font-medium">Photo of you holding it
+            <input data-testid="proof-selfie" type="file" accept="image/*" capture="user" className="mt-1 block w-full" onChange={(event) => void pick(event.target.files?.[0], setSelfie)} />
+          </label>
+          <button data-testid="proof-submit" type="submit" disabled={busy} className="min-h-11 rounded-full bg-navy font-display font-semibold text-white disabled:opacity-50">Upload photos</button>
+        </>
+      )}
+      {message ? <p role="status" data-testid="proof-status">{message}</p> : null}
+    </form>
   );
 }
 

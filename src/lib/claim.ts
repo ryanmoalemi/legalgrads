@@ -52,9 +52,23 @@ export interface ClaimOptions {
   claimed: boolean;
 }
 
+export const ATTESTATION = 'I am this attorney, and a false claim may be reported to the state bar.';
+
+/** Bar numbers compare without case, hyphens, spaces, or leading zeros, matching the server rule. */
+export function normalizeBarNumber(value: string): string {
+  return value.toLowerCase().replace(/[^a-z0-9]/g, '').replace(/^0+/, '');
+}
+
+export function barNumberMatches(listing: DirectoryListing, typed: string): boolean {
+  const entered = normalizeBarNumber(typed);
+  return entered.length > 0 && entered === normalizeBarNumber(listing.barNumber);
+}
+
 interface PendingClaim {
   profilePath: string;
   email: string;
+  barTyped?: string;
+  attest?: boolean;
   useBarEmail?: boolean;
   mode: 'local' | 'server';
   code?: string;
@@ -74,6 +88,7 @@ export interface ClaimApiResult {
   firmDomain?: string;
   lawSchoolDomain?: string;
   claimed?: boolean;
+  textPending?: boolean;
   edit?: {
     bio?: string;
     services?: string;
@@ -281,7 +296,7 @@ export function reportHref(profilePath: string): string {
   return `/claim/?profile=${encodeURIComponent(profilePath)}&report=1`;
 }
 
-export async function requestClaimCode(listing: DirectoryListing, emailInput: string, options: { useBarEmail?: boolean; maskedBarEmail?: string } = {}): Promise<{
+export async function requestClaimCode(listing: DirectoryListing, emailInput: string, options: { useBarEmail?: boolean; maskedBarEmail?: string; barTyped?: string; attest?: boolean } = {}): Promise<{
   ok: boolean;
   delivery?: 'email' | 'screen';
   code?: string;
@@ -289,19 +304,23 @@ export async function requestClaimCode(listing: DirectoryListing, emailInput: st
 }> {
   const useBarEmail = Boolean(options.useBarEmail);
   const email = useBarEmail ? (options.maskedBarEmail || 'bar email on file') : emailInput.trim().toLowerCase();
+  if (!barNumberMatches(listing, options.barTyped || '')) return { ok: false, message: 'That bar number does not match this profile. Enter the bar number on your State Bar record.' };
+  if (!options.attest) return { ok: false, message: 'Check the box to confirm you are this attorney.' };
   if (!useBarEmail && !validEmail(email)) return { ok: false, message: 'Enter a valid email address.' };
+  const barTyped = (options.barTyped || '').trim();
   const remote = await postClaim({
     action: 'send-code',
     email: useBarEmail ? '' : email,
     useBarEmail,
     profilePath: listing.profilePath,
     name: listing.name,
-    barNumber: listing.barNumber,
+    barNumber: barTyped,
+    attest: true,
     stateCode: listing.stateCode,
     city: listing.city,
   });
   if (remote?.sent) {
-    savePending({ profilePath: listing.profilePath, email, useBarEmail, mode: 'server', expiresAt: Date.now() + CODE_MS, listing });
+    savePending({ profilePath: listing.profilePath, email, useBarEmail, barTyped, attest: true, mode: 'server', expiresAt: Date.now() + CODE_MS, listing });
     return {
       ok: true,
       delivery: 'email',
@@ -331,6 +350,7 @@ export async function confirmClaimCode(listing: DirectoryListing, codeInput: str
   editUrl?: string;
   welcome?: MailCopy;
   emailed?: boolean;
+  approved?: boolean;
 }> {
   const pending = loadPending();
   if (!pending || pending.profilePath !== listing.profilePath) {
@@ -352,7 +372,8 @@ export async function confirmClaimCode(listing: DirectoryListing, codeInput: str
       profilePath: listing.profilePath,
       code: entered,
       name: listing.name,
-      barNumber: listing.barNumber,
+      barNumber: pending.barTyped || '',
+      attest: Boolean(pending.attest),
       stateCode: listing.stateCode,
       city: listing.city,
     });
@@ -404,6 +425,7 @@ export async function confirmClaimCode(listing: DirectoryListing, codeInput: str
     editUrl,
     welcome,
     emailed,
+    approved,
     message: emailed
       ? `Welcome email sent from ${mailed?.from || CLAIM_FROM}.`
       : 'The welcome email was not sent. The message is shown here, and the edit link works.',
@@ -433,7 +455,9 @@ export async function saveOwnerEdit(claim: OwnerClaim): Promise<{ remote: boolea
       remote: true,
       message: claim.approved === false
         ? 'Saved. Your claim is pending review, so these edits stay hidden from the public until we confirm it.'
-        : 'Saved. Your edits show on your public profile.',
+        : remote.textPending
+          ? 'Saved. Your bio and services text waits for a quick review before it shows. Your other edits show now.'
+          : 'Saved. Your edits show on your public profile.',
     };
   }
   return {
@@ -479,4 +503,54 @@ export function readPhotoFile(file: File): Promise<string> {
     };
     reader.readAsDataURL(file);
   });
+}
+
+/** Reads a proof image (bar card or license, or a photo holding it) as a JPEG data URL up to 1600 px. */
+export function readProofFile(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    if (!file.type.startsWith('image/')) {
+      reject(new Error('Choose a photo, not a PDF or screenshot file.'));
+      return;
+    }
+    if (file.size > 20_000_000) {
+      reject(new Error('Choose an image under 20 MB.'));
+      return;
+    }
+    const reader = new FileReader();
+    reader.onerror = () => reject(new Error('Could not read that image.'));
+    reader.onload = () => {
+      const img = new Image();
+      img.onerror = () => reject(new Error('Could not read that image.'));
+      img.onload = () => {
+        const scale = Math.min(1, 1600 / Math.max(img.width, img.height));
+        const canvas = document.createElement('canvas');
+        canvas.width = Math.max(1, Math.round(img.width * scale));
+        canvas.height = Math.max(1, Math.round(img.height * scale));
+        const ctx = canvas.getContext('2d');
+        if (!ctx) {
+          reject(new Error('Could not read that image.'));
+          return;
+        }
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        resolve(canvas.toDataURL('image/jpeg', 0.85));
+      };
+      img.src = String(reader.result || '');
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+export async function uploadClaimProof(claim: OwnerClaim, cardImage: string, selfieImage: string): Promise<{ ok: boolean; message: string }> {
+  const remote = await postClaim({
+    action: 'proof',
+    email: claim.useBarEmail ? '' : claim.email,
+    useBarEmail: Boolean(claim.useBarEmail),
+    profilePath: claim.profilePath,
+    claimToken: claim.claimToken,
+    cardImage,
+    selfieImage,
+  });
+  if (remote?.ok) return { ok: true, message: 'Thanks. Your photos are stored privately for our reviewer and deleted once we decide on your claim.' };
+  if (remote?.reason === 'already-approved') return { ok: false, message: 'Your claim is already approved. No photos are needed.' };
+  return { ok: false, message: 'We could not upload those photos. Try again with clear photos under 5 MB.' };
 }
