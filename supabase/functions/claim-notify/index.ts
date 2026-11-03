@@ -45,7 +45,10 @@ async function senderReady(): Promise<{ ok: boolean; reason: string; from: strin
     const response = await fetch('https://api.resend.com/domains', {
       headers: { authorization: `Bearer ${apiKey}` },
     });
-    if (!response.ok) {
+    if (response.status === 401 || response.status === 403) {
+      // Sending-only keys cannot list domains. Resend still rejects unverified senders at send time.
+      domainVerified = true;
+    } else if (!response.ok) {
       domainVerified = false;
     } else {
       const body = await response.json().catch(() => ({})) as { data?: { name?: string; status?: string }[] };
@@ -78,8 +81,6 @@ function codeMail(name: string, code: string, profilePath: string): { subject: s
       '',
       'Enter this code on the claim page to confirm this listing is yours.',
       'The code expires in 30 minutes.',
-      '',
-      'Legalgrads emails this code. We do not mail a physical letter to a State Bar address.',
       '',
       `Listing: https://legalgrads.com${profilePath}`,
     ].join('\n'),

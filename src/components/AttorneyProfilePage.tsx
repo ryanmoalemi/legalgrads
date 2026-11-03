@@ -121,7 +121,7 @@ export function AttorneyProfilePage({ p }: { p: AttorneyProfile }) {
           <aside>
             <div className="card claim"><h2>Are you this attorney?<br />Claim your free profile 🎉</h2><ul><li>Add your photo, bio &amp; services</li><li>Get a verified bar badge</li><li>Become a Founding Member: always free</li></ul>
               <Link className="btn pink" href={claimHref(profilePath(p))}>Claim my free profile</Link>
-              <p className="small" style={{ marginTop: 8 }}>We email you a confirmation code. Legalgrads does not mail a physical letter.</p></div>
+              <p className="small" style={{ marginTop: 8 }}>We email you a confirmation code.</p></div>
             <div className="card"><h2>Need a lawyer for your business?</h2><p className="small">Browse newly licensed attorneys who have set up their profiles and contact them directly.</p><Link className="btn out" href="/find-lawyer/">Browse the directory</Link><p className="small" style={{ marginTop: 10 }}><Link href={cityPath(p.state, p.city)}>More attorneys in {crumbCity}</Link></p></div>
           </aside></div>
         )}

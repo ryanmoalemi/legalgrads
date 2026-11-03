@@ -107,7 +107,7 @@ export function ClaimView() {
       <PageIntro
         kicker="Attorneys"
         title="Claim this profile"
-        body="We email a confirmation code to the address you enter. Legalgrads does not mail a physical letter, and this listing does not include a State Bar mailing address."
+        body="We email a confirmation code to the address you enter."
       />
       {lookup === 'loading' ? <p className="mt-6 text-sm">Loading this listing…</p> : null}
       {lookup === 'bad' ? <p role="alert" className="mt-6 text-sm text-pink">That profile link is not valid.</p> : null}
