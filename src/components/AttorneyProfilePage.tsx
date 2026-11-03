@@ -1,31 +1,69 @@
 import Link from 'next/link';
-import { type AttorneyProfile, calbarUrl, cityPath, firstName, initials, profileJsonLd } from '@/lib/profiles';
+import { type AttorneyProfile, calbarUrl, cityPath, firstName, initials, officialHref, officialLinkLabel, placeLabel, profileJsonLd } from '@/lib/profiles';
 import '@/app/(site)/attorneys/profile-template.css';
 import { ProfileViews } from './ProfileViews';
 
-const Disclaimer = () => (
+const LegacyDisclaimer = () => (
   <div className="disc"><b>About this listing.</b> LegalGrads is a free directory of licensed attorneys. We are not a law firm and not a lawyer referral service. We don&apos;t recommend, rank, match or endorse any attorney, and we don&apos;t receive any part of an attorney&apos;s fees. You contact attorneys directly. Information on unclaimed profiles comes from public State Bar records; always confirm license status on the official State Bar website. Listing is not a guarantee of quality. Attorney advertising.</div>
 );
 
+const NeutralDisclaimer = () => (
+  <div className="disc"><b>About this listing.</b> LegalGrads is a free directory of licensed attorneys. We are not a law firm and not a lawyer referral service. We don&apos;t recommend, rank, match or endorse any attorney, and we don&apos;t receive any part of an attorney&apos;s fees. You contact attorneys directly. Information on unclaimed profiles comes from public licensing records. Always confirm license status with the regulator linked on this page. Listing is not a guarantee of quality. Attorney advertising.</div>
+);
+
 function License({ p }: { p: AttorneyProfile }) {
-  const href = calbarUrl(p.barNumber);
+  if (!p.recordLinkType) {
+    const href = calbarUrl(p.barNumber);
+    return (
+      <div className="card"><h2>🎓 License (from the State Bar)</h2><div className="lic">
+        <div><small>State bar</small><b>{p.stateName}</b></div><div><small>Bar number</small><b><a href={href} target="_blank" rel="nofollow noopener">#{p.barNumber} ↗</a></b></div>
+        <div><small>Admitted</small><b>{p.admitted}</b></div><div><small>Status</small><b className={p.status === 'Active' ? 'ok' : undefined}>● {p.status}</b></div>
+        <div><small>Public discipline</small><b>{p.discipline}</b></div><div><small>Law school</small><b>{p.lawSchool}</b></div></div>
+        <p className="verified">✓ Last verified from State Bar of {p.stateName} records on {p.lastVerified}. <a href={href} target="_blank" rel="nofollow noopener">Check the official profile</a></p></div>
+    );
+  }
+  const href = officialHref(p);
+  const label = officialLinkLabel(p);
+  const authority = p.sourceAuthority || p.stateName;
+  const caProfile = p.stateCode === 'CA' && p.recordLinkType === 'individual_official_profile';
+  const lookup = p.recordLinkType === 'shared_official_roster_page' && p.officialLookupUrl && p.officialLookupUrl !== href ? p.officialLookupUrl : '';
   return (
-    <div className="card"><h2>🎓 License (from the State Bar)</h2><div className="lic">
-      <div><small>State bar</small><b>{p.stateName}</b></div><div><small>Bar number</small><b><a href={href} target="_blank" rel="nofollow noopener">#{p.barNumber} ↗</a></b></div>
+    <div className="card"><h2>🎓 License (from the regulator)</h2><div className="lic">
+      <div><small>Regulator</small><b>{authority}</b></div><div><small>Bar number</small><b>{href ? <a href={href} target="_blank" rel="nofollow noopener">#{p.barNumber} ↗</a> : <>#{p.barNumber}</>}</b></div>
       <div><small>Admitted</small><b>{p.admitted}</b></div><div><small>Status</small><b className={p.status === 'Active' ? 'ok' : undefined}>● {p.status}</b></div>
       <div><small>Public discipline</small><b>{p.discipline}</b></div><div><small>Law school</small><b>{p.lawSchool}</b></div></div>
-      <p className="verified">✓ Last verified from State Bar of {p.stateName} records on {p.lastVerified}. <a href={href} target="_blank" rel="nofollow noopener">Check the official profile</a></p></div>
+      <p className="verified">✓ Last verified from {caProfile ? `State Bar of ${p.stateName}` : authority} records on {p.lastVerified}. {href ? <a href={href} target="_blank" rel="nofollow noopener">{caProfile ? 'Check the official profile' : label === 'official profile' ? 'Check the official profile' : label === 'official record' ? 'Check the official record' : 'Open the official roster'}</a> : null}{lookup ? <> <a href={lookup} target="_blank" rel="nofollow noopener">Regulator lookup</a></> : null}</p></div>
   );
+}
+
+function whatWeKnow(p: AttorneyProfile, fn: string) {
+  if (!p.recordLinkType) {
+    return <div className="card"><h2>What we know</h2><p>This basic listing was created from public State Bar of {p.stateName} records. {fn} hasn&apos;t added a photo, services, or contact details yet. Contact details shown by the State Bar are available on the <a href={calbarUrl(p.barNumber)} rel="nofollow noopener" target="_blank">official profile</a>.</p></div>;
+  }
+  const href = officialHref(p);
+  const authority = p.sourceAuthority || p.stateName;
+  if (p.stateCode === 'CA' && p.recordLinkType === 'individual_official_profile') {
+    return <div className="card"><h2>What we know</h2><p>This basic listing was created from public State Bar of {p.stateName} records. {fn} hasn&apos;t added a photo, services, or contact details yet. Contact details shown by the State Bar are available on the <a href={href} rel="nofollow noopener" target="_blank">official profile</a>.</p></div>;
+  }
+  if (p.recordLinkType === 'shared_official_roster_page') {
+    return <div className="card"><h2>What we know</h2><p>This basic listing was created from a public roster published by {authority}. {fn} hasn&apos;t added a photo, services, or contact details yet. {href ? <a href={href} rel="nofollow noopener" target="_blank">That link</a> : 'The link'} opens a shared roster. It is not an individual profile.</p></div>;
+  }
+  if (p.recordLinkType === 'individual_official_data_record') {
+    return <div className="card"><h2>What we know</h2><p>This basic listing was created from public {authority} records. {fn} hasn&apos;t added a photo, services, or contact details yet. {href ? <a href={href} rel="nofollow noopener" target="_blank">The official record</a> : 'The official record'} is the registration data for this bar number.</p></div>;
+  }
+  return <div className="card"><h2>What we know</h2><p>This basic listing was created from public {authority} records. {fn} hasn&apos;t added a photo, services, or contact details yet. {href ? <a href={href} rel="nofollow noopener" target="_blank">The official profile</a> : 'The official profile'} is linked above.</p></div>;
 }
 
 export function AttorneyProfilePage({ p }: { p: AttorneyProfile }) {
   const c = p.claimed;
   const fn = firstName(p);
+  const place = placeLabel(p);
+  const crumbCity = p.officeState && p.officeState !== p.stateCode && p.locationLabel ? p.locationLabel : p.cityName;
   return (
     <div className="lgp">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(profileJsonLd(p)) }} />
       <main className="wrap">
-        <nav className="crumbs" aria-label="Breadcrumb"><Link href="/">Home</Link> › <Link href={`/attorneys/${p.state}/`}>{p.stateName}</Link> › <Link href={cityPath(p.state, p.city)}>{p.cityName}</Link> › {c ? <><Link href="/specialties/">Business &amp; contracts</Link> › </> : null}{p.name}</nav>
+        <nav className="crumbs" aria-label="Breadcrumb"><Link href="/">Home</Link> › <Link href={`/attorneys/${p.state}/`}>{p.stateName}</Link> › <Link href={cityPath(p.state, p.city)}>{crumbCity}</Link> › {c ? <><Link href="/specialties/">Business &amp; contracts</Link> › </> : null}{p.name}</nav>
         <section className="hero">
           {c ? (
             <div style={{ position: 'relative' }}><img className="avatar" src={c.photo} alt={p.name} /><span className="tassel">🎓</span></div>
@@ -34,7 +72,7 @@ export function AttorneyProfilePage({ p }: { p: AttorneyProfile }) {
           )}
           <div>
             <h1>{p.name}</h1>
-            <div className="head">{c ? `${c.headline} · ` : 'Attorney · '}{p.cityName}, {p.stateCode}</div>
+            <div className="head">{c ? `${c.headline} · ` : 'Attorney · '}{place}</div>
             <div className="chips">
               {c ? (<>
                 <span className="chip gold">⭐ Founding Member · Joined {c.joinedYear}</span>
@@ -45,7 +83,7 @@ export function AttorneyProfilePage({ p }: { p: AttorneyProfile }) {
                 {c.inPerson && <span className="chip">🤝 In-person · visits your business</span>}
               </>) : (<>
                 <span className="chip solid">Unclaimed profile</span>
-                <span className="chip">📍 {p.cityName}, {p.stateCode}</span>
+                <span className="chip">📍 {place}</span>
                 <span className="chip">🎓 Admitted {p.admittedYear}</span>
                 <span className="chip">● {p.status} license</span>
               </>)}
@@ -59,7 +97,7 @@ export function AttorneyProfilePage({ p }: { p: AttorneyProfile }) {
             <div className="card"><h2>Services</h2><div className="svc">{c.services.map((s) => <div key={s.title}><b>{s.icon} {s.title}</b><span>{s.detail}</span></div>)}</div>
               <p className="note">Outside-court work only. {fn} doesn&apos;t take court appearances or litigation through LegalGrads.</p></div>
             <div className="card"><h2>Practice areas</h2><div className="tags">{c.practiceAreas.map((a) => <span key={a}>{a}</span>)}</div></div>
-            <License p={p} /><Disclaimer />
+            <License p={p} /><LegacyDisclaimer />
           </div>
           <aside>
             <div className="card cta"><h2>Talk to {fn} directly</h2><p className="small" style={{ opacity: 0.85 }}>You reach {fn} directly. LegalGrads isn&apos;t part of the conversation and takes no fee.</p>
@@ -67,7 +105,7 @@ export function AttorneyProfilePage({ p }: { p: AttorneyProfile }) {
               {c.website && <a className="btn ghost" href={c.website} target="_blank" rel="nofollow noopener">🌐 Visit website</a>}
               {c.phone && <a className="btn ghost" href={`tel:${c.phone.replace(/[^\d+]/g, '')}`}>📞 {c.phone}</a>}</div>
             <div className="card"><h2>Quick facts</h2><ul className="facts">
-              <li><span>Location</span><span>{p.cityName}, {p.stateCode}</span></li><li><span>Licensed in</span><span>{p.stateName}</span></li>
+              <li><span>Location</span><span>{place}</span></li><li><span>Licensed in</span><span>{p.stateName}</span></li>
               <li><span>Admitted</span><span>{p.admitted}</span></li><li><span>Law school</span><span>{p.lawSchool}</span></li>
               <li><span>Languages</span><span>{c.languages.join(', ')}</span></li><li><span>Meets</span><span>{c.meets}</span></li></ul></div>
             <p className="small" style={{ textAlign: 'center' }}><Link href="/report-abuse/">Report this profile</Link></p>
@@ -75,15 +113,15 @@ export function AttorneyProfilePage({ p }: { p: AttorneyProfile }) {
         ) : (
           <div className="grid"><div>
             <License p={p} />
-            <div className="card"><h2>What we know</h2><p>This basic listing was created from public State Bar of {p.stateName} records. {fn} hasn&apos;t added a photo, services, or contact details yet. Contact details shown by the State Bar are available on the <a href={calbarUrl(p.barNumber)} rel="nofollow noopener" target="_blank">official profile</a>.</p></div>
-            <Disclaimer />
+            {whatWeKnow(p, fn)}
+            {p.recordLinkType && !(p.stateCode === 'CA' && p.recordLinkType === 'individual_official_profile') ? <NeutralDisclaimer /> : <LegacyDisclaimer />}
             <p className="small" style={{ marginTop: 12 }}>Are you {fn} and want this listing taken down? <Link href="/data-deletion/">Request removal</Link></p>
           </div>
           <aside>
             <div className="card claim"><h2>Are you this attorney?<br />Claim your free profile 🎉</h2><ul><li>Add your photo, bio &amp; services</li><li>Get a verified bar badge</li><li>Become a Founding Member: always free</li></ul>
               <Link className="btn pink" href="/join/">Claim my free profile</Link>
               <p className="small" style={{ marginTop: 8 }}>We confirm it&apos;s you with a code mailed to your State Bar address.</p></div>
-            <div className="card"><h2>Need a lawyer for your business?</h2><p className="small">Browse newly licensed attorneys who have set up their profiles and contact them directly.</p><Link className="btn out" href="/find-lawyer/">Browse the directory</Link><p className="small" style={{ marginTop: 10 }}><Link href={cityPath(p.state, p.city)}>More attorneys in {p.cityName}</Link></p></div>
+            <div className="card"><h2>Need a lawyer for your business?</h2><p className="small">Browse newly licensed attorneys who have set up their profiles and contact them directly.</p><Link className="btn out" href="/find-lawyer/">Browse the directory</Link><p className="small" style={{ marginTop: 10 }}><Link href={cityPath(p.state, p.city)}>More attorneys in {crumbCity}</Link></p></div>
           </aside></div>
         )}
         <div className="sticky">

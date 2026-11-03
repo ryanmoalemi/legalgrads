@@ -1,0 +1,320 @@
+{
+  "asOfUTC": "2026-11-02",
+  "cutoffStart": "2024-01-01",
+  "caExisting": 14809,
+  "caMissing": 245,
+  "caBoundaries": {
+    "before": 219,
+    "after": 25,
+    "inside": 1
+  },
+  "pages": 42552,
+  "licenses": 43081,
+  "statesWithLicenseRecords": 12,
+  "statesWithNamedEvidence": 50,
+  "evidence": 1332,
+  "caErrors": 222,
+  "audited": 1984,
+  "states": [
+    {
+      "stateCode": "AK",
+      "licenseRecords": 10,
+      "directoryProfiles": 10,
+      "otherNamedAdmissions": 4
+    },
+    {
+      "stateCode": "AL",
+      "licenseRecords": 0,
+      "directoryProfiles": 0,
+      "otherNamedAdmissions": 1
+    },
+    {
+      "stateCode": "AR",
+      "licenseRecords": 970,
+      "directoryProfiles": 736,
+      "otherNamedAdmissions": 0
+    },
+    {
+      "stateCode": "AZ",
+      "licenseRecords": 0,
+      "directoryProfiles": 0,
+      "otherNamedAdmissions": 4
+    },
+    {
+      "stateCode": "CA",
+      "licenseRecords": 15297,
+      "directoryProfiles": 15054,
+      "otherNamedAdmissions": 0
+    },
+    {
+      "stateCode": "CO",
+      "licenseRecords": 103,
+      "directoryProfiles": 100,
+      "otherNamedAdmissions": 0
+    },
+    {
+      "stateCode": "CT",
+      "licenseRecords": 0,
+      "directoryProfiles": 0,
+      "otherNamedAdmissions": 1
+    },
+    {
+      "stateCode": "DE",
+      "licenseRecords": 0,
+      "directoryProfiles": 0,
+      "otherNamedAdmissions": 2
+    },
+    {
+      "stateCode": "FL",
+      "licenseRecords": 6,
+      "directoryProfiles": 6,
+      "otherNamedAdmissions": 6
+    },
+    {
+      "stateCode": "GA",
+      "licenseRecords": 0,
+      "directoryProfiles": 0,
+      "otherNamedAdmissions": 3
+    },
+    {
+      "stateCode": "HI",
+      "licenseRecords": 0,
+      "directoryProfiles": 0,
+      "otherNamedAdmissions": 1
+    },
+    {
+      "stateCode": "IA",
+      "licenseRecords": 0,
+      "directoryProfiles": 0,
+      "otherNamedAdmissions": 2
+    },
+    {
+      "stateCode": "ID",
+      "licenseRecords": 0,
+      "directoryProfiles": 0,
+      "otherNamedAdmissions": 1
+    },
+    {
+      "stateCode": "IL",
+      "licenseRecords": 0,
+      "directoryProfiles": 0,
+      "otherNamedAdmissions": 1
+    },
+    {
+      "stateCode": "IN",
+      "licenseRecords": 0,
+      "directoryProfiles": 0,
+      "otherNamedAdmissions": 464
+    },
+    {
+      "stateCode": "KS",
+      "licenseRecords": 0,
+      "directoryProfiles": 0,
+      "otherNamedAdmissions": 4
+    },
+    {
+      "stateCode": "KY",
+      "licenseRecords": 0,
+      "directoryProfiles": 0,
+      "otherNamedAdmissions": 2
+    },
+    {
+      "stateCode": "LA",
+      "licenseRecords": 0,
+      "directoryProfiles": 0,
+      "otherNamedAdmissions": 3
+    },
+    {
+      "stateCode": "MA",
+      "licenseRecords": 0,
+      "directoryProfiles": 0,
+      "otherNamedAdmissions": 1
+    },
+    {
+      "stateCode": "MD",
+      "licenseRecords": 0,
+      "directoryProfiles": 0,
+      "otherNamedAdmissions": 2
+    },
+    {
+      "stateCode": "ME",
+      "licenseRecords": 16,
+      "directoryProfiles": 13,
+      "otherNamedAdmissions": 0
+    },
+    {
+      "stateCode": "MI",
+      "licenseRecords": 0,
+      "directoryProfiles": 0,
+      "otherNamedAdmissions": 2
+    },
+    {
+      "stateCode": "MN",
+      "licenseRecords": 0,
+      "directoryProfiles": 0,
+      "otherNamedAdmissions": 3
+    },
+    {
+      "stateCode": "MO",
+      "licenseRecords": 0,
+      "directoryProfiles": 0,
+      "otherNamedAdmissions": 1
+    },
+    {
+      "stateCode": "MS",
+      "licenseRecords": 0,
+      "directoryProfiles": 0,
+      "otherNamedAdmissions": 1
+    },
+    {
+      "stateCode": "MT",
+      "licenseRecords": 0,
+      "directoryProfiles": 0,
+      "otherNamedAdmissions": 1
+    },
+    {
+      "stateCode": "NC",
+      "licenseRecords": 0,
+      "directoryProfiles": 0,
+      "otherNamedAdmissions": 2
+    },
+    {
+      "stateCode": "ND",
+      "licenseRecords": 341,
+      "directoryProfiles": 341,
+      "otherNamedAdmissions": 0
+    },
+    {
+      "stateCode": "NE",
+      "licenseRecords": 0,
+      "directoryProfiles": 0,
+      "otherNamedAdmissions": 368
+    },
+    {
+      "stateCode": "NH",
+      "licenseRecords": 0,
+      "directoryProfiles": 0,
+      "otherNamedAdmissions": 1
+    },
+    {
+      "stateCode": "NJ",
+      "licenseRecords": 0,
+      "directoryProfiles": 0,
+      "otherNamedAdmissions": 3
+    },
+    {
+      "stateCode": "NM",
+      "licenseRecords": 0,
+      "directoryProfiles": 0,
+      "otherNamedAdmissions": 7
+    },
+    {
+      "stateCode": "NV",
+      "licenseRecords": 0,
+      "directoryProfiles": 0,
+      "otherNamedAdmissions": 1
+    },
+    {
+      "stateCode": "NY",
+      "licenseRecords": 25872,
+      "directoryProfiles": 25867,
+      "otherNamedAdmissions": 0
+    },
+    {
+      "stateCode": "OH",
+      "licenseRecords": 0,
+      "directoryProfiles": 0,
+      "otherNamedAdmissions": 1
+    },
+    {
+      "stateCode": "OK",
+      "licenseRecords": 0,
+      "directoryProfiles": 0,
+      "otherNamedAdmissions": 271
+    },
+    {
+      "stateCode": "OR",
+      "licenseRecords": 0,
+      "directoryProfiles": 0,
+      "otherNamedAdmissions": 2
+    },
+    {
+      "stateCode": "PA",
+      "licenseRecords": 5,
+      "directoryProfiles": 5,
+      "otherNamedAdmissions": 0
+    },
+    {
+      "stateCode": "RI",
+      "licenseRecords": 0,
+      "directoryProfiles": 0,
+      "otherNamedAdmissions": 2
+    },
+    {
+      "stateCode": "SC",
+      "licenseRecords": 0,
+      "directoryProfiles": 0,
+      "otherNamedAdmissions": 3
+    },
+    {
+      "stateCode": "SD",
+      "licenseRecords": 0,
+      "directoryProfiles": 0,
+      "otherNamedAdmissions": 2
+    },
+    {
+      "stateCode": "TN",
+      "licenseRecords": 0,
+      "directoryProfiles": 0,
+      "otherNamedAdmissions": 1
+    },
+    {
+      "stateCode": "TX",
+      "licenseRecords": 91,
+      "directoryProfiles": 91,
+      "otherNamedAdmissions": 0
+    },
+    {
+      "stateCode": "UT",
+      "licenseRecords": 0,
+      "directoryProfiles": 0,
+      "otherNamedAdmissions": 2
+    },
+    {
+      "stateCode": "VA",
+      "licenseRecords": 0,
+      "directoryProfiles": 0,
+      "otherNamedAdmissions": 1
+    },
+    {
+      "stateCode": "VT",
+      "licenseRecords": 368,
+      "directoryProfiles": 327,
+      "otherNamedAdmissions": 0
+    },
+    {
+      "stateCode": "WA",
+      "licenseRecords": 2,
+      "directoryProfiles": 2,
+      "otherNamedAdmissions": 0
+    },
+    {
+      "stateCode": "WI",
+      "licenseRecords": 0,
+      "directoryProfiles": 0,
+      "otherNamedAdmissions": 74
+    },
+    {
+      "stateCode": "WV",
+      "licenseRecords": 0,
+      "directoryProfiles": 0,
+      "otherNamedAdmissions": 79
+    },
+    {
+      "stateCode": "WY",
+      "licenseRecords": 0,
+      "directoryProfiles": 0,
+      "otherNamedAdmissions": 2
+    }
+  ]
+}

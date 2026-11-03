@@ -1,0 +1,33 @@
+LEGALGRADS / NEW ATTORNEY ADMISSIONS
+January 1, 2024 through November 2, 2026 UTC | Partial national registration database
+
+START HERE
+california-missing.json contains 245 active California licensees absent from the live LegalGrads directory on comparison. Each row has a verified name, bar number, actual admission date, status and individual State Bar of California URL. Fields the source did not publish may be absent. Match on stateCode and barNumber before creating a page.
+
+legalgrads-us.sqlite is the combined database. directory-profiles.ndjson is a UTF-8 export of its directory_profiles view for a page generator. Each line is one JSON object. California additions occur in both exports. Import the combined export once or import just the California delta.
+
+coverage.json gives exact counts for all 50 states. The database has 43,081 license records from 12 states, including 42,552 eligible profile rows. It also has 1,332 named admissions in admission_evidence for manual registry matching. Some entries there use an employer's dated admission report or biography. Those entries have no generated route. All 50 states have named records or research leads. Nationwide coverage is incomplete.
+
+CALIFORNIA
+The live index contained 14,809 existing California profiles. Their published routes and verification dates are preserved. The active additions include 219 bar numbers below 354200, 1 within the previous numbering range and 25 above 369338. Admission dates can run out of sequence with bar numbers.
+
+The audit compared the live bar numbers with California State Bar records, including every number absent between 354200 and 369338, the adjacent upper numbers through 369450, the band from 353550 to 354199 and additional lower candidates. california_audit contains the exact checked numbers and outcomes, including 222 unresolved lookups. A statewide date-filtered official roll would be needed to certify every omission. Existing site rows are drawn from the earlier LegalGrads import, with their original lastVerified dates.
+
+HOW TO IMPORT
+1. Use directory_profiles or directory-profiles.ndjson for page creation. Keep barNumber as text and preserve leading zeros. Upsert using (stateCode, barNumber). A person can hold licenses in several states.
+2. Retain an existing published or claimed URL. New rows include a proposed profilePath, name, state, available city/ZIP, admission date or year, status, law school where known, verification date, source authority and source links. Mark generated listings unclaimed. Show a neutral empty field when no value was published.
+3. Use registryRecordUrl for a personal HTML profile or New York official data record. For Vermont, sourceUrl links to the specific page of the official roster PDF. officialLookupUrl is the shared lookup. Do not label a shared roster as an individual profile. Existing California pages keep their original profile and verification date.
+4. Preserve each status literally. The discipline field points readers to the regulator. It does not assert a clean history. Handle out-of-state offices and undisclosed cities. Judicial admissions, bar-exam passage and graduation are distinct dates. Some admissions are by transfer, reciprocity or motion. The file identifies admission to the jurisdiction. California additions use the existing city slug and California fallback conventions. An undisclosed office city is identified in locationLabel.
+5. admission_evidence is a work queue. Check the source, find the attorney at the regulator, verify the bar number and current status, and deduplicate against (stateCode, barNumber) before promoting an entry. evidenceDate can be a year, month or date. For a year-only entry, a page generator should not manufacture an admission day.
+
+DATABASE QUERIES
+SELECT * FROM california_additions ORDER BY admissionDate, name;
+SELECT * FROM directory_profiles WHERE stateCode = 'NY';
+SELECT * FROM state_coverage ORDER BY stateCode;
+SELECT * FROM admission_evidence WHERE stateCode = 'IN';
+SELECT topic, description FROM notes;
+
+COVERAGE
+New York includes the statewide public registration dataset filtered by year admitted. Five nonpublishable registrations are retained for audit. North Dakota includes everyone in its published currently licensed seniority list who falls within the window. Arkansas includes the complete dated court roster export filtered to the window. Records awaiting a status check stay outside directory_profiles. Vermont covers its published list of lawyers in good standing. Its active, inactive and pro bono categories remain distinct. These four statewide sources cover different populations.
+
+The other state counts reflect the records collected and verified to date. Sources include official individual licensing pages, court orders, bar admission reports, employer reports and separately labeled secondary evidence. state_coverage lists a registry and the next source or action for each state. admission_benchmarks stores available NCBE reference counts for 2024 and 2025 by admission method. Use them to plan reconciliation. They do not identify individual attorneys or establish exact missing counts for these differently scoped sources.

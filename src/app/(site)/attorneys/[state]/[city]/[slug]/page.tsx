@@ -5,7 +5,11 @@ import { PROFILES, profilePath, seoDescription, seoTitle } from '@/lib/profiles'
 
 type Params = { state: string; city: string; slug: string };
 export const dynamicParams = false;
-export function generateStaticParams() { return PROFILES.map(({ state, city, slug }) => ({ state, city, slug })); }
+// Real profiles are plain HTML from scripts/emit_profile_pages.py. Next only
+// renders the two demo pages, so the export does not write an RSC file per attorney.
+export function generateStaticParams() {
+  return PROFILES.filter((p) => p.demo).map(({ state, city, slug }) => ({ state, city, slug }));
+}
 const find = (q: Params) => PROFILES.find((p) => p.state === q.state && p.city === q.city && p.slug === q.slug);
 
 export async function generateMetadata({ params }: { params: Promise<Params> }): Promise<Metadata> {
