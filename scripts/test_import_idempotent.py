@@ -72,7 +72,7 @@ def test_claimed_profile_is_kept_and_not_duplicated():
         "sourceUrl": "https://example.test/old",
         "officialLookupUrl": "https://example.test/lookup",
         "registryRecordUrl": "https://example.test/old",
-        "claimed": {"bio": "Owner bio"},
+        "claimed": {"bio": "Owner bio", "services": "Contract review"},
         "ownerEdited": True,
     }
     row = {
@@ -92,7 +92,7 @@ def test_claimed_profile_is_kept_and_not_duplicated():
         fail(f"Claimed import returned {len(added)} profiles")
     if added[0]["name"] != "Owner Edited" or added[0]["slug"] != "owner-0001111":
         fail("Claimed profile URL or name was replaced")
-    if added[0]["claimed"]["bio"] != "Owner bio":
+    if added[0]["claimed"]["bio"] != "Owner bio" or added[0]["claimed"].get("services") != "Contract review":
         fail("Owner edit was overwritten")
     if stats["NY"]["new"] != 0:
         fail("Claimed profile was inserted again")

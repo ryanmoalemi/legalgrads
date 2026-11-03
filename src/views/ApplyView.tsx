@@ -199,7 +199,7 @@ export function ApplyView() {
             </select>
             {errors.licensedState ? <p id="err-state" role="alert" className="mt-1 text-sm font-medium text-[#6E123F]">{errors.licensedState}</p> : <p id="err-state" className="sr-only" />}
           </div>
-          <Field label={input.licensedState ? `${stateName(input.licensedState)} bar number` : 'Bar number'} id="apply-bar" maxLength={12} hint="The number your state bar issued. Letters and digits only." why="We look this up with your state bar before anything goes live." error={errors.barNumber} value={input.barNumber} transform={(value) => value.replace(/[^A-Za-z0-9]/g, '').slice(0, 12)} onChange={(value) => patch({ barNumber: value })} />
+          <Field label={input.licensedState ? `${stateName(input.licensedState)} bar number` : 'Bar number'} id="apply-bar" maxLength={16} hint="The number your state bar issued. Letters, digits, and hyphens only." why="We look this up with your state bar before anything goes live." error={errors.barNumber} value={input.barNumber} transform={(value) => value.replace(/[^A-Za-z0-9-]/g, '').slice(0, 16)} onChange={(value) => patch({ barNumber: value })} />
           <p className="text-sm"><a className="inline-flex min-h-11 items-center font-semibold text-purple" data-testid="bar-lookup" href={STATE_BAR_LOOKUP[input.licensedState] ?? BAR_SEARCH_URL} target="_blank" rel="noreferrer">{STATE_BAR_LOOKUP[input.licensedState] ? `Open the ${stateName(input.licensedState)} attorney lookup` : 'Find your state bar’s lawyer lookup'}</a></p>
           <div>
             <div className="flex flex-wrap items-center gap-1">

@@ -167,7 +167,7 @@ export function errorsForStep(step: number, input: ApplicationInput): Record<str
   }
   if (step === 1) {
     if (!US_STATES.some((s) => s.code === input.licensedState)) errors.licensedState = 'Choose the state where you are licensed.';
-    if (!/^[A-Za-z0-9]{1,12}$/.test(input.barNumber)) errors.barNumber = 'Use letters and digits only, up to 12.';
+    if (!/^[A-Za-z0-9-]{1,16}$/.test(input.barNumber) || input.barNumber.startsWith('-') || input.barNumber.endsWith('-')) errors.barNumber = 'Use letters, digits, and hyphens only, up to 16.';
     if (!input.admissionDate) errors.admissionDate = 'Enter your admission date.';
     else if (isFutureDate(input.admissionDate)) errors.admissionDate = 'Admission date cannot be in the future.';
   }
