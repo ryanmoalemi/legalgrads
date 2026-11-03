@@ -73,7 +73,6 @@ async function hashValue(email: string, profilePath: string, secret: string): Pr
   return sha256(`${salt}:${email}:${profilePath}:${secret}`);
 }
 
-let domainVerified: boolean | null = null;
 
 async function senderReady(): Promise<{ ok: boolean; reason: string; from: string }> {
   const apiKey = Deno.env.get('RESEND_API_KEY');
