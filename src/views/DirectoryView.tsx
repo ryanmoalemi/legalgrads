@@ -211,7 +211,7 @@ export function DirectoryView() {
               </div>
               {row.unclaimed_url ? (<>
                 <p className="mt-2 inline-flex rounded-full bg-[#F3E9FF] px-3 py-1 text-xs font-bold text-purple">Unclaimed profile · from {row.licensed_state === 'CA' ? 'State Bar' : 'public licensing'} records</p>
-                <p className="mt-3"><Link className="font-semibold text-purple" href={row.unclaimed_url}>View {row.full_name}&apos;s profile</Link></p>
+                <p className="mt-3"><a className="font-semibold text-purple" href={row.unclaimed_url}>View {row.full_name}&apos;s profile</a></p>
               </>) : (<>
               <div className="mt-2 flex flex-wrap gap-2">
                 <p className="inline-flex rounded-full bg-[#F3E9FF] px-3 py-1 text-xs font-bold text-purple">{joinedLabel(row.published_at || row.created_at)}</p>

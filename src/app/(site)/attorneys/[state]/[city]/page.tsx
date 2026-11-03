@@ -69,7 +69,7 @@ export default async function Page({ params }: { params: Promise<Params> }) {
       <h1 style={{ fontSize: 34, fontWeight: 900, lineHeight: 1.15 }}>{legacy ? `Newly licensed attorneys in ${g.cityName}, ${g.stateCode}` : heading}</h1>
       <p style={{ margin: '10px 0 20px', maxWidth: 720 }}>{cityIntro(g)} <Link href="/find-lawyer/">Search the full directory</Link>.</p>
       <ul className="card" style={{ listStyle: 'none', columns: '260px' }}>
-        {g.profiles.map((p) => <li key={p.slug} style={{ padding: '6px 0', breakInside: 'avoid' }}><Link href={profilePath(p)}>{p.name}</Link> <span className="small" style={{ color: '#6b6b8f' }}>· admitted {p.admitted}</span></li>)}
+        {g.profiles.map((p) => <li key={p.slug} style={{ padding: '6px 0', breakInside: 'avoid' }}><a href={profilePath(p)}>{p.name}</a> <span className="small" style={{ color: '#6b6b8f' }}>· admitted {p.admitted}</span></li>)}
       </ul>
     </main></div>
   );
