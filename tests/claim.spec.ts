@@ -44,7 +44,7 @@ test('claim mail copy is plain and names the edit link', async () => {
   expect(welcome.text).toContain(editUrl);
   expect(welcome.text).toContain('Edit your profile:');
   expect(code.text).toContain('123456');
-  expect(code.text).toContain('do not mail a physical letter');
+  expect(code.text).not.toContain('physical letter');
   expect(`${welcome.subject}\n${welcome.text}\n${code.subject}\n${code.text}`).not.toMatch(/\u2014|\u2013/);
   expect(claimHref(CALLIE)).toBe(`/claim/?profile=${encodeURIComponent(CALLIE)}`);
   expect(removalHref(CALLIE)).toBe(`/data-deletion/?profile=${encodeURIComponent(CALLIE)}`);
