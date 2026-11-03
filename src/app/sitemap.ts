@@ -6,18 +6,30 @@ const B = 'https://legalgrads.com';
 const STATIC = ['/', '/find-lawyer/', '/for-attorneys/', '/how-it-works/', '/pricing/', '/faq/', '/about/', '/specialties/', '/join/', '/contact/', '/cookie-settings/', '/privacy-request/', '/do-not-sell-or-share/', '/attorney-advertising/',
   '/privacy/', '/terms/', '/disclaimers/', '/directory-disclosure/', '/attorney-terms/',
   '/accessibility/', '/security/', '/cookies/', '/legal/', '/data-deletion/', '/report-abuse/', '/how-we-build-legalgrads/', '/sitemap/', '/resources/post-bar-licensing-tracker/', '/resources/post-bar-licensing-tracker/california/', '/resources/post-bar-licensing-tracker/california/retake/', '/resources/post-bar-licensing-tracker/new-york/'];
-export default function sitemap(): MetadataRoute.Sitemap {
+const CHUNK = 45000;
+
+function allItems(): MetadataRoute.Sitemap {
   const groups = cityGroups();
-  const items: MetadataRoute.Sitemap = [
+  return [
     ...STATIC.map((p) => ({ url: B + p })),
     ...SPECIALTIES.map((s) => ({ url: `${B}/specialties/${s.slug}/` })),
     ...[...new Set(groups.map((g) => g.state))].map((s) => ({ url: `${B}/attorneys/${s}/` })),
     ...groups.map((g) => ({ url: B + cityPath(g.state, g.city) })),
     ...REAL_PROFILES.map((p) => ({ url: B + profilePath(p), ...(p.lastVerified ? { lastModified: new Date(p.lastVerified) } : {}) })),
   ];
-  // One file stays under the sitemap protocol cap (50,000 URLs and 50MB). Split before crossing it.
-  if (items.length > 50000) {
-    throw new Error(`Sitemap has ${items.length} URLs. Split it into files of at most 50,000 URLs before building.`);
+}
+
+export async function generateSitemaps() {
+  const parts = Math.max(1, Math.ceil(allItems().length / CHUNK));
+  return Array.from({ length: parts }, (_, id) => ({ id }));
+}
+
+export default async function sitemap({ id }: { id: Promise<string> }): Promise<MetadataRoute.Sitemap> {
+  const part = Number(await id);
+  const items = allItems();
+  const slice = items.slice(part * CHUNK, (part + 1) * CHUNK);
+  if (slice.length > 50000) {
+    throw new Error(`Sitemap part ${part} has ${slice.length} URLs.`);
   }
-  return items;
+  return slice;
 }

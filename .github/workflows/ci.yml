@@ -15,5 +15,6 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npx playwright install --with-deps chromium
+      - run: python3 scripts/test_import_idempotent.py
       - run: npm run build
       - run: npx playwright test
