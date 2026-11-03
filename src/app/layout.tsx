@@ -65,6 +65,17 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" className={`${jakarta.variable} ${inter.variable} ${caveat.variable}`}>
+      <head>
+        <script async src="https://www.googletagmanager.com/gtag/js?id=G-CHX0PZJH8W" />
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-CHX0PZJH8W');`,
+          }}
+        />
+      </head>
       <body className="font-sans antialiased">
         <a className="skip-link" href="#main">Skip to content</a>
         {children}
