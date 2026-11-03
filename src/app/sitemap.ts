@@ -8,11 +8,16 @@ const STATIC = ['/', '/find-lawyer/', '/for-attorneys/', '/how-it-works/', '/pri
   '/accessibility/', '/security/', '/cookies/', '/legal/', '/data-deletion/', '/report-abuse/', '/how-we-build-legalgrads/', '/sitemap/', '/resources/post-bar-licensing-tracker/', '/resources/post-bar-licensing-tracker/california/', '/resources/post-bar-licensing-tracker/california/retake/', '/resources/post-bar-licensing-tracker/new-york/'];
 export default function sitemap(): MetadataRoute.Sitemap {
   const groups = cityGroups();
-  return [
+  const items: MetadataRoute.Sitemap = [
     ...STATIC.map((p) => ({ url: B + p })),
     ...SPECIALTIES.map((s) => ({ url: `${B}/specialties/${s.slug}/` })),
     ...[...new Set(groups.map((g) => g.state))].map((s) => ({ url: `${B}/attorneys/${s}/` })),
     ...groups.map((g) => ({ url: B + cityPath(g.state, g.city) })),
     ...REAL_PROFILES.map((p) => ({ url: B + profilePath(p), ...(p.lastVerified ? { lastModified: new Date(p.lastVerified) } : {}) })),
   ];
+  // One file stays under the sitemap protocol cap (50,000 URLs and 50MB). Split before crossing it.
+  if (items.length > 50000) {
+    throw new Error(`Sitemap has ${items.length} URLs. Split it into files of at most 50,000 URLs before building.`);
+  }
+  return items;
 }

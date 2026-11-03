@@ -46,15 +46,15 @@ interface PublicProfile {
   unclaimed_url?: string; // static unclaimed profile (public State Bar record)
 }
 
-type UnclaimedRow = { id: string; n: string; c: string; z: string; a: string; u: string };
+type UnclaimedRow = { id: string; n: string; c: string; z: string; a: string; u: string; s?: string };
 async function loadUnclaimed(): Promise<PublicProfile[]> {
   try {
     const res = await fetch('/data/unclaimed-directory.json');
     if (!res.ok) return [];
     const data = (await res.json()) as UnclaimedRow[];
     return data.map((r) => ({
-      id: `ca-${r.id}`, full_name: r.n, practice_areas: [], cities_served: r.c, bio: '', languages: '', contact_link: '',
-      admission_date: r.a, licensed_state: 'CA', office_zip: r.z || null, in_person: null, unclaimed_url: r.u,
+      id: `${r.s || 'CA'}-${r.id}`, full_name: r.n, practice_areas: [], cities_served: r.c, bio: '', languages: '', contact_link: '',
+      admission_date: r.a || '', licensed_state: r.s || 'CA', office_zip: r.z || null, in_person: null, unclaimed_url: r.u,
     }));
   } catch { return []; }
 }
@@ -206,11 +206,11 @@ export function DirectoryView() {
               <div className="flex flex-wrap items-start justify-between gap-2">
                 <div>
                   <h2 className="font-display text-2xl font-extrabold">{row.full_name}</h2>
-                  <p className="text-sm text-ink">{row.cities_served}{row.licensed_state ? `, ${row.licensed_state}` : ''} · Admitted {row.admission_date.slice(0, 7)}{dist(row) !== null ? <span data-testid="distance"> · ~{Math.round(dist(row) as number)} mi</span> : null}</p>
+                  <p className="text-sm text-ink">{row.cities_served}{row.licensed_state ? `, ${row.licensed_state}` : ''}{row.admission_date ? ` · Admitted ${row.admission_date.slice(0, 7)}` : ''}{dist(row) !== null ? <span data-testid="distance"> · ~{Math.round(dist(row) as number)} mi</span> : null}</p>
                 </div>
               </div>
               {row.unclaimed_url ? (<>
-                <p className="mt-2 inline-flex rounded-full bg-[#F3E9FF] px-3 py-1 text-xs font-bold text-purple">Unclaimed profile · from State Bar records</p>
+                <p className="mt-2 inline-flex rounded-full bg-[#F3E9FF] px-3 py-1 text-xs font-bold text-purple">Unclaimed profile · from {row.licensed_state === 'CA' ? 'State Bar' : 'public licensing'} records</p>
                 <p className="mt-3"><Link className="font-semibold text-purple" href={row.unclaimed_url}>View {row.full_name}&apos;s profile</Link></p>
               </>) : (<>
               <div className="mt-2 flex flex-wrap gap-2">
