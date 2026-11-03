@@ -7,8 +7,11 @@ import {
   type DirectoryListing,
   type MailCopy,
   type OwnerClaim,
+  type ClaimOptions,
   confirmClaimCode,
   claimHref,
+  fetchClaimOptions,
+  reportWrongClaim,
   editorHref,
   listingFromDirectoryRow,
   loadClaim,
@@ -37,6 +40,38 @@ export function ClaimView() {
   const [welcome, setWelcome] = useState<MailCopy | null>(null);
   const [editHref, setEditHref] = useState('');
   const [codeStep, setCodeStep] = useState(false);
+  const [options, setOptions] = useState<ClaimOptions | null>(null);
+  const [otherEmail, setOtherEmail] = useState(false);
+  const reportMode = params.get('report') === '1';
+  const [reportEmail, setReportEmail] = useState('');
+  const [reportNote, setReportNote] = useState('');
+  const [reported, setReported] = useState(false);
+
+  useEffect(() => {
+    if (!profilePath) return;
+    let cancelled = false;
+    void fetchClaimOptions(profilePath).then((found) => {
+      if (!cancelled) setOptions(found);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [profilePath]);
+
+  async function sendReport(event: FormEvent) {
+    event.preventDefault();
+    if (!profilePath) return;
+    setBusy(true);
+    setError('');
+    const ok = await reportWrongClaim(profilePath, reportEmail, reportNote);
+    setBusy(false);
+    if (!ok) {
+      setError('We could not save the report. Try again in a minute.');
+      return;
+    }
+    setReported(true);
+    setStatus('Thanks. The claim is flagged and its edits are hidden while we review it. If this is your profile, you can claim it below.');
+  }
 
   useEffect(() => {
     if (!profilePath) {
@@ -72,7 +107,8 @@ export function ClaimView() {
     setBusy(true);
     setError('');
     setWelcome(null);
-    const result = await requestClaimCode(listing, email);
+    const useBar = Boolean(options?.barEmailMasked) && !otherEmail;
+    const result = await requestClaimCode(listing, email, { useBarEmail: useBar, maskedBarEmail: options?.barEmailMasked });
     setBusy(false);
     setStatus(result.message);
     if (!result.ok) {
@@ -107,7 +143,7 @@ export function ClaimView() {
       <PageIntro
         kicker="Attorneys"
         title="Claim this profile"
-        body="We email a confirmation code to the address you enter."
+        body={reportMode ? 'Tell us if this profile was claimed by the wrong person.' : 'We email a confirmation code to confirm you are this attorney.'}
       />
       {lookup === 'loading' ? <p className="mt-6 text-sm">Loading this listing…</p> : null}
       {lookup === 'bad' ? <p role="alert" className="mt-6 text-sm text-pink">That profile link is not valid.</p> : null}
@@ -120,12 +156,38 @@ export function ClaimView() {
           <p className="break-all">{listing.profilePath}</p>
         </div>
       ) : null}
-      {listing && !welcome ? (
-        <form className="mt-6 grid gap-3" onSubmit={(event) => void sendCode(event)}>
-          <label className="text-sm font-medium">Email
-            <input data-testid="claim-email" type="email" required value={email} onChange={(event) => setEmail(event.target.value)} className="mt-1 w-full rounded-2xl border border-navy/10 px-3 py-3" />
+      {listing && reportMode && !reported ? (
+        <form data-testid="report-form" className="mt-6 grid gap-3 rounded-3xl bg-white p-4" onSubmit={(event) => void sendReport(event)}>
+          <p className="font-semibold">Report a wrong claim</p>
+          <p className="text-sm">If someone else claimed this profile, tell us. We hide their edits while we check the official bar record.</p>
+          <label className="text-sm font-medium">Your email (optional)
+            <input data-testid="report-email" type="email" value={reportEmail} onChange={(event) => setReportEmail(event.target.value)} className="mt-1 w-full rounded-2xl border border-navy/10 px-3 py-3" />
           </label>
-          <button type="submit" disabled={busy} className="min-h-11 rounded-full bg-pink font-display font-semibold text-white disabled:opacity-50">Email me a code</button>
+          <label className="text-sm font-medium">What is wrong
+            <textarea data-testid="report-note" rows={3} value={reportNote} onChange={(event) => setReportNote(event.target.value)} className="mt-1 w-full rounded-2xl border border-navy/10 px-3 py-3" />
+          </label>
+          <button data-testid="report-submit" type="submit" disabled={busy} className="min-h-11 rounded-full bg-navy font-display font-semibold text-white disabled:opacity-50">Report this claim</button>
+        </form>
+      ) : null}
+      {listing && !welcome && (!reportMode || reported) ? (
+        <form className="mt-6 grid gap-3" onSubmit={(event) => void sendCode(event)}>
+          {options?.barEmailMasked && !otherEmail ? (
+            <>
+              <p data-testid="claim-bar-email" className="text-sm">The State Bar lists an email for this attorney: <b>{options.barEmailMasked}</b>. We send the code only to that address, which verifies you right away.</p>
+              <button type="submit" disabled={busy} className="min-h-11 rounded-full bg-pink font-display font-semibold text-white disabled:opacity-50">Email a code to {options.barEmailMasked}</button>
+              <button type="button" data-testid="claim-other-email" className="text-sm font-semibold text-purple" onClick={() => setOtherEmail(true)}>I no longer use that address</button>
+            </>
+          ) : (
+            <>
+              {options?.firmDomain ? <p data-testid="claim-firm-hint" className="text-sm">Use your work email at <b>{options.firmDomain}</b> to be verified right away.</p> : null}
+              {options?.lawSchoolDomain ? <p data-testid="claim-school-hint" className="text-sm">New lawyer? Your law school email at <b>{options.lawSchoolDomain}</b> also verifies you right away.</p> : null}
+              <p className="text-sm">If your email does not match the official bar record, your claim goes to manual review and your edits stay hidden from the public until we confirm it.</p>
+              <label className="text-sm font-medium">Email
+                <input data-testid="claim-email" type="email" required value={email} onChange={(event) => setEmail(event.target.value)} className="mt-1 w-full rounded-2xl border border-navy/10 px-3 py-3" />
+              </label>
+              <button type="submit" disabled={busy} className="min-h-11 rounded-full bg-pink font-display font-semibold text-white disabled:opacity-50">Email me a code</button>
+            </>
+          )}
         </form>
       ) : null}
       {shownCode ? <p data-testid="claim-code" className="mt-4 text-sm">Test code: {shownCode}</p> : null}
@@ -247,7 +309,7 @@ export function OwnerEditorView() {
 
   return (
     <div className="mx-auto max-w-xl px-4 py-10">
-      <PageIntro title="Edit your profile" body={`Signed in on this device as ${claim.email} for ${claim.name}. A directory import keeps profiles marked claimed or owner-edited. This save stays on this device until Supabase claim storage accepts it.`} />
+      <PageIntro title="Edit your profile" body={`Signed in on this device as ${claim.email} for ${claim.name}. ${claim.approved === false ? 'Your claim is pending review, so your edits stay hidden from the public until we confirm it against the official bar record.' : 'Your edits show on your public profile.'}`} />
       <form className="mt-6 grid gap-3" onSubmit={(event) => void save(event)}>
         <label className="text-sm font-medium">Photo
           <input data-testid="owner-photo" type="file" accept="image/*" className="mt-1 block w-full text-sm" onChange={(event) => void onPhoto(event.target.files?.[0])} />
