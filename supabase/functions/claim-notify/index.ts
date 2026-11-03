@@ -45,6 +45,36 @@ export function claimMethod(email: string, contact: Contact | null): Method {
 
 let domainVerified: boolean | null = null;
 
+function canMail(email: string): boolean {
+  return Deno.env.get('CLAIM_MAIL_LIVE') === '1' || TEST.has(email);
+}
+
+function fromAddress(): string {
+  const claimFrom = Deno.env.get('CLAIM_FROM')?.trim();
+  const messageFrom = Deno.env.get('MESSAGE_FROM')?.trim();
+  for (const candidate of [claimFrom, messageFrom, DEFAULT_FROM]) {
+    if (candidate && /@legalgrads\.com\b/i.test(candidate)) return candidate;
+  }
+  return '';
+}
+
+function fromDomain(from: string): string {
+  const match = /@([a-z0-9.-]+)/i.exec(from);
+  return (match?.[1] || '').toLowerCase();
+}
+
+async function sha256(value: string): Promise<string> {
+  const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(value));
+  return Array.from(new Uint8Array(digest), (byte) => byte.toString(16).padStart(2, '0')).join('');
+}
+
+async function hashValue(email: string, profilePath: string, secret: string): Promise<string> {
+  const salt = Deno.env.get('CLAIM_CODE_SALT') || Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') || 'legalgrads';
+  return sha256(`${salt}:${email}:${profilePath}:${secret}`);
+}
+
+let domainVerified: boolean | null = null;
+
 async function senderReady(): Promise<{ ok: boolean; reason: string; from: string }> {
   const apiKey = Deno.env.get('RESEND_API_KEY');
   const from = fromAddress();
