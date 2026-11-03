@@ -9,6 +9,7 @@ the same files and adds no duplicate keys.
 import gzip
 import json
 import re
+import unicodedata
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -26,6 +27,135 @@ def plain(value):
     if not isinstance(value, str):
         return value
     return value.replace("\u2014", " - ").replace("\u2013", " - ")
+
+
+# Pages already on legalgrads.com. Their URLs are never rebuilt.
+LIVE_STATES = {"CA", "NY", "AR", "ND", "VT", "CO", "TX", "AK", "FL", "PA", "WA"}
+GENERATIONAL = {"jr", "sr", "ii", "iii", "iv"}
+TITLES = {"esq", "esquire", "llm"}
+FIRST_NAMES = set()
+BUILTIN_FIRST = {
+    "aaron","abigail","adam","adrian","aiden","alan","albert","alex","alexander","alexandra","alexis","alice","alyssa",
+    "amanda","amber","amy","andrea","andrew","angelina","anna","anthony","ashley","austin","barbara","benjamin","beth",
+    "brandon","brenda","brian","brianne","brittany","brooke","bryan","caleb","cameron","carl","carlos","carmen","carol",
+    "caroline","casey","catherine","charles","charlotte","cheryl","chris","christian","christina","christopher","claire",
+    "clara","cody","colin","connor","corey","courtney","craig","crystal","cynthia","daniel","danielle","david","dawn",
+    "deborah","debra","delisa","denise","dennis","destiney","diana","diane","donald","donna","douglas","dylan","edward",
+    "elena","elizabeth","emily","emma","eric","erin","ethan","evan","eve","evelyn","frances","frank","gabriel","gabrielle",
+    "george","grace","gregory","hannah","harold","heather","henry","holly","hunter","ian","isaac","jack","jacob","jaelyn",
+    "james","jane","janet","janice","jared","jason","jean","jeffrey","jennifer","jeremy","jessica","john","jonathan","jordan",
+    "jose","joseph","joshua","joyce","juan","judith","julia","julian","julie","justin","karen","katherine","kathleen","kathryn",
+    "kayla","keith","kelly","kenneth","kevin","kimberly","kyle","laura","lauren","lawrence","leah","liam","linda","lisa",
+    "logan","louis","lucas","luke","lynn","madison","marla","margaret","maria","marie","mark","martha","martin","mary",
+    "matthew","megan","melissa","michael","michelle","nancy","nathan","nicholas","nicole","noah","olivia","paige","pamela",
+    "patricia","patrick","paul","peter","philip","phillip","rachel","ralph","raymond","rebecca","richard","robert","roger",
+    "ronald","rose","russell","ruth","ryan","samantha","samuel","sandra","sara","sarah","scott","sean","shannon","sharon",
+    "shawn","stephanie","stephen","steven","susan","teresa","terry","thomas","timothy","todd","tyler","victoria","vincent",
+    "virginia","walter","wayne","wendy","william","zachary",
+}
+
+
+def learn_first_names(rows):
+    global FIRST_NAMES
+    FIRST_NAMES = set(BUILTIN_FIRST)
+    for row in rows:
+        tokens = row.get("name", "").replace(",", " ").split()
+        if row.get("stateCode") == "CT" and tokens:
+            FIRST_NAMES.add(tokens[0].lower().strip("."))
+        if row.get("stateCode") == "DE" and len(tokens) == 3 and len(tokens[2].strip(".")) == 1:
+            FIRST_NAMES.add(tokens[1].lower())
+
+
+def slugify(value):
+    text = unicodedata.normalize("NFKD", value).encode("ascii", "ignore").decode().lower()
+    return re.sub(r"[^a-z0-9]+", "-", text).strip("-")
+
+
+def format_suffix(token):
+    key = token.lower().strip(".")
+    if key in {"jr", "sr"}:
+        return key.title() + ("." if token.rstrip().endswith(".") else "")
+    return key.upper()
+
+
+def smart_token(token):
+    key = token.lower().strip(".")
+    if key in GENERATIONAL or key == "v":
+        return format_suffix(key) if key in GENERATIONAL else token
+    parts = re.split(r"([-'’])", token)
+    out = []
+    for part in parts:
+        if part in "-'’":
+            out.append("'" if part == "’" else part)
+            continue
+        lower = part.lower()
+        if lower.startswith("mc") and len(lower) > 2:
+            out.append("Mc" + lower[2:].capitalize())
+        else:
+            out.append(lower.capitalize())
+    return "".join(out)
+
+
+def normalize_name(state, raw):
+    name = " ".join(str(raw).replace("***", " ").split())
+    name = re.sub(r",?\s*(Esq\.?|L\.?L\.?M\.?)\b\.?", "", name, flags=re.I)
+    name = " ".join(name.strip(" ,").split())
+    if name.endswith(".") and not re.search(r"\b(Jr|Sr|II|III|IV|V)\.$", name):
+        name = name[:-1].rstrip(" ,")
+    if state == "DE" and name.isupper():
+        return normalize_de(name)
+    match = re.match(r"^(Jr\.?|Sr\.?|II|III|IV|V),\s*(.+)$", name, flags=re.I)
+    if match:
+        name = f"{match.group(2)} {match.group(1)}"
+    name = re.sub(r"\s*,\s*(Jr\.?|Sr\.?|II|III|IV|V)\s*$", r" \1", name, flags=re.I)
+    upper = name.isupper()
+    tokens = name.split()
+    body = []
+    suffixes = []
+    for index, token in enumerate(tokens):
+        key = token.lower().strip(".")
+        if key in GENERATIONAL and index != len(tokens) - 1:
+            suffixes.append(format_suffix(token))
+        elif key in TITLES:
+            continue
+        else:
+            body.append(smart_token(token) if upper else token)
+    if body:
+        last = body[-1].lower().strip(".")
+        if last in GENERATIONAL:
+            suffixes.append(format_suffix(body[-1]))
+            body = body[:-1]
+        elif last == "v" and len(body[-1].strip(".")) == 1 and len(body) > 1:
+            suffixes.append("V")
+            body = body[:-1]
+    return " ".join(body + suffixes)
+
+
+def normalize_de(raw):
+    tokens = [token.strip(".,") for token in raw.split() if token.strip(".,")]
+    suffixes = []
+    while tokens and tokens[-1].lower().strip(".") in GENERATIONAL | TITLES | {"esq"}:
+        key = tokens.pop().lower().strip(".")
+        if key in TITLES:
+            continue
+        suffixes.insert(0, format_suffix(key))
+    initials = []
+    while tokens and len(tokens[-1].strip(".")) == 1:
+        initials.insert(0, tokens.pop().strip("."))
+    if len(tokens) < 2:
+        ordered = tokens + initials
+    else:
+        start = 1
+        for index in range(1, len(tokens)):
+            if tokens[index].lower() in FIRST_NAMES:
+                start = index
+                break
+        ordered = tokens[start:] + initials + tokens[:start]
+    return " ".join([smart_token(token) for token in ordered] + suffixes)
+
+
+def public_slug(name, bar):
+    return f"{slugify(name)}-{slugify(bar.replace('-', ''))}"
 
 
 def zip5(value):
@@ -99,6 +229,9 @@ def profile_from_row(row):
         raise SystemExit(f"Individual record missing registryRecordUrl: {row['stateCode']} {bar}")
     if link == "shared_official_roster_page" and not (profile["sourceUrl"] or profile["officialLookupUrl"]):
         raise SystemExit(f"Shared roster missing source link: {row['stateCode']} {bar}")
+    if row["stateCode"] not in LIVE_STATES:
+        profile["name"] = normalize_name(row["stateCode"], profile["name"])
+        profile["slug"] = public_slug(profile["name"], profile["barNumber"])
     if "\u2014" in json.dumps(profile, ensure_ascii=False) or "\u2013" in json.dumps(profile, ensure_ascii=False):
         raise SystemExit(f"Dash left in profile {row['stateCode']} {bar}")
     return profile
@@ -254,6 +387,7 @@ def run(ndjson=NDJSON, ca_path=EXISTING, added_path=ADDED, directory_path=DIRECT
     existing_added = json.loads(Path(added_path).read_text(encoding="utf-8")) if Path(added_path).exists() else []
     ca_text = Path(ca_path).read_text(encoding="utf-8")
     rows = load_ndjson(ndjson)
+    learn_first_names(rows)
     ca_profiles, added_profiles, stats = import_profiles(existing_ca, existing_added, rows)
     for state, count in held_by_state(coverage_path).items():
         stats.setdefault(state, {"new": 0, "updated": 0, "unchanged": 0, "held": 0})["held"] = count
