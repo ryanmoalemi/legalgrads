@@ -82,6 +82,8 @@ test('unknown profile claim page is a real page', async ({ page }) => {
 test('a non-test email does not reveal a code', async ({ page }) => {
   await boot(page, `/claim/?profile=${encodeURIComponent(CALLIE)}`);
   await expect(page.getByTestId('claim-listing')).toContainText('Callie Yahyavi');
+  await page.getByTestId('claim-bar-number').fill('369241');
+  await page.getByTestId('claim-attest').check();
   await page.getByTestId('claim-email').fill('someone@example.com');
   await page.getByRole('button', { name: 'Email me a code' }).click();
   await expect(page.getByTestId('claim-error')).toBeVisible();
@@ -105,7 +107,12 @@ test('test inbox can claim, edit, and see the edit on the public page', async ({
   await page.setViewportSize({ width: 390, height: 844 });
   await page.getByRole('link', { name: 'Claim this free profile' }).click();
   await expect(page.getByTestId('claim-listing')).toContainText('Callie Yahyavi');
+  await page.getByTestId('claim-bar-number').fill('111111');
+  await page.getByTestId('claim-attest').check();
   await page.getByTestId('claim-email').fill('ryan@legalgrads.com');
+  await page.getByRole('button', { name: 'Email me a code' }).click();
+  await expect(page.getByTestId('claim-error')).toContainText('bar number does not match');
+  await page.getByTestId('claim-bar-number').fill('0369-241');
   await page.getByRole('button', { name: 'Email me a code' }).click();
   const code = (await page.getByTestId('claim-code').innerText()).replace(/\D/g, '');
   expect(code).toMatch(/^\d{6}$/);

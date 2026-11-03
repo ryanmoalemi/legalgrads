@@ -146,6 +146,34 @@ function welcomeMail(name: string, profilePath: string, approved: boolean): { su
   };
 }
 
+/** Bar numbers compare without case, hyphens, spaces, or leading zeros. The profile slug ends with the bar number. */
+function normBar(value: string): string {
+  return value.toLowerCase().replace(/[^a-z0-9]/g, '').replace(/^0+/, '');
+}
+
+function barMatches(profilePath: string, typed: unknown): boolean {
+  const slugBar = profilePath.replace(/\/$/, '').split('-').pop() || '';
+  const entered = normBar(String(typed || ''));
+  return entered.length > 0 && entered === normBar(slugBar);
+}
+
+function clientIp(request: Request): string {
+  const forwarded = request.headers.get('x-forwarded-for') || '';
+  return (forwarded.split(',')[0] || request.headers.get('cf-connecting-ip') || '').trim().slice(0, 64);
+}
+
+const PROOF_BUCKET = 'claim-proofs';
+const PROOF_MAX = 5 * 1024 * 1024;
+
+function decodeImage(dataUrl: unknown): { bytes: Uint8Array; type: string; ext: string } | null {
+  const match = /^data:(image\/(jpeg|png|webp|heic));base64,([A-Za-z0-9+/=]+)$/.exec(String(dataUrl || ''));
+  if (!match) return null;
+  const binary = atob(match[3]);
+  if (binary.length > PROOF_MAX || binary.length < 1000) return null;
+  const bytes = Uint8Array.from(binary, (char) => char.charCodeAt(0));
+  return { bytes, type: match[1], ext: match[2] === 'jpeg' ? 'jpg' : match[2] };
+}
+
 function client() {
   const url = Deno.env.get('SUPABASE_URL');
   const key = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
@@ -163,6 +191,40 @@ Deno.serve(async (request) => {
     return json({ ok: false }, 400);
   }
   const action = String(payload.action || '');
+
+  if (action === 'purge') {
+    const db = client();
+    if (!db) return json({ ok: false });
+    const { data: queued } = await db.from('claim_proof_deletions').select('object_path').limit(200);
+    const paths = (queued || []).map((row: { object_path: string }) => row.object_path);
+    if (paths.length) {
+      const removed = await db.storage.from(PROOF_BUCKET).remove(paths);
+      if (!removed.error) await db.from('claim_proof_deletions').delete().in('object_path', paths);
+    }
+    return json({ ok: true, removed: paths.length });
+  }
+
+  if (action === 'review') {
+    // Only a service role or secret key can read claim_review, so the caller's own key is the gate.
+    const callerKey = (request.headers.get('authorization') || '').replace(/^Bearer\s+/i, '');
+    const url = Deno.env.get('SUPABASE_URL');
+    if (!url || !callerKey) return json({ ok: false }, 401);
+    const caller = createClient(url, callerKey, { auth: { persistSession: false } });
+    const { data: rows, error } = await caller.from('claim_review').select('*');
+    if (error) return json({ ok: false }, 401);
+    const db = client();
+    if (!db) return json({ ok: false });
+    const out = [];
+    for (const row of rows || []) {
+      const sign = async (path: string | null) => {
+        if (!path) return null;
+        const { data } = await db.storage.from(PROOF_BUCKET).createSignedUrl(path, 600);
+        return data?.signedUrl || null;
+      };
+      out.push({ ...row, proof_card_url: await sign(row.proof_card_path), proof_selfie_url: await sign(row.proof_selfie_path) });
+    }
+    return json({ ok: true, expiresInSeconds: 600, rows: out });
+  }
   let email = String(payload.email || '').trim().toLowerCase();
   const profilePath = String(payload.profilePath || '');
   const name = String(payload.name || '').trim().slice(0, 160);
@@ -237,12 +299,17 @@ Deno.serve(async (request) => {
   }
 
   if (!EMAIL.test(email) || email.length > 200) return json({ ok: false, reason: 'bad-email' }, 400);
-  if (!canMail(email) && action !== 'verify' && action !== 'save') {
+  if (!canMail(email) && action !== 'verify' && action !== 'save' && action !== 'proof') {
     return json({ ok: true, sent: false, reason: 'live-mail-off' });
   }
 
   const supabase = client();
   if (!supabase) return json({ ok: false, sent: false, reason: 'storage-not-ready' });
+
+  if (action === 'send-code' || action === 'verify') {
+    if (!barMatches(profilePath, payload.barNumber)) return json({ ok: false, sent: false, reason: 'bar-mismatch' }, 400);
+    if (payload.attest !== true) return json({ ok: false, sent: false, reason: 'attest-required' }, 400);
+  }
 
   if (action === 'send-code') {
     const ready = await senderReady();
@@ -302,7 +369,9 @@ Deno.serve(async (request) => {
       profile_path: profilePath,
       email,
       claim_token_hash: tokenHash,
-      bar_number: String(payload.barNumber || '').slice(0, 16),
+      bar_number: String(payload.barNumber || '').trim().slice(0, 16),
+      attested_at: new Date().toISOString(),
+      attest_ip: clientIp(request),
       state_code: String(payload.stateCode || '').slice(0, 2),
       full_name: name,
       city: String(payload.city || '').slice(0, 120),
@@ -310,7 +379,7 @@ Deno.serve(async (request) => {
       approved,
       approved_at: approved ? new Date().toISOString() : null,
       disputed: false,
-      ...(takeover ? { bio: '', services: '', phone: '', contact_link: '', practice_areas: [], photo_data_url: '' } : {}),
+      ...(takeover ? { pending_bio: null, pending_services: null, edits_submitted_at: null, bio: '', services: '', phone: '', contact_link: '', practice_areas: [], photo_data_url: '' } : {}),
       updated_at: new Date().toISOString(),
     }, { onConflict: 'profile_path' });
     if (saved.error) return json({ ok: false, reason: 'storage-not-ready' });
@@ -340,12 +409,19 @@ Deno.serve(async (request) => {
     const photo = String(edit.photoDataUrl || '');
     if (photo && (!photo.startsWith('data:image/') || photo.length > 180000)) return json({ ok: false, reason: 'bad-photo' }, 400);
     const tokenHash = await hashValue(email, profilePath, token);
-    const { data: existing, error } = await supabase.from('profile_owner_edits').select('claim_token_hash').eq('profile_path', profilePath).maybeSingle();
+    const { data: existing, error } = await supabase.from('profile_owner_edits').select('claim_token_hash, bio, services, pending_bio, pending_services').eq('profile_path', profilePath).maybeSingle();
     if (error || !existing || existing.claim_token_hash !== tokenHash) return json({ ok: false, reason: 'bad-token' });
     const areas = Array.isArray(edit.practiceAreas) ? edit.practiceAreas.map((item) => String(item).slice(0, 40)).slice(0, 12) : [];
+    // Free text (bio, services) waits for review. Structured fields save directly.
+    const bio = String(edit.bio || '').slice(0, 600);
+    const services = String(edit.services || '').slice(0, 600);
+    const pendingBio = bio === (existing.bio || '') ? null : bio;
+    const pendingServices = services === (existing.services || '') ? null : services;
+    const textPending = pendingBio !== null || pendingServices !== null;
     const updated = await supabase.from('profile_owner_edits').update({
-      bio: String(edit.bio || '').slice(0, 600),
-      services: String(edit.services || '').slice(0, 600),
+      pending_bio: pendingBio,
+      pending_services: pendingServices,
+      edits_submitted_at: textPending ? new Date().toISOString() : null,
       phone: String(edit.phone || '').slice(0, 40),
       contact_link: String(edit.contactLink || '').slice(0, 300),
       practice_areas: areas,
@@ -353,6 +429,32 @@ Deno.serve(async (request) => {
       updated_at: new Date().toISOString(),
     }).eq('profile_path', profilePath);
     if (updated.error) return json({ ok: false, reason: 'storage-not-ready' });
+    return json({ ok: true, textPending });
+  }
+
+  if (action === 'proof') {
+    const token = String(payload.claimToken || '');
+    if (!/^[a-f0-9]{32}$/.test(token)) return json({ ok: false }, 400);
+    const tokenHash = await hashValue(email, profilePath, token);
+    const { data: existing } = await supabase.from('profile_owner_edits').select('claim_token_hash, approved, proof_card_path, proof_selfie_path').eq('profile_path', profilePath).maybeSingle();
+    if (!existing || existing.claim_token_hash !== tokenHash) return json({ ok: false, reason: 'bad-token' });
+    if (existing.approved) return json({ ok: false, reason: 'already-approved' });
+    const card = decodeImage(payload.cardImage);
+    const selfie = decodeImage(payload.selfieImage);
+    if (!card || !selfie) return json({ ok: false, reason: 'bad-image' }, 400);
+    const folder = profilePath.replace(/^\/|\/$/g, '').replace(/\//g, '_');
+    const stamp = Date.now();
+    const cardPath = `${folder}/${stamp}-card.${card.ext}`;
+    const selfiePath = `${folder}/${stamp}-selfie.${selfie.ext}`;
+    const a = await supabase.storage.from(PROOF_BUCKET).upload(cardPath, card.bytes, { contentType: card.type });
+    const b = await supabase.storage.from(PROOF_BUCKET).upload(selfiePath, selfie.bytes, { contentType: selfie.type });
+    if (a.error || b.error) {
+      await supabase.storage.from(PROOF_BUCKET).remove([cardPath, selfiePath]);
+      return json({ ok: false, reason: 'upload-failed' });
+    }
+    const old = [existing.proof_card_path, existing.proof_selfie_path].filter(Boolean) as string[];
+    if (old.length) await supabase.storage.from(PROOF_BUCKET).remove(old);
+    await supabase.from('profile_owner_edits').update({ proof_card_path: cardPath, proof_selfie_path: selfiePath, proof_uploaded_at: new Date().toISOString() }).eq('profile_path', profilePath);
     return json({ ok: true });
   }
 
