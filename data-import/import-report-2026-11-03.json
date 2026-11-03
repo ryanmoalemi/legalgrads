@@ -1,0 +1,302 @@
+{
+ "AK": {
+  "held": 4,
+  "new": 0,
+  "unchanged": 10,
+  "updated": 0
+ },
+ "AL": {
+  "held": 36,
+  "new": 0,
+  "unchanged": 0,
+  "updated": 0
+ },
+ "AR": {
+  "held": 0,
+  "new": 0,
+  "unchanged": 736,
+  "updated": 0
+ },
+ "AZ": {
+  "held": 4,
+  "new": 0,
+  "unchanged": 0,
+  "updated": 0
+ },
+ "CA": {
+  "held": 0,
+  "new": 0,
+  "unchanged": 15054,
+  "updated": 0
+ },
+ "CO": {
+  "held": 0,
+  "new": 0,
+  "unchanged": 100,
+  "updated": 0
+ },
+ "CT": {
+  "held": 1,
+  "new": 853,
+  "unchanged": 0,
+  "updated": 0
+ },
+ "DE": {
+  "held": 2,
+  "new": 428,
+  "unchanged": 0,
+  "updated": 0
+ },
+ "FL": {
+  "held": 6,
+  "new": 0,
+  "unchanged": 6,
+  "updated": 0
+ },
+ "GA": {
+  "held": 34,
+  "new": 0,
+  "unchanged": 0,
+  "updated": 0
+ },
+ "HI": {
+  "held": 1,
+  "new": 104,
+  "unchanged": 0,
+  "updated": 0
+ },
+ "IA": {
+  "held": 145,
+  "new": 0,
+  "unchanged": 0,
+  "updated": 0
+ },
+ "ID": {
+  "held": 1,
+  "new": 675,
+  "unchanged": 0,
+  "updated": 0
+ },
+ "IL": {
+  "held": 1,
+  "new": 0,
+  "unchanged": 0,
+  "updated": 0
+ },
+ "IN": {
+  "held": 464,
+  "new": 0,
+  "unchanged": 0,
+  "updated": 0
+ },
+ "KS": {
+  "held": 4,
+  "new": 1078,
+  "unchanged": 0,
+  "updated": 0
+ },
+ "KY": {
+  "held": 24,
+  "new": 0,
+  "unchanged": 0,
+  "updated": 0
+ },
+ "LA": {
+  "held": 1373,
+  "new": 0,
+  "unchanged": 0,
+  "updated": 0
+ },
+ "MA": {
+  "held": 1,
+  "new": 0,
+  "unchanged": 0,
+  "updated": 0
+ },
+ "MD": {
+  "held": 2,
+  "new": 5,
+  "unchanged": 0,
+  "updated": 0
+ },
+ "ME": {
+  "held": 0,
+  "new": 20,
+  "unchanged": 13,
+  "updated": 0
+ },
+ "MI": {
+  "held": 6,
+  "new": 0,
+  "unchanged": 0,
+  "updated": 0
+ },
+ "MN": {
+  "held": 3,
+  "new": 2922,
+  "unchanged": 0,
+  "updated": 0
+ },
+ "MO": {
+  "held": 1,
+  "new": 58,
+  "unchanged": 0,
+  "updated": 0
+ },
+ "MS": {
+  "held": 1,
+  "new": 0,
+  "unchanged": 0,
+  "updated": 0
+ },
+ "MT": {
+  "held": 648,
+  "new": 0,
+  "unchanged": 0,
+  "updated": 0
+ },
+ "NC": {
+  "held": 2,
+  "new": 203,
+  "unchanged": 0,
+  "updated": 0
+ },
+ "ND": {
+  "held": 0,
+  "new": 0,
+  "unchanged": 341,
+  "updated": 0
+ },
+ "NE": {
+  "held": 368,
+  "new": 0,
+  "unchanged": 0,
+  "updated": 0
+ },
+ "NH": {
+  "held": 1,
+  "new": 0,
+  "unchanged": 0,
+  "updated": 0
+ },
+ "NJ": {
+  "held": 3,
+  "new": 0,
+  "unchanged": 0,
+  "updated": 0
+ },
+ "NM": {
+  "held": 1475,
+  "new": 0,
+  "unchanged": 0,
+  "updated": 0
+ },
+ "NV": {
+  "held": 1,
+  "new": 779,
+  "unchanged": 0,
+  "updated": 0
+ },
+ "NY": {
+  "held": 0,
+  "new": 0,
+  "unchanged": 25867,
+  "updated": 0
+ },
+ "OH": {
+  "held": 1,
+  "new": 2338,
+  "unchanged": 0,
+  "updated": 0
+ },
+ "OK": {
+  "held": 271,
+  "new": 0,
+  "unchanged": 0,
+  "updated": 0
+ },
+ "OR": {
+  "held": 2,
+  "new": 240,
+  "unchanged": 0,
+  "updated": 0
+ },
+ "PA": {
+  "held": 0,
+  "new": 0,
+  "unchanged": 5,
+  "updated": 0
+ },
+ "RI": {
+  "held": 2,
+  "new": 0,
+  "unchanged": 0,
+  "updated": 0
+ },
+ "SC": {
+  "held": 3,
+  "new": 0,
+  "unchanged": 0,
+  "updated": 0
+ },
+ "SD": {
+  "held": 2,
+  "new": 0,
+  "unchanged": 0,
+  "updated": 0
+ },
+ "TN": {
+  "held": 1,
+  "new": 0,
+  "unchanged": 0,
+  "updated": 0
+ },
+ "TX": {
+  "held": 0,
+  "new": 0,
+  "unchanged": 91,
+  "updated": 0
+ },
+ "UT": {
+  "held": 2,
+  "new": 1736,
+  "unchanged": 0,
+  "updated": 0
+ },
+ "VA": {
+  "held": 1,
+  "new": 1160,
+  "unchanged": 0,
+  "updated": 0
+ },
+ "VT": {
+  "held": 0,
+  "new": 0,
+  "unchanged": 0,
+  "updated": 327
+ },
+ "WA": {
+  "held": 0,
+  "new": 0,
+  "unchanged": 2,
+  "updated": 0
+ },
+ "WI": {
+  "held": 74,
+  "new": 0,
+  "unchanged": 0,
+  "updated": 0
+ },
+ "WV": {
+  "held": 91,
+  "new": 0,
+  "unchanged": 0,
+  "updated": 0
+ },
+ "WY": {
+  "held": 2,
+  "new": 469,
+  "unchanged": 0,
+  "updated": 0
+ }
+}

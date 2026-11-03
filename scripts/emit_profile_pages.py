@@ -42,12 +42,15 @@ def individual(p):
     return p.get("recordLinkType") in ("individual_official_profile", "individual_official_data_record")
 
 
+SEARCH_LABEL = "Search the state bar."
+
+
 def official_href(p):
     if not p.get("recordLinkType"):
         return calbar(p["barNumber"])
-    if individual(p):
-        return p.get("registryRecordUrl") or p.get("sourceUrl") or p.get("officialLookupUrl") or ""
-    return p.get("sourceUrl") or p.get("officialLookupUrl") or ""
+    if p.get("registryRecordUrl"):
+        return p["registryRecordUrl"]
+    return p.get("officialLookupUrl") or ""
 
 
 def link_label(p):
@@ -162,11 +165,12 @@ def license_html(p):
         head = "🎓 License (from the regulator)"
         who_label, who = "Regulator", authority
         verified_from = f"State Bar of {p['stateName']}" if ca else authority
-        label = link_label(p)
-        check = "Check the official profile" if ca or label == "official profile" else ("Check the official record" if label == "official record" else "Open the official roster")
+        if not p.get("registryRecordUrl"):
+            check = SEARCH_LABEL
+        else:
+            label = link_label(p)
+            check = "Check the official profile" if ca or label == "official profile" else "Check the official record"
     lookup = ""
-    if p.get("recordLinkType") == "shared_official_roster_page" and p.get("officialLookupUrl") and p.get("officialLookupUrl") != href:
-        lookup = " " + ext(p["officialLookupUrl"], "Regulator lookup")
     check_html = (" " + ext(href, check)) if href else ""
     return (
         f'<div class="card"><h2>{head}</h2><div class="lic">'
@@ -190,6 +194,13 @@ def know_html(p, fn):
             f"Contact details shown by the State Bar are available on the {ext(link_href, 'official profile')}.</p></div>"
         )
     authority = p.get("sourceAuthority") or p["stateName"]
+    if not p.get("registryRecordUrl"):
+        href = p.get("officialLookupUrl") or ""
+        link = ext(href, SEARCH_LABEL) if href else SEARCH_LABEL
+        return (
+            '<div class="card"><h2>What we know</h2><p>This basic listing was created from public '
+            f"{esc(authority)} records. {esc(fn)} hasn&#39;t added a photo, services, or contact details yet. {link}</p></div>"
+        )
     if p.get("recordLinkType") == "shared_official_roster_page":
         link = ext(href, "That link") if href else "The link"
         return (
@@ -303,8 +314,16 @@ def main():
             sample = html_text
     if sample is None or "Oct 27, 2026" not in sample or "License (from the State Bar)" not in sample:
         raise SystemExit("Existing California page text did not match")
-    if "License (from the regulator)" in sample:
+    if "License (from the regulator)" in sample or "Search the state bar." in sample:
         raise SystemExit("Existing California page picked up new-state license wording")
+    parts = sorted(OUT.joinpath("sitemap").glob("*.xml"))
+    if parts and not (OUT / "sitemap.xml").exists():
+        body = ["<?xml version=\"1.0\" encoding=\"UTF-8\"?>",
+                "<sitemapindex xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\">"]
+        for part in parts:
+            body.append(f"<sitemap><loc>{SITE}/sitemap/{part.name}</loc></sitemap>")
+        body.append("</sitemapindex>")
+        (OUT / "sitemap.xml").write_text("\n".join(body) + "\n", encoding="utf-8")
     print(f"profiles {len(profiles)} bytes {total} avg {total / len(profiles):.0f}")
 
 
