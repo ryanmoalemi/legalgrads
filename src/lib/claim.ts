@@ -148,8 +148,6 @@ export function verificationEmail(input: { name: string; code: string; profilePa
       'Enter this code on the claim page to confirm this listing is yours.',
       'The code expires in 30 minutes.',
       '',
-      'Legalgrads emails this code. We do not mail a physical letter to a State Bar address.',
-      '',
       `Listing: ${SITE_URL}${input.profilePath}`,
     ].join('\n'),
   };
@@ -236,12 +234,12 @@ async function postClaim(body: Record<string, unknown>): Promise<ClaimApiResult 
 }
 
 function deliveryFailure(remote: ClaimApiResult | null): string {
-  if (!remote) return 'The claim email service is not reachable, so no code was emailed. Nothing was mailed to a State Bar address.';
+  if (!remote) return 'The claim email service is not reachable, so no code was emailed.';
   if (remote.reason === 'live-mail-off') return 'Confirmation email is limited to Legalgrads test inboxes until live mail is turned on. Nothing was sent.';
   if (remote.reason === 'domain-not-verified') return 'The legalgrads.com sender is not verified in Resend yet, so no code was emailed.';
   if (remote.reason === 'missing-api-key') return 'Resend is not configured, so no code was emailed.';
   if (remote.reason === 'storage-not-ready') return 'Claim storage is not ready in Supabase yet, so no code was emailed.';
-  return 'We could not email a confirmation code. Nothing was mailed to a State Bar address.';
+  return 'We could not email a confirmation code.';
 }
 
 export async function requestClaimCode(listing: DirectoryListing, emailInput: string): Promise<{
@@ -266,7 +264,7 @@ export async function requestClaimCode(listing: DirectoryListing, emailInput: st
     return {
       ok: true,
       delivery: 'email',
-      message: `We emailed a confirmation code to ${email}. It expires in 30 minutes. Legalgrads does not mail a physical letter.`,
+      message: `We emailed a confirmation code to ${email}. It expires in 30 minutes.`,
     };
   }
   if (isTestRecipient(email)) {
@@ -275,7 +273,7 @@ export async function requestClaimCode(listing: DirectoryListing, emailInput: st
     const why = remote?.reason === 'live-mail-off'
       ? 'Live email is off, so this test inbox shows the code here.'
       : 'Email delivery is not available, so this test inbox shows the code here.';
-    return { ok: true, delivery: 'screen', code, message: `${why} No message was sent to a State Bar address.` };
+    return { ok: true, delivery: 'screen', code, message: why };
   }
   return { ok: false, message: deliveryFailure(remote) };
 }
