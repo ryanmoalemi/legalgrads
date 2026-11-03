@@ -7,8 +7,10 @@ template. Shared CSS is one file. No per-page RSC payload is written.
 """
 import html
 import json
+import os
 import re
 from pathlib import Path
+from urllib.parse import quote
 
 ROOT = Path(__file__).resolve().parent.parent
 OUT = ROOT / "out"
@@ -20,6 +22,29 @@ GA = "G-CHX0PZJH8W"
 
 def esc(value):
     return html.escape(str(value), quote=True)
+
+
+def claim_href(path):
+    return "/claim/?profile=" + quote(path, safe="")
+
+
+def removal_href(path):
+    return "/data-deletion/?profile=" + quote(path, safe="")
+
+
+def assert_claim_links(html_text, path):
+    href = claim_href(path)
+    removal = removal_href(path)
+    if html_text.count(f'href="{href}"') < 2:
+        raise SystemExit(f"Claim buttons missing on {path}")
+    if f'href="{removal}"' not in html_text:
+        raise SystemExit(f"Removal link missing on {path}")
+    if "mailed to your State Bar" in html_text or "\u2014" in html_text or "\u2013" in html_text:
+        raise SystemExit(f"Bad copy on {path}")
+    if "/js/owner-edits.js" not in html_text:
+        raise SystemExit(f"Owner script missing on {path}")
+    if "We email you a confirmation code." not in html_text:
+        raise SystemExit(f"Claim copy missing on {path}")
 
 
 def calbar(bar):
@@ -256,15 +281,15 @@ def page_html(p):
         f'<div class="chips"><span class="chip solid">Unclaimed profile</span><span class="chip">📍 {esc(place)}</span>'
         f"<span class=\"chip\">🎓 Admitted {esc(p['admittedYear'])}</span><span class=\"chip\">● {esc(p['status'])} license</span></div>"
         f"</div></section><div class=\"grid\"><div>{license_html(p)}{know_html(p, fn)}{disc}"
-        f'<p class="small" style="margin-top:12px">Are you {esc(fn)} and want this listing taken down? <a href="/data-deletion/">Request removal</a></p></div>'
+        f'<p class="small" style="margin-top:12px">Are you {esc(fn)} and want this listing taken down? <a href="{removal_href(path)}">Request removal</a></p></div>'
         f'<aside><div class="card claim"><h2>Are you this attorney?<br>Claim your free profile 🎉</h2><ul>'
         f"<li>Add your photo, bio &amp; services</li><li>Get a verified bar badge</li><li>Become a Founding Member: always free</li></ul>"
-        f'<a class="btn pink" href="/join/">Claim my free profile</a>'
-        f'<p class="small" style="margin-top:8px">We confirm it&#39;s you with a code mailed to your State Bar address.</p></div>'
+        f'<a class="btn pink" href="{claim_href(path)}">Claim my free profile</a>'
+        f'<p class="small" style="margin-top:8px">We email you a confirmation code. Legalgrads does not mail a physical letter.</p></div>'
         f'<div class="card"><h2>Need a lawyer for your business?</h2><p class="small">Browse newly licensed attorneys who have set up their profiles and contact them directly.</p>'
         f'<a class="btn out" href="/find-lawyer/">Browse the directory</a>'
         f'<p class="small" style="margin-top:10px"><a href="{city_href}">More attorneys in {esc(crumb)}</a></p></div></aside></div>'
-        f'<div class="sticky"><a class="btn pink" href="/join/">Claim this free profile</a></div></main></div>'
+        f'<div class="sticky"><a class="btn pink" href="{claim_href(path)}">Claim this free profile</a></div></main></div>'
     )
     return (
         "<!DOCTYPE html><html lang=\"en\"><head><meta charset=\"utf-8\">"
@@ -279,7 +304,8 @@ def page_html(p):
         f"<script async src=\"https://www.googletagmanager.com/gtag/js?id={GA}\"></script>"
         "<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());"
         f"gtag('config','{GA}');</script>"
-        f'<script type="application/ld+json">{json_ld(p)}</script></head><body>{body}</body></html>'
+        f'<script type="application/ld+json">{json_ld(p)}</script></head><body>{body}'
+        '<script src="/js/owner-edits.js" defer></script></body></html>'
     )
 
 
@@ -298,13 +324,20 @@ def main():
     css = re.sub(r"\s+", " ", css).strip()
     CSS_OUT.parent.mkdir(parents=True, exist_ok=True)
     CSS_OUT.write_text(css, encoding="utf-8")
+    supabase_url = os.environ.get("NEXT_PUBLIC_SUPABASE_URL", "").strip()
+    supabase_key = os.environ.get("NEXT_PUBLIC_SUPABASE_ANON_KEY", "").strip()
+    if supabase_url.startswith("https://") and supabase_key and "sb_secret_" not in supabase_key:
+        (OUT / "js").mkdir(parents=True, exist_ok=True)
+        (OUT / "js" / "supabase-public.js").write_text(
+            "window.LEGALGRADS_SUPABASE=" + json.dumps({"url": supabase_url, "key": supabase_key}) + ";\n",
+            encoding="utf-8",
+        )
     profiles = load_profiles()
     total = 0
     sample = None
     for p in profiles:
         html_text = page_html(p)
-        if "\u2014" in html_text or "\u2013" in html_text:
-            raise SystemExit(f"Dash in {p['stateCode']} {p['barNumber']}")
+        assert_claim_links(html_text, profile_path(p))
         dest = OUT / "attorneys" / p["state"] / p["city"] / p["slug"] / "index.html"
         dest.parent.mkdir(parents=True, exist_ok=True)
         data = html_text.encode("utf-8")

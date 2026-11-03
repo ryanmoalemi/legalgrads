@@ -1,5 +1,6 @@
 import Link from 'next/link';
-import { type AttorneyProfile, calbarUrl, cityPath, firstName, initials, officialHref, officialLinkLabel, placeLabel, profileJsonLd } from '@/lib/profiles';
+import { claimHref, removalHref } from '@/lib/claim';
+import { type AttorneyProfile, calbarUrl, cityPath, firstName, initials, officialHref, officialLinkLabel, placeLabel, profileJsonLd, profilePath } from '@/lib/profiles';
 import '@/app/(site)/attorneys/profile-template.css';
 import { ProfileViews } from './ProfileViews';
 
@@ -115,18 +116,19 @@ export function AttorneyProfilePage({ p }: { p: AttorneyProfile }) {
             <License p={p} />
             {whatWeKnow(p, fn)}
             {p.recordLinkType && !(p.stateCode === 'CA' && p.recordLinkType === 'individual_official_profile') ? <NeutralDisclaimer /> : <LegacyDisclaimer />}
-            <p className="small" style={{ marginTop: 12 }}>Are you {fn} and want this listing taken down? <Link href="/data-deletion/">Request removal</Link></p>
+            <p className="small" style={{ marginTop: 12 }}>Are you {fn} and want this listing taken down? <Link href={removalHref(profilePath(p))}>Request removal</Link></p>
           </div>
           <aside>
             <div className="card claim"><h2>Are you this attorney?<br />Claim your free profile 🎉</h2><ul><li>Add your photo, bio &amp; services</li><li>Get a verified bar badge</li><li>Become a Founding Member: always free</li></ul>
-              <Link className="btn pink" href="/join/">Claim my free profile</Link>
-              <p className="small" style={{ marginTop: 8 }}>We confirm it&apos;s you with a code mailed to your State Bar address.</p></div>
+              <Link className="btn pink" href={claimHref(profilePath(p))}>Claim my free profile</Link>
+              <p className="small" style={{ marginTop: 8 }}>We email you a confirmation code. Legalgrads does not mail a physical letter.</p></div>
             <div className="card"><h2>Need a lawyer for your business?</h2><p className="small">Browse newly licensed attorneys who have set up their profiles and contact them directly.</p><Link className="btn out" href="/find-lawyer/">Browse the directory</Link><p className="small" style={{ marginTop: 10 }}><Link href={cityPath(p.state, p.city)}>More attorneys in {crumbCity}</Link></p></div>
           </aside></div>
         )}
+        <script src="/js/owner-edits.js" defer />
         <div className="sticky">
           {c ? (<><a className="btn pink" href={`mailto:${c.email}`}>✉️ Email</a>{c.website && <a className="btn out" href={c.website} target="_blank" rel="nofollow noopener">🌐 Website</a>}</>)
-            : <Link className="btn pink" href="/join/">Claim this free profile</Link>}
+            : <Link className="btn pink" href={claimHref(profilePath(p))}>Claim this free profile</Link>}
         </div>
       </main>
     </div>

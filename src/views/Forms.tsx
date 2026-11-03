@@ -1,10 +1,12 @@
 'use client';
 
 import { FormEvent, useEffect, useState, type ReactNode } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { analyticsLog, readConsent, track, writeConsent } from '@/lib/consent';
 import { mailtoHref } from '@/lib/mailto';
 import { validEmail } from '@/lib/format';
-import { CONTACT_EMAIL } from '@/lib/site';
+import { normalizeProfilePath } from '@/lib/claim';
+import { CONTACT_EMAIL, SITE_URL } from '@/lib/site';
 import { PageIntro } from '@/components/ui';
 
 export function CookieSettingsView() {
@@ -51,12 +53,16 @@ function MailtoForm({
   subject,
   detailsLabel,
   extra,
+  defaultDetails = '',
+  profilePath = '',
 }: {
   title: string;
   body: string;
   subject: string;
   detailsLabel: string;
   extra?: ReactNode;
+  defaultDetails?: string;
+  profilePath?: string;
 }) {
   const [mailto, setMailto] = useState('');
   const [error, setError] = useState('');
@@ -85,6 +91,7 @@ function MailtoForm({
       name ? `Name: ${name}` : null,
       `Email: ${email}`,
       type ? `Type: ${type}` : null,
+      profilePath ? `Listing: ${SITE_URL}${profilePath}` : null,
       '',
       details.trim(),
     ].filter(Boolean).join('\n');
@@ -94,6 +101,7 @@ function MailtoForm({
   return (
     <div className="mx-auto max-w-xl px-4 py-10">
       <PageIntro title={title} body={body} />
+      {profilePath ? <p data-testid="removal-profile" className="mt-4 text-sm">Listing: {SITE_URL}{profilePath}</p> : null}
       <form className="mt-6 grid gap-3" onSubmit={onSubmit}>
         <label className="text-sm font-medium">Name
           <input name="name" className="mt-1 w-full rounded-2xl border border-navy/10 px-3 py-3" />
@@ -103,7 +111,7 @@ function MailtoForm({
         </label>
         {extra}
         <label className="text-sm font-medium">{detailsLabel}
-          <textarea name="details" required className="mt-1 w-full rounded-2xl border border-navy/10 px-3 py-3" rows={5} />
+          <textarea name="details" required defaultValue={defaultDetails} className="mt-1 w-full rounded-2xl border border-navy/10 px-3 py-3" rows={5} />
         </label>
         <button type="submit" className="min-h-11 rounded-full bg-pink font-display font-semibold text-white">Prepare email</button>
       </form>
@@ -151,12 +159,19 @@ export function PrivacyRequestView() {
 }
 
 export function DeletionView() {
+  const params = useSearchParams();
+  const profilePath = normalizeProfilePath(params.get('profile')) || '';
+  const listing = profilePath ? `${SITE_URL}${profilePath}` : '';
   return (
     <MailtoForm
       title="Data deletion"
-      body={`Email ${CONTACT_EMAIL} and ask us to delete the address or application you name. We do not delete anything until that email is sent.`}
+      body={listing
+        ? `This request is for ${listing}. Email ${CONTACT_EMAIL} and ask us to take that listing down. We do not delete anything until that email is sent.`
+        : `Email ${CONTACT_EMAIL} and ask us to delete the address or application you name. We do not delete anything until that email is sent.`}
       subject="Legalgrads deletion request"
       detailsLabel="What should we delete?"
+      profilePath={profilePath}
+      defaultDetails={listing ? `Please remove this public listing: ${listing}` : ''}
     />
   );
 }

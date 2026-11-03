@@ -3,3 +3,6 @@ verify_jwt = false
 
 [functions.inbound-attorney-reply]
 verify_jwt = false
+
+[functions.claim-notify]
+verify_jwt = false
