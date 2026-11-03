@@ -1,0 +1,25 @@
+LegalGrads admissions | January 1, 2024 through November 2, 2026
+
+The combined database contains 56,808 numbered license records. Of these, 55,620 meet the current profile import criteria. Regulators also confirmed 3,697 records for which a public bar number could not be established. State-level coverage appears in state-coverage.csv. A state can have rows while its statewide historical cohort is still incomplete. The CSV gives annual counts and shows how many numbered records have an exact date, individual registry link, and named law school.
+
+All listings
+all-registry-listings.ndjson contains every numbered registration and all verified directory records that lack a confirmed public bar number. It includes non-active statuses. admission-evidence.ndjson exports the full separate queue of court reports, other named admission evidence and research leads. A person may appear in both exports.
+
+For Grok
+Read directory-profiles.ndjson or the directory_profiles SQLite view. Upsert on stateCode and barNumber as text. Preserve leading zeros, existing claimed profiles, and existing California paths. Do not create pages from other tables automatically. Distinguish an attorney’s licensing state from their office location. Preserve a year-only admission. Leave missing fields empty and preserve the regulator’s status exactly. Check current status before publication and observe the source’s conditions of use.
+
+registryRecordUrl identifies an individual regulator record or an official search anchored to the individual, as described by recordLinkType. Where a directory requires a search session or has no stable individual link, use officialLookupUrl with the attorney’s name and number. sourceUrl is the evidence or the licensing registry where the record was verified. Extra source fields, including certain jurisdictions’ admission methods, are in registry_extra.
+
+California
+california-missing.json contains 245 active licensees whose bar IDs were absent from LegalGrads’ public California inventory of 14,809. These rows also occur in the main export. The numbered audit was bounded. 107 attempted numbers still need resolution. Further omissions may exist.
+
+Other records
+verified-without-bar-number.ndjson contains dated records verified in regulator directories. Its SQLite table, verified_without_bar_number, keeps official record keys separate from bar numbers. A shared registry link and name can support a manual lookup when an individual URL is unavailable.
+official_event_admissions contains 1,297 rows from court admission orders, state bar reports, and official swearing-in notices. It is a subset of admission_evidence. Some names can overlap the other tables. These sources establish admission or identify an admission cohort, while current status and license numbers may still require checking. Do not add these counts to estimate unique attorneys.
+admission_evidence also includes separately attributed employer announcements and other research leads. Exam passage, graduation, registration renewal and admission have different meanings. This database uses admission to a jurisdiction. It can include lawyers already licensed elsewhere.
+
+Outreach
+state-contacts.xlsx has one contact route per state. roster-request-email.txt is a copyable request for the missing roster. The same contacts and source URLs are in roster_contacts. No outreach was sent.
+
+Louisiana correction
+The earlier interim download treated LADB internal record IDs as bar roll numbers. Withdraw unclaimed Louisiana listings generated solely from that interim file. Match the original import source before making changes to a claimed or independently verified listing. This version keeps those verified admissions in verified_without_bar_number. The numeric LADB key is for registry matching only.
