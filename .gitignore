@@ -137,3 +137,4 @@ shot-*.png
 /templates/profile-unclaimed.html
 /templates/shot.py
 /lg2
+supabase/.temp/
