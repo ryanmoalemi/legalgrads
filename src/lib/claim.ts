@@ -39,11 +39,23 @@ export interface OwnerClaim {
   phone: string;
   contactLink: string;
   practiceAreas: string[];
+  /** True when the code went to the official bar email on file. The full address stays server side. */
+  useBarEmail?: boolean;
+  /** False while a claim waits for manual review. Edits stay hidden from the public until approved. */
+  approved?: boolean;
+}
+
+export interface ClaimOptions {
+  barEmailMasked: string;
+  firmDomain: string;
+  lawSchoolDomain: string;
+  claimed: boolean;
 }
 
 interface PendingClaim {
   profilePath: string;
   email: string;
+  useBarEmail?: boolean;
   mode: 'local' | 'server';
   code?: string;
   expiresAt: number;
@@ -56,6 +68,12 @@ export interface ClaimApiResult {
   reason?: string;
   claimToken?: string;
   from?: string;
+  method?: string;
+  approved?: boolean;
+  barEmailMasked?: string;
+  firmDomain?: string;
+  lawSchoolDomain?: string;
+  claimed?: boolean;
   edit?: {
     bio?: string;
     services?: string;
@@ -153,7 +171,7 @@ export function verificationEmail(input: { name: string; code: string; profilePa
   };
 }
 
-export function welcomeEmail(input: { name: string; editUrl: string }): MailCopy {
+export function welcomeEmail(input: { name: string; editUrl: string; approved?: boolean }): MailCopy {
   return {
     from: CLAIM_FROM,
     subject: 'Your Legalgrads profile is claimed',
@@ -166,7 +184,9 @@ export function welcomeEmail(input: { name: string; editUrl: string }): MailCopy
       `Edit your profile: ${input.editUrl}`,
       '',
       'The confirmation code signs you in on this device.',
-      'Your edits show on the public page in this browser and stay in your editor.',
+      ...(input.approved === false
+        ? ['Your claim is pending review because the email did not match the official bar record.', 'Your edits are saved but stay hidden from the public until we confirm the claim.']
+        : ['Your claim matched the official bar record, so your edits show on your public profile.']),
       'A later directory import keeps profiles that are marked claimed or owner-edited.',
     ].join('\n'),
   };
@@ -242,17 +262,38 @@ function deliveryFailure(remote: ClaimApiResult | null): string {
   return 'We could not email a confirmation code.';
 }
 
-export async function requestClaimCode(listing: DirectoryListing, emailInput: string): Promise<{
+export async function fetchClaimOptions(profilePath: string): Promise<ClaimOptions> {
+  const remote = await postClaim({ action: 'options', profilePath });
+  return {
+    barEmailMasked: remote?.barEmailMasked || '',
+    firmDomain: remote?.firmDomain || '',
+    lawSchoolDomain: remote?.lawSchoolDomain || '',
+    claimed: Boolean(remote?.claimed),
+  };
+}
+
+export async function reportWrongClaim(profilePath: string, reporterEmail: string, note: string): Promise<boolean> {
+  const remote = await postClaim({ action: 'report', profilePath, reporterEmail: reporterEmail.trim(), note: note.trim() });
+  return Boolean(remote?.ok);
+}
+
+export function reportHref(profilePath: string): string {
+  return `/claim/?profile=${encodeURIComponent(profilePath)}&report=1`;
+}
+
+export async function requestClaimCode(listing: DirectoryListing, emailInput: string, options: { useBarEmail?: boolean; maskedBarEmail?: string } = {}): Promise<{
   ok: boolean;
   delivery?: 'email' | 'screen';
   code?: string;
   message: string;
 }> {
-  const email = emailInput.trim().toLowerCase();
-  if (!validEmail(email)) return { ok: false, message: 'Enter a valid email address.' };
+  const useBarEmail = Boolean(options.useBarEmail);
+  const email = useBarEmail ? (options.maskedBarEmail || 'bar email on file') : emailInput.trim().toLowerCase();
+  if (!useBarEmail && !validEmail(email)) return { ok: false, message: 'Enter a valid email address.' };
   const remote = await postClaim({
     action: 'send-code',
-    email,
+    email: useBarEmail ? '' : email,
+    useBarEmail,
     profilePath: listing.profilePath,
     name: listing.name,
     barNumber: listing.barNumber,
@@ -260,14 +301,14 @@ export async function requestClaimCode(listing: DirectoryListing, emailInput: st
     city: listing.city,
   });
   if (remote?.sent) {
-    savePending({ profilePath: listing.profilePath, email, mode: 'server', expiresAt: Date.now() + CODE_MS, listing });
+    savePending({ profilePath: listing.profilePath, email, useBarEmail, mode: 'server', expiresAt: Date.now() + CODE_MS, listing });
     return {
       ok: true,
       delivery: 'email',
       message: `We emailed a confirmation code to ${email}. It expires in 30 minutes.`,
     };
   }
-  if (isTestRecipient(email)) {
+  if (!useBarEmail && isTestRecipient(email)) {
     const code = makeClaimCode();
     savePending({ profilePath: listing.profilePath, email, mode: 'local', code, expiresAt: Date.now() + CODE_MS, listing });
     const why = remote?.reason === 'live-mail-off'
@@ -302,10 +343,12 @@ export async function confirmClaimCode(listing: DirectoryListing, codeInput: str
   const entered = codeInput.trim();
   if (!/^\d{6}$/.test(entered)) return { ok: false, message: 'Enter the 6 digit code.' };
   let token = '';
+  let approved = true;
   if (pending.mode === 'server') {
     const remote = await postClaim({
       action: 'verify',
-      email: pending.email,
+      email: pending.useBarEmail ? '' : pending.email,
+      useBarEmail: Boolean(pending.useBarEmail),
       profilePath: listing.profilePath,
       code: entered,
       name: listing.name,
@@ -313,8 +356,13 @@ export async function confirmClaimCode(listing: DirectoryListing, codeInput: str
       stateCode: listing.stateCode,
       city: listing.city,
     });
+    if (remote?.reason === 'already-claimed') {
+      clearPending();
+      return { ok: false, message: 'This profile is already claimed. We saved your request for review. If this is your profile, use the bar email on file or report a wrong claim.' };
+    }
     if (!remote?.ok || !remote.claimToken) return { ok: false, message: 'That code does not match.' };
     token = remote.claimToken;
+    approved = remote.approved !== false;
   } else if (pending.code !== entered) {
     return { ok: false, message: 'That code does not match.' };
   } else {
@@ -336,13 +384,16 @@ export async function confirmClaimCode(listing: DirectoryListing, codeInput: str
     phone: '',
     contactLink: '',
     practiceAreas: [],
+    useBarEmail: Boolean(pending.useBarEmail),
+    approved,
   };
   saveClaim(claim);
   clearPending();
-  const welcome = welcomeEmail({ name: listing.name, editUrl });
+  const welcome = welcomeEmail({ name: listing.name, editUrl, approved });
   const mailed = await postClaim({
     action: 'welcome',
-    email: pending.email,
+    email: pending.useBarEmail ? '' : pending.email,
+    useBarEmail: Boolean(pending.useBarEmail),
     profilePath: listing.profilePath,
     name: listing.name,
     claimToken: token,
@@ -363,7 +414,8 @@ export async function saveOwnerEdit(claim: OwnerClaim): Promise<{ remote: boolea
   saveClaim(claim);
   const remote = await postClaim({
     action: 'save',
-    email: claim.email,
+    email: claim.useBarEmail ? '' : claim.email,
+    useBarEmail: Boolean(claim.useBarEmail),
     profilePath: claim.profilePath,
     claimToken: claim.claimToken,
     edit: {
@@ -377,7 +429,12 @@ export async function saveOwnerEdit(claim: OwnerClaim): Promise<{ remote: boolea
     },
   });
   if (remote?.ok) {
-    return { remote: true, message: 'Saved on this device and in Legalgrads claim storage.' };
+    return {
+      remote: true,
+      message: claim.approved === false
+        ? 'Saved. Your claim is pending review, so these edits stay hidden from the public until we confirm it.'
+        : 'Saved. Your edits show on your public profile.',
+    };
   }
   return {
     remote: false,

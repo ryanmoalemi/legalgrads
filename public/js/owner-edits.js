@@ -46,6 +46,21 @@
     parent.appendChild(p);
   }
 
+  function markClaimed(verified) {
+    var chip = document.querySelector('.lgp .chip.solid');
+    if (chip && /unclaimed/i.test(chip.textContent || '')) chip.textContent = verified ? 'Claimed profile' : 'Claim pending review';
+    var host = document.querySelector('.lgp aside');
+    if (!host || document.getElementById('report-claim')) return;
+    var p = document.createElement('p');
+    p.className = 'small';
+    p.id = 'report-claim';
+    var a = document.createElement('a');
+    a.href = '/claim/?profile=' + encodeURIComponent(path) + '&report=1';
+    a.textContent = "This isn't me? Report a wrong claim";
+    p.appendChild(a);
+    host.appendChild(p);
+  }
+
   function apply(claim) {
     if (!claim) return;
     var chip = document.querySelector('.lgp .chip.solid');
@@ -105,6 +120,7 @@
     }).then(function (response) {
       return response.json();
     }).then(function (data) {
+      if (data && data.claimed) markClaimed(Boolean(data.verified));
       apply(merge(data && data.edit, local));
     }).catch(function () {
       apply(local);
