@@ -174,12 +174,6 @@ function decodeImage(dataUrl: unknown): { bytes: Uint8Array; type: string; ext: 
   return { bytes, type: match[1], ext: match[2] === 'jpeg' ? 'jpg' : match[2] };
 }
 
-function isServiceRole(request: Request): boolean {
-  const key = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') || '';
-  const auth = (request.headers.get('authorization') || '').replace(/^Bearer\s+/i, '');
-  return key.length > 20 && auth === key;
-}
-
 function client() {
   const url = Deno.env.get('SUPABASE_URL');
   const key = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
@@ -211,11 +205,15 @@ Deno.serve(async (request) => {
   }
 
   if (action === 'review') {
-    if (!isServiceRole(request)) return json({ ok: false }, 401);
+    // Only a service role or secret key can read claim_review, so the caller's own key is the gate.
+    const callerKey = (request.headers.get('authorization') || '').replace(/^Bearer\s+/i, '');
+    const url = Deno.env.get('SUPABASE_URL');
+    if (!url || !callerKey) return json({ ok: false }, 401);
+    const caller = createClient(url, callerKey, { auth: { persistSession: false } });
+    const { data: rows, error } = await caller.from('claim_review').select('*');
+    if (error) return json({ ok: false }, 401);
     const db = client();
     if (!db) return json({ ok: false });
-    const { data: rows, error } = await db.from('claim_review').select('*');
-    if (error) return json({ ok: false, reason: 'storage-not-ready' });
     const out = [];
     for (const row of rows || []) {
       const sign = async (path: string | null) => {
