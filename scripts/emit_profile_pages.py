@@ -12,6 +12,8 @@ import re
 from pathlib import Path
 from urllib.parse import quote
 
+from places import present_profile
+
 ROOT = Path(__file__).resolve().parent.parent
 OUT = ROOT / "out"
 CSS_SRC = ROOT / "src/app/(site)/attorneys/profile-template.css"
@@ -104,6 +106,8 @@ def seo_description(p):
         and p.get("recordLinkType") == "individual_official_profile"
         and (not p.get("officeState") or p.get("officeState") == "CA")
     )
+    if (not p.get("recordLinkType") or ca_in) and p.get("officeState") and p.get("officeState") != p.get("stateCode"):
+        return f"{p['name']} is licensed in {p['stateName']} and was admitted in {p['admitted']}{school}. Office: {place_label(p)}. License #{p['barNumber']} from State Bar records."
     if not p.get("recordLinkType") or ca_in:
         return f"{p['name']} is a {p['cityName']}, {p['stateCode']} attorney admitted in {p['admitted']}{school}. License #{p['barNumber']} from State Bar records."
     authority = p.get("sourceAuthority") or f"{p['stateName']} licensing authority"
@@ -115,7 +119,7 @@ def seo_description(p):
 def json_ld(p):
     url = SITE + profile_path(p)
     if not p.get("recordLinkType"):
-        address = {"@type": "PostalAddress", "addressLocality": p["cityName"], "addressRegion": p["stateCode"], "addressCountry": "US"}
+        address = {"@type": "PostalAddress", "addressLocality": p["cityName"], "addressRegion": p.get("officeState") or p["stateCode"], "addressCountry": "US"}
         if p.get("officeZip"):
             address["postalCode"] = p["officeZip"]
         person = {
@@ -316,9 +320,39 @@ def page_html(p):
 
 def load_profiles():
     profiles = []
+    redirects = {}
+    hubs = {}
     for name in ("unclaimed-ca.json", "unclaimed-added.json"):
-        profiles.extend(json.loads((ROOT / "src/data" / name).read_text(encoding="utf-8")))
-    return profiles
+        for raw in json.loads((ROOT / "src/data" / name).read_text(encoding="utf-8")):
+            profile, redirect = present_profile(dict(raw))
+            profiles.append(profile)
+            if redirect:
+                old, new, hub_old, hub_new = redirect
+                redirects[old] = new
+                hubs[hub_old] = hub_new
+    return profiles, redirects, hubs
+
+
+def redirect_html(target):
+    url = SITE + target
+    return (
+        '<!DOCTYPE html><html lang="en"><head><meta charset="utf-8">'
+        f'<link rel="canonical" href="{esc(url)}">'
+        f'<meta http-equiv="refresh" content="0;url={esc(target)}">'
+        f'<script>location.replace("{esc(target)}")</script>'
+        f'<title>Moved</title></head><body><p><a href="{esc(target)}">This page has moved.</a></p></body></html>'
+    )
+
+
+def write_redirect(old, new):
+    if old == new:
+        return
+    folder = OUT / old.strip("/")
+    index = folder / "index.html"
+    if index.exists():
+        return
+    folder.mkdir(parents=True, exist_ok=True)
+    index.write_text(redirect_html(new), encoding="utf-8")
 
 
 def main():
@@ -337,7 +371,7 @@ def main():
             "window.LEGALGRADS_SUPABASE=" + json.dumps({"url": supabase_url, "key": supabase_key}) + ";\n",
             encoding="utf-8",
         )
-    profiles = load_profiles()
+    profiles, redirects, hubs = load_profiles()
     total = 0
     sample = None
     for p in profiles:
@@ -354,6 +388,8 @@ def main():
         raise SystemExit("Existing California page text did not match")
     if "License (from the regulator)" in sample or "Search the state bar." in sample:
         raise SystemExit("Existing California page picked up new-state license wording")
+    for old, new in {**redirects, **hubs}.items():
+        write_redirect(old, new)
     parts = sorted(OUT.joinpath("sitemap").glob("*.xml"))
     if parts and not (OUT / "sitemap.xml").exists():
         body = ["<?xml version=\"1.0\" encoding=\"UTF-8\"?>",
