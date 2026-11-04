@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { DeadlineNote } from '@/components/postbar/DeadlineNote';
 import { TRACKER_PATH } from '@/lib/postBar';
 
 export function RetakeHighlight() {
@@ -11,7 +12,9 @@ export function RetakeHighlight() {
       <p>A California MBE score can be sent only to places on NCBE&apos;s accept list (updated June 3, 2026). <b className="text-navy">Florida is on that list.</b> Oklahoma is marked concurrent only. Michigan is reciprocal only. <b className="text-navy">Washington, D.C. and Colorado are not on that accept list.</b> They show up on a different NCBE page, the one for jurisdictions that let NCBE send their own scores out. That is not the same as accepting a California score.</p>
       <div className="rounded-2xl bg-cream p-4">
         <p className="font-display font-extrabold text-navy">February 2027 retake</p>
-        <p className="mt-1">The exam is February 23 and 24, 2027. A general applicant pays <b>$878</b> plus <b>$153</b> to type on a laptop. Immediate repeaters who sat every July 2026 session: timely filing is November 13, 2026. Everyone else: timely filing is November 2, 2026.</p>
+        <p className="mt-1">The exam is February 23 and 24, 2027. A general applicant pays <b>$878</b> plus <b>$153</b> to type on a laptop.</p>
+        <DeadlineNote iso="2026-11-13">Immediate repeaters who sat every July 2026 session: timely filing is November 13, 2026.</DeadlineNote>
+        <DeadlineNote iso="2026-11-02">Everyone else: timely filing was November 2, 2026.</DeadlineNote>
       </div>
       <p><Link className="font-semibold text-purple underline" href={`${TRACKER_PATH}california/retake/`}>Full retake deadlines, late fees, AccessLex limits, and the NCBE jurisdiction list</Link></p>
     </div>

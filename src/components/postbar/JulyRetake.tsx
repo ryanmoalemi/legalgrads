@@ -1,3 +1,5 @@
+import { DeadlineNote } from '@/components/postbar/DeadlineNote';
+
 const MBE_IN = [
   ['Alabama', ''],
   ['Florida', ''],
@@ -22,15 +24,21 @@ export function JulyRetake() {
   return (
     <div className="space-y-5 text-ink" data-testid="july-retake">
       <p className="rounded-2xl bg-pink/10 p-4 text-navy ring-1 ring-pink/30">
-        <b>July 2026 results:</b> the State Bar released scores to applicants on October 30, 2026, through the Applicant Portal. The public pass list was set for November 2, 2026, at 8:00 a.m. On the two-day General Bar Exam, 48.3% passed (3,838 of 7,942). First-time takers: 64.7%. Repeat takers: 14.1%. California ABA schools as a group had a preliminary first-time rate of 78.1%. School-by-school July 2026 rates are not on the exam statistics page yet.
+        <b>July 2026 results:</b> the State Bar released scores to applicants on October 30, 2026, through the Applicant Portal. The public pass list was November 2, 2026, at 8:00 a.m. On the two-day General Bar Exam, 48.3% passed (3,838 of 7,942). First-time takers: 64.7%. Repeat takers: 14.1%. California ABA schools as a group had a preliminary first-time rate of 78.1%. School-by-school July 2026 rates are not on the exam statistics page yet.
       </p>
+      <div className="space-y-2 rounded-2xl bg-cream p-4" data-testid="deadline-spotlight">
+        <h3 className="font-display text-lg font-extrabold text-navy">Deadline status</h3>
+        <DeadlineNote iso="2026-11-02">November 2, 2026 timely filing for applicants who did not sit every July 2026 session, and the public pass list that morning. CalBar set both.</DeadlineNote>
+        <DeadlineNote iso="2026-11-06">November 6, 2026 Loyola Law School swearing-in registration. The LMU Loyola ceremony page says registration opens that day for the December 6, 2026 ceremony.</DeadlineNote>
+        <DeadlineNote iso="2026-11-13">November 13, 2026 timely filing for immediate repeaters who sat every July 2026 session. CalBar's February 2027 page sets that deadline under Business and Professions Code section 6060.3.</DeadlineNote>
+      </div>
       <p>California is not a UBE state. A score under 1390 is not passing. The essays and the MBE are not portable as a UBE score, and California does not accept an MBE score transferred in from another state.</p>
       <div>
         <h3 className="font-display text-lg font-extrabold text-navy">February 2027 retake: fees and deadlines</h3>
         <p className="mt-2">The exam is February 23 and 24, 2027. A general applicant pays <b className="text-navy">$878</b> (Rule 4.61(A)) plus <b className="text-navy">$153</b> if you type on a laptop. We did not find a Rule 2.15 or 2.16 discount on the exam fee. Those rules scale the annual license fee, not this application.</p>
         <ul className="mt-3 space-y-2">
           <li><b className="text-navy">Sat every session of July 2026 (immediate repeater):</b> application opened October 30 after 4:00 p.m. Timely filing is November 13, 2026. A $50 late fee runs November 14 through December 8. A $250 late fee runs December 9, 2026 through January 4, 2027.</li>
-          <li><b className="text-navy">Did not sit July 2026, or missed a session:</b> timely filing is November 2, 2026. A $50 late fee runs November 3 through 30. A $250 late fee runs December 1, 2026 through January 4, 2027.</li>
+          <li><b className="text-navy">Did not sit July 2026, or missed a session:</b> timely filing was November 2, 2026. A $50 late fee runs November 3 through 30. A $250 late fee runs December 1, 2026 through January 4, 2027.</li>
         </ul>
       </div>
       <div>

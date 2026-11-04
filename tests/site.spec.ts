@@ -429,7 +429,7 @@ test('CA embed HTML has no site chrome and includes calculator labels', async ({
   expect(html).not.toMatch(/<footer[\s>]/i);
   expect(html).not.toMatch(/<nav[\s>]/i);
   expect(html).toContain('Source:');
-  expect(html).toContain('Legalgrads.com');
+  expect(html).toContain('LegalGrads.com');
   expect(html).toContain('Nov 20, 2026');
   expect(html).toContain('Dec 1, 2026');
   expect(html).toContain('Jan 5, 2027');

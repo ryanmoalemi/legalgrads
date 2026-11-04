@@ -14,7 +14,7 @@ const SCHOOLS: School[] = [
     name: 'Loyola Law School',
     href: 'https://www.lls.edu/alumni/alumnievents/2026-2027alumnievents/swearing-inceremonydecember2026/',
     linkLabel: 'LLS ceremony page',
-    when: 'Dec. 6, 2026, 10:00 a.m. Lawn, 919 Albany Street, Los Angeles. Location is on the LMU event calendar. The LLS page states the time and that registration opens Nov. 6.',
+    when: 'Dec. 6, 2026, 10:00 a.m. Lawn, 919 Albany Street, Los Angeles. The LMU Loyola page states the time and that registration opens Nov. 6, 2026.',
     who: 'Listed as an alumni event for new attorneys. A guest limit is not stated on the pages checked.',
     fee: 'After Dec. 1. A same-day oath is the $0 Rule 2.12 first-year license fee on the 2026 schedule.',
   },
