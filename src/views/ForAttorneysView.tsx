@@ -4,6 +4,7 @@ import { ListingPreview } from '@/components/ListingPreview';
 import { SharePanel } from '@/components/SharePanel';
 import { PageIntro } from '@/components/ui';
 import { joinedLabel } from '@/lib/joined';
+import { BRAND } from '@/lib/site';
 
 export function ForAttorneysView() {
   return (
@@ -13,8 +14,7 @@ export function ForAttorneysView() {
         title="Join free"
         body="Attorneys licensed in any U.S. state or DC can apply now. The listing is free. Your email stays private. Clients reach you through our secure contact form. Legalgrads takes no referral fee and no share of legal fees. Nothing goes live until we manually check your record with your state bar."
       />
-      <p className="mt-4 inline-flex rounded-full bg-[#F3E9FF] px-3 py-1 text-xs font-bold text-purple">{joinedLabel()}</p>
-      <p className="mt-2 max-w-3xl text-sm text-ink">{joinedLabel()} is only the year you join Legalgrads. It is not a rating and not a benefit to clients.</p>
+      <p className="mt-4 inline-flex rounded-full bg-[#F3E9FF] px-3 py-1 text-xs font-bold text-purple">{joinedLabel()}<a className="ml-1 text-purple" href="#joined-footnote">*</a></p>
       <Link href="/join/" data-testid="founding-cta" className="mt-6 inline-flex min-h-11 items-center rounded-full bg-pink px-6 py-3 font-display text-base font-semibold text-white">
         Join free
       </Link>
@@ -35,9 +35,9 @@ export function ForAttorneysView() {
         {SPECIALTIES.map((spec) => (
           <li key={spec.slug} className="flex items-center gap-3 rounded-3xl bg-white p-3">
             <img src={spec.icon} alt="" width={56} height={56} />
-            <span>
-              <span className="block font-display font-extrabold">{spec.name}</span>
-              <span className="text-sm text-ink">{spec.examples}</span>
+            <span className="flex min-w-0 flex-col gap-1">
+              <span className="font-display font-extrabold">{spec.name}</span>
+              <span className="text-sm text-ink">Examples: {spec.examples}</span>
             </span>
           </li>
         ))}
@@ -81,6 +81,7 @@ export function ForAttorneysView() {
       <p className="mt-8 text-sm text-ink">
         Read the <Link className="font-semibold text-purple" href="/attorney-terms/">Attorney Terms</Link> before you apply. You are responsible for your own advertising. A future premium, if we offer one, will be a flat fee for visibility only.
       </p>
+      <p id="joined-footnote" data-testid="joined-footnote" className="mt-6 text-xs text-ink">* {joinedLabel()} is only the year you join {BRAND}. It is not a rating and not a benefit to clients.</p>
     </div>
   );
 }

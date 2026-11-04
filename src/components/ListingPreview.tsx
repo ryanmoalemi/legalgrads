@@ -1,4 +1,5 @@
 import { publicContactHref } from '@/lib/applications';
+import { PillList } from '@/components/PillList';
 import { joinedLabel, joinedYear } from '@/lib/joined';
 import { MessageAttorneyForm } from '@/components/MessageAttorneyForm';
 
@@ -51,9 +52,7 @@ export function ListingPreview({
       </div>
       <p className="mt-2 text-sm text-ink">{bio || 'Your short bio appears here.'}</p>
       {languages ? <p className="mt-2 text-sm text-ink" data-testid="listing-languages"><span className="font-semibold text-navy">Languages:</span> {languages}</p> : null}
-      <div className="mt-3 flex flex-wrap gap-1">
-        {areas.map((area) => <span key={area} className="rounded-full bg-[#F4EEFF] px-2 py-1 text-xs font-semibold text-purple">{area}</span>)}
-      </div>
+      <PillList items={areas} className="mt-3" />
       {booking ? <p className="mt-3 text-sm"><a className="font-semibold text-purple" href={booking}>Website</a></p> : null}
       {staticPreview ? (
         <div className="mt-4" data-testid="listing-message-preview">
@@ -63,7 +62,7 @@ export function ListingPreview({
       ) : (
         <MessageAttorneyForm profileId={profileId} />
       )}
-      {staticPreview ? null : <p className="mt-3 text-sm text-ink">Clients find this card on Find an attorney after your state bar record is verified. {label} is only the year you joined Legalgrads. It is not a rating and not a benefit to clients. Your email is not on this card.</p>}
+      {staticPreview ? null : <p className="mt-3 text-sm text-ink">Clients find this card on Find an attorney after your state bar record is verified. Your email is not on this card.</p>}
     </article>
   );
 }

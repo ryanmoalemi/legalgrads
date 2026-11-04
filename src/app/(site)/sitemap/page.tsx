@@ -3,7 +3,7 @@ import Link from 'next/link';
 import { SPECIALTIES } from '@/lib/catalog';
 import { cityGroups } from '@/lib/profiles';
 import { LEGAL_LINKS } from '@/lib/legal';
-export const metadata: Metadata = { title: 'Site map', description: 'Every main section of Legalgrads in one place.', alternates: { canonical: '/sitemap/' } };
+export const metadata: Metadata = { title: 'Site map', description: 'Every main section of LegalGrads in one place.', alternates: { canonical: '/sitemap/' } };
 const MAIN = [['/', 'Home'], ['/find-lawyer/', 'Find an attorney'], ['/specialties/', 'Practice areas'], ['/how-it-works/', 'How it works'], ['/about/', 'About'], ['/faq/', 'FAQ'], ['/contact/', 'Contact'], ['/for-attorneys/', 'For attorneys'], ['/join/', 'Join free'], ['/pricing/', 'Pricing'], ['/resources/post-bar-licensing-tracker/', 'Post-bar licensing tracker']];
 export default function Page() {
   const states = [...new Set(cityGroups().map((g) => g.state))].sort();

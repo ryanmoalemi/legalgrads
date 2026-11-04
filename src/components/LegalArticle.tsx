@@ -6,7 +6,7 @@ export function LegalArticle({ doc }: { doc: LegalDoc }) {
     <article className="mx-auto max-w-3xl px-4 py-10">
       <h1 className="font-display text-4xl font-extrabold tracking-tight">{doc.title}</h1>
       <p className="mt-3 text-ink">{doc.description}</p>
-      <p className="mt-2 text-sm text-ink">Updated {doc.updated.slice(0, 10)} · Legalgrads</p>
+      <p className="mt-2 text-sm text-ink">Updated {doc.updated.slice(0, 10)} · LegalGrads</p>
       {doc.sections.map((section) => (
         <section key={section.heading} className="mt-8">
           <h2 className="font-display text-2xl font-extrabold">{section.heading}</h2>

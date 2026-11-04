@@ -10,6 +10,7 @@ import { money, validEmail } from '@/lib/format';
 import { getSupabase } from '@/lib/supabase';
 import { joinedLabel } from '@/lib/joined';
 import { PHASE2, supabaseConfigured } from '@/lib/site';
+import { PillList } from '@/components/PillList';
 import { Empty, PageIntro } from '@/components/ui';
 import Link from 'next/link';
 import { US_STATES } from '@/lib/states';
@@ -142,7 +143,7 @@ export function DirectoryView() {
     const result = await submitWaitlist(email, `directory:${specialty || 'any'}`);
     setMailto(result.channel === 'mailto' ? result.mailto : '');
     setNotice(result.channel === 'supabase'
-      ? 'You’re on the list. We’ll email you when attorneys are published.'
+      ? 'You’re on the list. We’ll email you a directory note. You can browse public-record profiles without it.'
       : 'We did not store this on a server. Send the email so your address is not lost.');
   }
 
@@ -150,8 +151,8 @@ export function DirectoryView() {
     <div className="mx-auto max-w-6xl px-4 py-8">
       <PageIntro
         kicker="Find an attorney"
-        title="U.S. attorneys, after a state bar check"
-        body="Browse published listings, or leave your email and we’ll tell you when the first attorneys are live."
+        title="Unclaimed rosters and Claimed profiles"
+        body="Unclaimed public profiles are live from official licensing rosters, on the state and city pages below. Claimed profiles are the ones an attorney verified with an email code and a manual bar review. This search filters Claimed listings. A waitlist note is optional."
       />
       <form className="mt-6 grid gap-3 rounded-3xl bg-white p-4 sm:grid-cols-3" aria-label="Filters" onSubmit={(event) => event.preventDefault()}>
         <label className="text-sm font-medium">State
@@ -187,17 +188,16 @@ export function DirectoryView() {
         <p className="mt-2 text-xs text-ink">Distances are approximate (office ZIP). You choose who to contact; we don&apos;t assign, forward or rank by payment.</p>
       </section>
 
-      {rows === null ? <p className="mt-6 text-sm text-ink">Loading published listings…</p> : null}
       {rows && rows.length === 0 ? (
         <div className="mt-6" data-testid="directory-empty">
           <Empty
-            title="Attorneys joining now — launching soon"
-            body="No listing is public until Legalgrads manually verifies the attorney’s state bar record. Leave your email and we’ll write when the directory opens."
+            title="Public-record pages are below"
+            body="This search did not load a short list. Unclaimed profiles from official rosters are on the state and city pages in Public-record listings."
           />
         </div>
       ) : null}
       {rows && rows.length > 0 && filtered.length === 0 ? (
-        <p className="mt-6 text-sm text-ink">No published attorneys match those filters yet.</p>
+        <p className="mt-6 text-sm text-ink">No Claimed listings match those filters. Unclaimed public profiles do not list a practice area. Open a state or city page in Public-record listings.</p>
       ) : null}
       {filtered.length > 0 ? (
         <ul className="mt-6 space-y-4">
@@ -219,9 +219,7 @@ export function DirectoryView() {
                 {row.insured ? <p className="inline-flex rounded-full bg-mint/20 px-3 py-1 text-xs font-bold text-navy">Insured</p> : null}
               </div>
               <p className="mt-3 text-sm text-ink">{row.bio}</p>
-              <div className="mt-3 flex flex-wrap gap-1">
-                {row.practice_areas.map((slug) => <span key={slug} className="rounded-full bg-[#F4EEFF] px-2 py-1 text-xs font-semibold text-purple">{specialtyName(slug)}</span>)}
-              </div>
+              <PillList items={row.practice_areas.map((slug) => specialtyName(slug))} className="mt-3" />
               <p className="mt-2 text-sm">Languages: {row.languages}</p>
               {PHASE2 ? <Link className="mt-3 inline-flex font-semibold text-purple" href={`/attorneys/profile/?id=${row.id}`}>View profile</Link> : null}
               {publicContactHref(row.contact_link) ? <p className="mt-2 text-sm"><a className="font-semibold text-purple" href={publicContactHref(row.contact_link) ?? undefined}>Website</a></p> : null}
@@ -233,7 +231,7 @@ export function DirectoryView() {
       ) : null}
 
       <form onSubmit={onWaitlist} className="mt-8 max-w-xl rounded-3xl bg-white p-5">
-        <h2 className="font-display text-2xl font-extrabold">Get a note when listings are live</h2>
+        <h2 className="font-display text-2xl font-extrabold">Optional directory note</h2>
         <label className="mt-3 block text-sm font-medium" htmlFor="directory-email">Email</label>
         <input id="directory-email" name="email" type="email" required data-testid="directory-email" className="mt-1 w-full rounded-2xl border border-navy/10 px-3 py-3" placeholder="you@example.com" />
         <button type="submit" data-testid="directory-waitlist" className="mt-3 min-h-11 rounded-full bg-pink px-5 font-display font-semibold text-white">Join the waitlist</button>

@@ -26,7 +26,7 @@ export function Logo({ variant = 'color', className = '', compact = false }: { v
       </svg>
       <span className={cx('font-display font-extrabold leading-none tracking-[-0.05em]', compact ? 'text-[1.35rem]' : 'text-[1.7rem]')}>
         <span style={{ color: ink }}>Legal</span>
-        {variant === 'white' ? <span className="text-white">grads</span> : <span className="gradient-text">grads</span>}
+        {variant === 'white' ? <span className="text-white">Grads</span> : <span className="gradient-text">Grads</span>}
       </span>
     </span>
   );

@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { FormEvent, useState } from 'react';
+import { PillList } from '@/components/PillList';
 import { SPECIALTIES } from '@/lib/catalog';
 import { HOW_STEPS, HOW_SUBTITLE } from '@/views/MarketingViews';
 import { submitWaitlist } from '@/lib/applications';
@@ -71,17 +72,19 @@ export function HomeView() {
               <svg viewBox="0 0 80 10" aria-hidden="true"><path d="M2 7 C 20 2, 50 2, 78 6" stroke="#7A00FF" strokeWidth="3" fill="none" strokeLinecap="round" /></svg>
             </span>
           </p>
-          <div className="mt-5 grid grid-cols-2 gap-2 sm:grid-cols-4">
+          <ul className="mt-5 grid list-none grid-cols-2 gap-2 p-0 sm:grid-cols-4">
             {SHORTCUTS.map((slug) => {
               const spec = SPECIALTIES.find((s) => s.slug === slug)!;
               return (
-                <Link key={slug} href={`/find-lawyer/?specialty=${slug}`} data-testid={`specialty-${slug}`} className="flex min-h-11 items-center gap-2 rounded-2xl bg-white px-2 py-2 text-sm font-display font-semibold shadow-sm">
-                  <img src={spec.icon} alt="" width={36} height={36} />
-                  <span>{spec.name}</span>
-                </Link>
+                <li key={slug}>
+                  <Link href={`/find-lawyer/?specialty=${slug}`} data-testid={`specialty-${slug}`} className="flex min-h-11 items-center gap-2 rounded-2xl bg-white px-2 py-2 text-sm font-display font-semibold shadow-sm">
+                    <img src={spec.icon} alt="" width={36} height={36} />
+                    <span>{spec.name}</span>
+                  </Link>
+                </li>
               );
             })}
-          </div>
+          </ul>
         </div>
         <HeroArt />
       </section>
@@ -93,6 +96,30 @@ export function HomeView() {
           <Benefit testid="benefit-verified" icon="/icons/benefits/verified_attorneys.svg" title="Verified Attorneys" body="A listing goes live only after a manual state bar check." />
           <Benefit testid="benefit-wide-range" icon="/icons/benefits/wide_range.svg" title="Wide Range of Help" body="Contracts, business, real estate, employment, and more." />
         </ul>
+      </section>
+
+      <section className="mx-auto max-w-6xl px-4 py-4" aria-labelledby="browse-places" data-testid="home-browse">
+        <h2 id="browse-places" className="font-display text-3xl font-extrabold tracking-tight text-navy sm:text-4xl">Browse public profiles</h2>
+        <p className="mt-2 max-w-2xl text-ink">Unclaimed profiles from official rosters, grouped by state and city.</p>
+        <ul className="mt-4 flex list-none flex-wrap gap-2 p-0">
+          {[
+            ['/attorneys/ca/', 'California'],
+            ['/attorneys/ca/los-angeles/', 'Los Angeles'],
+            ['/attorneys/ca/san-francisco/', 'San Francisco'],
+            ['/attorneys/ca/san-diego/', 'San Diego'],
+            ['/attorneys/ny/', 'New York'],
+            ['/attorneys/ny/new-york/', 'New York City'],
+          ].map(([href, label]) => (
+            <li key={href}>
+              <Link href={href} className="inline-flex min-h-11 items-center rounded-full bg-white px-4 font-display text-sm font-semibold text-navy shadow-sm">{label}</Link>
+            </li>
+          ))}
+        </ul>
+        <article className="mt-4 rounded-3xl bg-white p-5 shadow-card">
+          <h3 className="font-display text-xl font-extrabold text-navy">Post-Bar Licensing Tracker</h3>
+          <p className="mt-2 text-sm text-ink">Swearing-in costs and CLE for the states checked against official bar sources.</p>
+          <Link href="/resources/post-bar-licensing-tracker/" className="mt-3 inline-flex min-h-11 items-center font-display text-sm font-semibold text-purple">Open the tracker</Link>
+        </article>
       </section>
 
       <section className="mx-auto max-w-6xl px-4 pb-8" aria-labelledby="how-heading" data-testid="home-how">
@@ -201,11 +228,7 @@ function SampleCard({ className, photo, alt, title, place, tags }: { className: 
         <h2 className="font-display text-lg font-extrabold">{title}</h2>
         <p className="text-xs text-ink">{place}</p>
       </div>
-      <div className="mt-2 flex flex-wrap gap-1 px-1 pb-1">
-        {tags.map((tag) => (
-          <span key={tag} className="rounded-full bg-[#F4EEFF] px-2 py-1 text-[11px] font-semibold text-purple">{tag}</span>
-        ))}
-      </div>
+      <PillList items={tags} className="mt-2 px-1 pb-1 text-[11px]" />
     </article>
   );
 }

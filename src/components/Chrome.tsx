@@ -23,7 +23,7 @@ export function Header() {
   return (
     <header className="relative z-40">
       <div className="mx-auto flex max-w-6xl items-center gap-3 px-4 py-4">
-        <Link href="/" aria-label="Legalgrads home" className="shrink-0">
+        <Link href="/" aria-label="LegalGrads home" className="shrink-0">
           <Logo />
         </Link>
         <nav className="ml-auto hidden items-center gap-6 lg:flex" aria-label="Primary">
@@ -60,7 +60,7 @@ const FOOTER = [
     ['/how-it-works/', 'How It Works'],
     ['/about/', 'About'],
     ['/faq/', 'FAQ'],
-    ['/how-we-build-legalgrads/', 'How we build Legalgrads'],
+    ['/how-we-build-legalgrads/', 'How we build LegalGrads'],
     ['/contact/', 'Contact'],
     ['/sitemap/', 'Site map'],
   ]],
@@ -99,7 +99,7 @@ export function Footer() {
       <div className="mx-auto grid max-w-6xl gap-8 px-4 py-12 sm:grid-cols-2 lg:grid-cols-5">
         <div>
           <Logo variant="white" />
-          <p className="mt-4 text-sm text-white/75">A directory of newly licensed U.S. attorneys. Legalgrads is not a law firm and not a state-bar-certified lawyer referral service. Listings are free, with no per-lead fees.</p>
+          <p className="mt-4 text-sm text-white/75">A directory of newly licensed U.S. attorneys. LegalGrads is not a law firm and not a state-bar-certified lawyer referral service. Listings are free, with no per-lead fees.</p>
           <p className="mt-3 text-sm"><a className="underline" href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a></p>
         </div>
         {FOOTER.map(([title, links]) => (
@@ -113,7 +113,7 @@ export function Footer() {
           </div>
         ))}
       </div>
-      <p className="border-t border-white/10 px-4 py-4 text-center text-xs text-white/60">© 2026 Legalgrads. Informational resource only; not legal advice.</p>
+      <p className="border-t border-white/10 px-4 py-4 text-center text-xs text-white/60">© 2026 LegalGrads. Informational resource only; not legal advice.</p>
     </footer>
   );
 }
@@ -122,7 +122,7 @@ function JoinFooter({ reserveActionBar }: { reserveActionBar: boolean }) {
   return (
     <>
       <footer data-testid="join-footer" className="px-4 py-6 text-center text-xs text-navy/70">
-        <p>© 2026 Legalgrads · <Link className="font-semibold text-purple" href="/terms/">Terms</Link> · <Link className="font-semibold text-purple" href="/privacy/">Privacy</Link></p>
+        <p>© 2026 LegalGrads · <Link className="font-semibold text-purple" href="/terms/">Terms</Link> · <Link className="font-semibold text-purple" href="/privacy/">Privacy</Link></p>
       </footer>
       {reserveActionBar ? <div className="join-footer-pad" aria-hidden="true" /> : null}
     </>
