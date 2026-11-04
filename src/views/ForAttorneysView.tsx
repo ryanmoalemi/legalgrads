@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { SPECIALTIES } from '@/lib/catalog';
 import { ListingPreview } from '@/components/ListingPreview';
+import { ProfileBadge } from '@/components/ProfileBadge';
 import { SharePanel } from '@/components/SharePanel';
 import { PageIntro } from '@/components/ui';
 import { joinedLabel } from '@/lib/joined';
@@ -57,6 +58,7 @@ export function ForAttorneysView() {
       <div className="mt-8">
         <SharePanel name="Your name" />
       </div>
+      <ProfileBadge />
       <section className="mt-10" aria-labelledby="attorney-faq">
         <h2 id="attorney-faq" className="font-display text-2xl font-extrabold">Attorney questions</h2>
         <div className="mt-4 space-y-4">

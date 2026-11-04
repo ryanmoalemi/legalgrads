@@ -1,4 +1,5 @@
 node_modules
+public/data/bar-lookup/
 .next
 out
 test-results

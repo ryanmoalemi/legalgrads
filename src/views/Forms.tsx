@@ -1,6 +1,6 @@
 'use client';
 
-import { FormEvent, useEffect, useState, type ReactNode } from 'react';
+import { FormEvent, useEffect, useRef, useState, type ReactNode } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { analyticsLog, readConsent, track, writeConsent } from '@/lib/consent';
 import { mailtoHref } from '@/lib/mailto';
@@ -64,28 +64,26 @@ function MailtoForm({
   defaultDetails?: string;
   profilePath?: string;
 }) {
+  const formRef = useRef<HTMLFormElement>(null);
   const [mailto, setMailto] = useState('');
   const [error, setError] = useState('');
+  const [copied, setCopied] = useState('');
 
-  function onSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    const data = new FormData(event.currentTarget);
+  function messageLines(data: FormData): string | null {
     const email = String(data.get('email') || '');
     const details = String(data.get('details') || '');
     const name = String(data.get('name') || '');
     const type = String(data.get('type') || '');
     if (!validEmail(email)) {
       setError('Enter a valid email address.');
-      setMailto('');
-      return;
+      return null;
     }
     if (details.trim().length < 8) {
       setError('Add a few details so the request is not empty.');
-      setMailto('');
-      return;
+      return null;
     }
     setError('');
-    const lines = [
+    return [
       title,
       '',
       name ? `Name: ${name}` : null,
@@ -95,14 +93,36 @@ function MailtoForm({
       '',
       details.trim(),
     ].filter(Boolean).join('\n');
-    setMailto(mailtoHref(subject, lines));
+  }
+
+  function onSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const lines = messageLines(new FormData(event.currentTarget));
+    setMailto(lines ? mailtoHref(subject, lines) : '');
+  }
+
+  async function copyMessage() {
+    const form = formRef.current;
+    if (!form) return;
+    const lines = messageLines(new FormData(form));
+    if (!lines) {
+      setCopied('');
+      return;
+    }
+    const text = `To: ${CONTACT_EMAIL}\n\n${lines}`;
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopied('Copied the message and email address.');
+    } catch {
+      setCopied(`Copy is unavailable in this browser. The address is ${CONTACT_EMAIL}.`);
+    }
   }
 
   return (
     <div className="mx-auto max-w-xl px-4 py-10">
       <PageIntro title={title} body={body} />
       {profilePath ? <p data-testid="removal-profile" className="mt-4 text-sm">Listing: {SITE_URL}{profilePath}</p> : null}
-      <form className="mt-6 grid gap-3" onSubmit={onSubmit}>
+      <form ref={formRef} className="mt-6 grid gap-3" onSubmit={onSubmit}>
         <label className="text-sm font-medium">Name
           <input name="name" className="mt-1 w-full rounded-2xl border border-navy/10 px-3 py-3" />
         </label>
@@ -113,9 +133,13 @@ function MailtoForm({
         <label className="text-sm font-medium">{detailsLabel}
           <textarea name="details" required defaultValue={defaultDetails} className="mt-1 w-full rounded-2xl border border-navy/10 px-3 py-3" rows={5} />
         </label>
-        <button type="submit" className="min-h-11 rounded-full bg-pink font-display font-semibold text-white">Prepare email</button>
+        <div className="flex flex-wrap gap-2">
+          <button type="submit" className="min-h-11 rounded-full bg-pink px-5 font-display font-semibold text-white">Prepare email</button>
+          <button type="button" data-testid="copy-message" className="min-h-11 rounded-full bg-white px-5 font-display font-semibold text-navy ring-1 ring-navy/15" onClick={() => void copyMessage()}>Copy message and email address</button>
+        </div>
       </form>
       {error ? <p role="alert" className="mt-3 text-sm text-pink">{error}</p> : null}
+      {copied ? <p role="status" data-testid="copy-status" className="mt-3 text-sm">{copied}</p> : null}
       {mailto ? (
         <p className="mt-4 text-sm" role="status">
           Nothing is stored until you send this message.{' '}
