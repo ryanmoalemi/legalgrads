@@ -139,3 +139,6 @@ shot-*.png
 /templates/shot.py
 /lg2
 supabase/.temp/
+
+__pycache__/
+*.pyc

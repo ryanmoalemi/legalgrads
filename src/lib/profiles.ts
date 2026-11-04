@@ -4,6 +4,12 @@
 // (scripts/import_directory_profiles.py). New rows are unclaimed template output.
 import unclaimedCa from '@/data/unclaimed-ca.json';
 import unclaimedAdded from '@/data/unclaimed-added.json';
+import zipCentroids from '../../public/data/zip-centroids.json';
+import { miles, type LatLng } from '@/lib/geo';
+import { expandCityName, expandSchool, slugifyPlace, zipRegion } from '@/lib/places';
+import { US_STATES } from '@/lib/states';
+
+const STATE_SUFFIXES = new Set(US_STATES.map((item) => item.code.toLowerCase()));
 export type ProfileService = { icon: string; title: string; detail: string };
 export type RecordLinkType = 'individual_official_profile' | 'individual_official_data_record' | 'shared_official_roster_page';
 export type AttorneyProfile = {
@@ -86,10 +92,43 @@ const DEMO_PROFILES: AttorneyProfile[] = [
   },
 ];
 
-export const PROFILES: AttorneyProfile[] = [...DEMO_PROFILES, ...(unclaimedCa as AttorneyProfile[]), ...(unclaimedAdded as AttorneyProfile[])];
+const FROZEN_CITIES = new Set(['office-unlisted', 'location-not-listed', 'international-offices']);
+export const SLUG_REDIRECTS: { from: string; to: string }[] = [];
+
+function presentProfile(p: AttorneyProfile): AttorneyProfile {
+  if (p.demo) return p;
+  if (p.claimed) return { ...p, lawSchool: expandSchool(p.lawSchool) };
+  const cityName = expandCityName(p.cityName);
+  const region = zipRegion(p.officeZip);
+  const out = Boolean(region && region !== p.stateCode);
+  const next: AttorneyProfile = {
+    ...p,
+    cityName,
+    lawSchool: expandSchool(p.lawSchool),
+    ...(out ? { officeState: p.officeState || region || undefined, locationLabel: p.locationLabel || `${cityName}, ${region}` } : {}),
+  };
+  const suffix = p.city.match(/-([a-z]{2})$/);
+  const newCityBase = slugifyPlace(cityName);
+  const keep = suffix && STATE_SUFFIXES.has(suffix[1]) && !newCityBase.endsWith(`-${suffix[1]}`) ? `-${suffix[1]}` : '';
+  const newCity = `${newCityBase}${keep}`;
+  if (cityName !== p.cityName && !FROZEN_CITIES.has(p.city) && newCity && newCity !== p.city) {
+    SLUG_REDIRECTS.push(
+      { from: `/attorneys/${p.state}/${p.city}/${p.slug}/`, to: `/attorneys/${p.state}/${newCity}/${p.slug}/` },
+      { from: `/attorneys/${p.state}/${p.city}/`, to: `/attorneys/${p.state}/${newCity}/` },
+    );
+    next.city = newCity;
+  }
+  return next;
+}
+
+export const PROFILES: AttorneyProfile[] = [...DEMO_PROFILES, ...(unclaimedCa as AttorneyProfile[]), ...(unclaimedAdded as AttorneyProfile[])].map(presentProfile);
 
 export const REAL_PROFILES = PROFILES.filter((p) => !p.demo);
-export type CityGroup = { state: string; stateName: string; stateCode: string; city: string; cityName: string; profiles: AttorneyProfile[] };
+export type CityGroup = {
+  state: string; stateName: string; stateCode: string; city: string; cityName: string; profiles: AttorneyProfile[];
+  nearby?: { href: string; label: string }[];
+  nearbyByDistance?: boolean;
+};
 let cityGroupCache: CityGroup[] | null = null;
 export function cityGroups(): CityGroup[] {
   if (cityGroupCache) return cityGroupCache;
@@ -100,7 +139,35 @@ export function cityGroups(): CityGroup[] {
     m.get(k)!.profiles.push(p);
   }
   for (const g of m.values()) g.profiles.sort((a, b) => a.name.localeCompare(b.name));
-  cityGroupCache = [...m.values()].sort((a, b) => b.profiles.length - a.profiles.length || a.cityName.localeCompare(b.cityName));
+  const groups = [...m.values()].sort((a, b) => b.profiles.length - a.profiles.length || a.cityName.localeCompare(b.cityName));
+  const zips = zipCentroids as unknown as Record<string, LatLng>;
+  const anchor = (g: CityGroup): LatLng | null => {
+    for (const profile of g.profiles) {
+      const point = profile.officeZip ? zips[profile.officeZip] : undefined;
+      if (point) return point;
+    }
+    return null;
+  };
+  const points = new Map(groups.map((g) => [g, anchor(g)]));
+  for (const g of groups) {
+    if (g.profiles.length >= 3) continue;
+    const origin = points.get(g);
+    const same = groups.filter((other) => other !== g && other.state === g.state);
+    if (origin) {
+      g.nearbyByDistance = true;
+      g.nearby = same
+        .map((other) => ({ other, distance: points.get(other) ? miles(origin, points.get(other) as LatLng) : Infinity }))
+        .filter((item) => item.distance < Infinity)
+        .sort((a, b) => a.distance - b.distance)
+        .slice(0, 5)
+        .map((item) => ({ href: cityPath(item.other.state, item.other.city), label: cityListLabel(item.other) }));
+    } else {
+      g.nearbyByDistance = false;
+      g.nearby = [...same].sort((a, b) => b.profiles.length - a.profiles.length).slice(0, 5)
+        .map((other) => ({ href: cityPath(other.state, other.city), label: cityListLabel(other) }));
+    }
+  }
+  cityGroupCache = groups;
   return cityGroupCache;
 }
 export const cityPath = (state: string, city: string) => `/attorneys/${state}/${city}/`;
@@ -153,6 +220,9 @@ export const seoDescription = (p: AttorneyProfile) => {
   if (p.claimed) return `${p.name} helps small businesses with contracts, formation and advice. Licensed in ${p.stateName} since ${p.admittedYear}.`;
   const school = p.lawSchool && p.lawSchool !== 'Not listed' ? ` (${p.lawSchool})` : '';
   const caInState = p.stateCode === 'CA' && p.recordLinkType === 'individual_official_profile' && (!p.officeState || p.officeState === 'CA');
+  if ((!p.recordLinkType || caInState) && p.officeState && p.officeState !== p.stateCode) {
+    return `${p.name} is licensed in ${p.stateName} and was admitted in ${p.admitted}${school}. Office: ${placeLabel(p)}. License #${p.barNumber} from State Bar records.`;
+  }
   if (!p.recordLinkType || caInState) {
     return `${p.name} is a ${p.cityName}, ${p.stateCode} attorney admitted in ${p.admitted}${school}. License #${p.barNumber} from State Bar records.`;
   }
