@@ -37,7 +37,7 @@ export async function inviteClassmate(): Promise<string> {
   const text = `I'm joining Legalgrads. Apply here: ${INVITE_URL}`;
   if (typeof navigator !== 'undefined' && navigator.share) {
     try {
-      await navigator.share({ title: 'Legalgrads', text, url: INVITE_URL });
+      await navigator.share({ title: 'LegalGrads', text, url: INVITE_URL });
       return 'Share sheet opened.';
     } catch {
       return 'Link ready to copy.';

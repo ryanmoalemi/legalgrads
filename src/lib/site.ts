@@ -1,5 +1,7 @@
 export const CONTACT_EMAIL = 'ryan@legalgrads.com';
 export const ENTITY = 'Legalgrads';
+/** Visible brand in titles, Open Graph, the footer, and meta. */
+export const BRAND = 'LegalGrads';
 export const SITE_URL = 'https://legalgrads.com';
 
 /** Phase 2 tools stay off the public navigation until this is "1" at build time. */

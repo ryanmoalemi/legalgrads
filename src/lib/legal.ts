@@ -28,14 +28,14 @@ export const DOCS: Record<string, LegalDoc> = {
       {
         heading: 'The directory',
         paragraphs: [
-          'A listing appears only after Legalgrads manually checks the attorney’s record with the state bar where they are licensed. Until then, the directory may be empty. An empty directory is not a match and is not legal advice.',
+          'The directory has two kinds of profiles. Unclaimed public profiles are live and come from official licensing rosters. Claimed profiles are the ones an attorney has verified: an email confirmation code, then a manual check of the state bar record. Browsing the directory is not a match and is not legal advice.',
           'If you contact an attorney, that relationship is between you and the attorney. Legalgrads does not supervise the legal work, does not take a referral fee, and does not take a share of legal fees.',
         ],
       },
       {
         heading: 'Waitlist',
         paragraphs: [
-          'If you leave an email address, we use it to tell you when published listings are available. You can ask us to delete it by emailing ' + CONTACT_EMAIL + '.',
+          'If you leave an email address, we use it to send directory updates. You can browse Unclaimed public profiles without joining that list. You can ask us to delete the address by emailing ' + CONTACT_EMAIL + '.',
         ],
       },
       {

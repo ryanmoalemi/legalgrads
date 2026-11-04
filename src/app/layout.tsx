@@ -35,7 +35,7 @@ const caveat = localFont({
 export const metadata: Metadata = {
   metadataBase: new URL('https://legalgrads.com'),
   verification: { google: 'VuaqBDBpMxICyqFhvuwk_BlT9Rvv19IfOCFuCcNZhGk' },
-  title: { default: 'Legalgrads | Fresh out of law school. Ready to work for you.', template: '%s | Legalgrads' },
+  title: { default: 'LegalGrads | Fresh out of law school. Ready to work for you.', template: '%s | LegalGrads' },
   description: 'A directory of newly licensed U.S. attorneys. Listings go live only after a manual check with the attorney’s state bar.',
   icons: {
     icon: [
@@ -47,16 +47,16 @@ export const metadata: Metadata = {
   },
   manifest: '/site.webmanifest',
   openGraph: {
-    title: 'Legalgrads',
+    title: 'LegalGrads',
     description: 'Fresh out of law school. Ready to work for you.',
     url: 'https://legalgrads.com',
-    siteName: 'Legalgrads',
+    siteName: 'LegalGrads',
     images: [{ url: '/og-image.png', width: 1200, height: 630 }],
     type: 'website',
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Legalgrads',
+    title: 'LegalGrads',
     description: 'Fresh out of law school. Ready to work for you.',
     images: ['/og-image.png'],
   },
