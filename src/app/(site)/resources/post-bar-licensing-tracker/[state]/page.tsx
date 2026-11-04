@@ -45,6 +45,16 @@ export default async function Page({ params }: Props) {
   const cle = s.cle, portability = s.portability, faq = s.faq;
   const ca = s.slug === 'california';
   const faqLd = { '@context': 'https://schema.org', '@type': 'FAQPage', mainEntity: faq.map((f) => ({ '@type': 'Question', name: f.q, acceptedAnswer: { '@type': 'Answer', text: f.a } })) };
+  const feeLd = (s.slug === 'california' || s.slug === 'new-york') ? {
+    '@context': 'https://schema.org',
+    '@type': 'Dataset',
+    name: `${s.name} post-bar fee table`,
+    description: s.upfrontNote,
+    url: `https://legalgrads.com${TRACKER_PATH}${s.slug}/`,
+    dateModified: s.lastVerified,
+    creator: { '@type': 'Organization', name: 'LegalGrads', url: 'https://legalgrads.com' },
+    isAccessibleForFree: true,
+  } : null;
   const crumbLd = { '@context': 'https://schema.org', '@type': 'BreadcrumbList', itemListElement: [
     { '@type': 'ListItem', position: 1, name: 'Post-Bar Licensing Tracker', item: `https://legalgrads.com${TRACKER_PATH}` },
     { '@type': 'ListItem', position: 2, name: s.name, item: `https://legalgrads.com${TRACKER_PATH}${s.slug}/` },
@@ -52,6 +62,7 @@ export default async function Page({ params }: Props) {
   return (
     <div className="mx-auto max-w-5xl px-4 py-12 sm:py-16">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqLd) }} />
+      {feeLd ? <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(feeLd) }} /> : null}
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(crumbLd) }} />
       <nav className="text-sm text-ink"><Link className="font-semibold text-purple underline" href={TRACKER_PATH}>Post-bar tracker</Link> / {s.name}</nav>
       <p className="mt-4 font-display text-sm font-bold uppercase tracking-wide text-purple" data-testid="state-eyebrow">{s.name}</p>

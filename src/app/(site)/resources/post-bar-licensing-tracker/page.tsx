@@ -37,9 +37,10 @@ export default function Page() {
       </div>
 
       <section className="mt-14 rounded-3xl bg-white shadow-pill ring-1 ring-navy/5">
-        <h2 className="px-6 pt-6 font-display text-xl font-extrabold text-navy">All {ALL_STATES.length} jurisdictions, side by side</h2>
+        <h2 className="px-6 pt-6 font-display text-xl font-extrabold text-navy">States with sourced figures, side by side</h2>
+        <p className="px-6 pt-2 text-sm text-ink">The {ALL_STATES.length} rows with fees are the jurisdictions checked against official sources. Every other state is marked not yet researched. Those cells are blank on purpose.</p>
         <NationalTable states={ALL_STATES} base={TRACKER_PATH} />
-        <p className="px-6 pb-6 pt-2 text-xs text-ink/70">Every figure links back to an official bar or court source below. Ranges reflect swearing-in month or optional fees.</p>
+        <p className="px-6 pb-6 pt-2 text-xs text-ink/70">Sourced figures link to an official bar or court source below. Ranges reflect swearing-in month or optional fees. Not yet researched means we have not published a sourced figure.</p>
       </section>
 
       <EmbedBox pageUrl={`https://legalgrads.com${TRACKER_PATH}`} title={title} />
