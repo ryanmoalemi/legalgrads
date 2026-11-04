@@ -28,14 +28,19 @@ def claim_href(path):
     return "/claim/?profile=" + quote(path, safe="")
 
 
+def join_href(profile):
+    return f"/join/?state={quote(profile['stateCode'])}&bar={quote(profile['barNumber'])}"
+
+
 def removal_href(path):
     return "/data-deletion/?profile=" + quote(path, safe="")
 
 
-def assert_claim_links(html_text, path):
+def assert_claim_links(html_text, path, profile):
     href = claim_href(path)
+    joined = join_href(profile)
     removal = removal_href(path)
-    if html_text.count(f'href="{href}"') < 2:
+    if f'href="{href}"' not in html_text or f'href="{joined}"' not in html_text:
         raise SystemExit(f"Claim buttons missing on {path}")
     if f'href="{removal}"' not in html_text:
         raise SystemExit(f"Removal link missing on {path}")
@@ -286,10 +291,10 @@ def page_html(p):
         f"<li>Add your photo, bio &amp; services</li><li>Get a verified bar badge</li><li>Become a Founding Member: always free</li></ul>"
         f'<a class="btn pink" href="{claim_href(path)}">Claim my free profile</a>'
         f'<p class="small" style="margin-top:8px">We email you a confirmation code. Legalgrads does not mail a physical letter.</p></div>'
-        f'<div class="card"><h2>Need a lawyer for your business?</h2><p class="small">Browse newly licensed attorneys who have set up their profiles and contact them directly.</p>'
+        f'<div class="card"><h2>Looking for a business attorney in {esc(crumb)}?</h2><p class="small">This is separate from claiming the profile above. Browse attorneys who have verified their own listings and contact them directly.</p>'
         f'<a class="btn out" href="/find-lawyer/">Browse the directory</a>'
         f'<p class="small" style="margin-top:10px"><a href="{city_href}">More attorneys in {esc(crumb)}</a></p></div></aside></div>'
-        f'<div class="sticky"><a class="btn pink" href="{claim_href(path)}">Claim this free profile</a></div></main></div>'
+        f'<div class="sticky"><a class="btn pink" href="{join_href(p)}">Claim this free profile</a></div></main></div>'
     )
     return (
         "<!DOCTYPE html><html lang=\"en\"><head><meta charset=\"utf-8\">"
@@ -337,7 +342,7 @@ def main():
     sample = None
     for p in profiles:
         html_text = page_html(p)
-        assert_claim_links(html_text, profile_path(p))
+        assert_claim_links(html_text, profile_path(p), p)
         dest = OUT / "attorneys" / p["state"] / p["city"] / p["slug"] / "index.html"
         dest.parent.mkdir(parents=True, exist_ok=True)
         data = html_text.encode("utf-8")

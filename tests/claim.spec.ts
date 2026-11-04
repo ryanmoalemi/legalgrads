@@ -65,7 +65,9 @@ test('both claim buttons and removal links resolve for every sample state', asyn
       .map((href) => html.split(href).length - 1);
     const removalHits = [`/data-deletion/?profile=${encodeURIComponent(path)}`, `/data-deletion/?profile=${path}`]
       .some((href) => html.includes(href));
-    expect(Math.max(...claimHits), path).toBeGreaterThanOrEqual(2);
+    expect(Math.max(...claimHits), path).toBeGreaterThanOrEqual(1);
+    expect(html, path).toContain('/join/?state=');
+    expect(html, path).toContain('Claim this free profile');
     expect(removalHits, path).toBe(true);
     expect(html, path).toContain('/js/owner-edits.js');
     expect(html, path).toContain('We email you a confirmation code.');
@@ -99,14 +101,13 @@ test('wyoming claim page keeps the official hyphenated bar number', async ({ pag
 
 test('test inbox can claim, edit, and see the edit on the public page', async ({ page }) => {
   await boot(page, CALLIE);
+  await page.setViewportSize({ width: 390, height: 844 });
+  await expect(page.getByRole('link', { name: 'Claim this free profile' })).toHaveAttribute('href', '/join/?state=CA&bar=369241');
+  await expect(page.getByRole('heading', { name: 'Looking for a business attorney in Escondido?' })).toBeVisible();
   await page.getByRole('link', { name: 'Claim my free profile' }).click();
   await expect(page).toHaveURL(/\/claim\/\?profile=/);
   await expect(page.getByTestId('claim-listing')).toContainText('Callie Yahyavi');
   await expect(page.getByTestId('claim-listing')).toContainText('Bar 369241');
-  await page.goBack();
-  await page.setViewportSize({ width: 390, height: 844 });
-  await page.getByRole('link', { name: 'Claim this free profile' }).click();
-  await expect(page.getByTestId('claim-listing')).toContainText('Callie Yahyavi');
   await page.getByTestId('claim-bar-number').fill('111111');
   await page.getByTestId('claim-attest').check();
   await page.getByTestId('claim-email').fill('ryan@legalgrads.com');

@@ -21,15 +21,15 @@ test('capture launch screenshots', async ({ page }) => {
   const shots: [string, () => Promise<void>][] = [
     ['apply-1-you', async () => undefined],
     ['apply-2-license', async () => {
-      await page.getByTestId('apply-name').fill('Alex Rivera');
-      await page.getByTestId('apply-email').fill('alex.rivera@example.com');
-      await page.getByTestId('apply-phone').fill('4155551212');
-      await page.getByTestId('apply-next').click();
-    }],
-    ['apply-3-areas', async () => {
       await page.getByTestId('apply-state').selectOption('CA');
       await page.getByTestId('apply-bar').fill('123456');
       await page.getByTestId('apply-admitted').fill('2020-06-01');
+      await page.getByTestId('apply-next').click();
+    }],
+    ['apply-3-areas', async () => {
+      await page.getByTestId('apply-name').fill('Alex Rivera');
+      await page.getByTestId('apply-email').fill('alex.rivera@example.com');
+      await page.getByTestId('apply-phone').fill('4155551212');
       await page.getByTestId('apply-next').click();
     }],
     ['apply-4-practice', async () => {
@@ -59,17 +59,9 @@ test('capture launch screenshots', async ({ page }) => {
     }
     if (name === 'apply-1-you') {
       await page.evaluate(() => window.scrollTo(0, 0));
-      await page.getByTestId('apply-name').fill('Alex Rivera');
-      await page.getByTestId('apply-email').fill('alex.rivera@example.com');
-      await page.getByTestId('apply-phone').fill('555-1212');
       await page.getByTestId('apply-next').click();
-      await page.getByText('Enter a 10-digit US phone number.').waitFor();
-      await page.getByTestId('apply-phone').evaluate((el) => el.scrollIntoView({ block: 'center' }));
-      await page.waitForTimeout(150);
+      await page.getByText('Choose the state where you are licensed.').waitFor();
       await page.screenshot({ path: `${dir}/apply-1-phone-error-mobile.png` });
-      await page.getByTestId('apply-name').fill('');
-      await page.getByTestId('apply-email').fill('');
-      await page.getByTestId('apply-phone').fill('');
     }
   }
   await page.getByTestId('apply-phone-private').check();

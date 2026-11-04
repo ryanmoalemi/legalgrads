@@ -23,13 +23,14 @@ import {
 import { ListingPreview } from '@/components/ListingPreview';
 import { PhotoField } from '@/components/PhotoField';
 import { inputClass } from '@/components/ui';
+import { lookupRoster, type RosterHit } from '@/lib/rosterLookup';
 import { STATE_BAR_LOOKUP, stateName, US_STATES } from '@/lib/states';
 
-const STEPS = ['You', 'License', 'Areas', 'Practice', 'Review'] as const;
+const STEPS = ['Record', 'You', 'Areas', 'Practice', 'Review'] as const;
 
 const STEP_LINES = [
+  'State and bar number. We fill the roster fields we already have.',
   'Your name, email, and phone.',
-  'Your state of licensure, bar number, and admission date.',
   'Choose the areas you practice. Clients browse by these.',
   'Cities, languages, and a short bio.',
   'Check the listing, then send it.',
@@ -45,12 +46,20 @@ export function ApplyView() {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [hydrated, setHydrated] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [roster, setRoster] = useState<RosterHit | null>(null);
+  const [rosterNote, setRosterNote] = useState('');
 
   useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const state = (params.get('state') || '').toUpperCase();
+    const bar = (params.get('bar') || '').replace(/[^A-Za-z0-9-]/g, '').slice(0, 16);
     const saved = loadDraft();
-    if (saved) {
-      setInput(saved.input);
-      setPhotoDataUrl(saved.photoDataUrl);
+    const next = { ...(saved?.input ?? EMPTY_APPLICATION) };
+    if (state) next.licensedState = state;
+    if (bar) next.barNumber = bar;
+    if (saved || state || bar) {
+      setInput(next);
+      if (saved) setPhotoDataUrl(saved.photoDataUrl);
     }
     setHydrated(true);
   }, []);
@@ -66,8 +75,8 @@ export function ApplyView() {
       const index = STEP_IDS.indexOf(id as typeof STEP_IDS[number]);
       setStep(index >= 0 ? index : 0);
     };
-    if (!window.location.hash) {
-      window.history.replaceState(null, '', `${window.location.pathname}${window.location.search}#you`);
+    if (!window.location.hash || window.location.hash === '#license') {
+      window.history.replaceState(null, '', `${window.location.pathname}${window.location.search}#record`);
     }
     sync();
     window.addEventListener('hashchange', sync);
@@ -86,6 +95,29 @@ export function ApplyView() {
     window.scrollTo(0, Math.max(0, top));
     root.style.scrollBehavior = previous;
   }, [step, hydrated]);
+
+  useEffect(() => {
+    if (!hydrated || !input.licensedState || !input.barNumber) return;
+    let cancel = false;
+    void lookupRoster(input.licensedState, input.barNumber).then((hit) => {
+      if (cancel) return;
+      setRoster(hit);
+      if (!hit) {
+        setRosterNote('No public roster record for that state and bar number.');
+        return;
+      }
+      setRosterNote('');
+      setInput((current) => ({
+        ...current,
+        fullName: current.fullName || hit.name,
+        citiesServed: current.citiesServed || hit.city,
+        admissionDate: current.admissionDate || hit.admissionDate,
+      }));
+    });
+    return () => {
+      cancel = true;
+    };
+  }, [hydrated, input.licensedState, input.barNumber]);
 
   function patch(partial: Partial<ApplicationInput>) {
     setInput((current) => ({ ...current, ...partial }));
@@ -183,14 +215,6 @@ export function ApplyView() {
 
       {step === 0 ? (
         <div className="mt-6 grid gap-5">
-          <Field label="Full name" id="apply-name" why="This is the name clients see on your listing." error={errors.fullName} value={input.fullName} autoComplete="name" onChange={(value) => patch({ fullName: value })} />
-          <Field label="Email" id="apply-email" type="email" why="We email you about the state bar check. This address is never shown on your listing." error={errors.email} value={input.email} autoComplete="email" onChange={(value) => patch({ email: value })} />
-          <Field label="Phone" id="apply-phone" type="tel" required hint={PHONE_HINT} error={errors.phone} value={input.phone} autoComplete="tel" transform={formatUsPhone} onChange={(value) => patch({ phone: value })} />
-        </div>
-      ) : null}
-
-      {step === 1 ? (
-        <div className="mt-6 grid gap-5">
           <div>
             <label className="text-base font-semibold text-navy" htmlFor="apply-state">State of licensure</label>
             <select id="apply-state" data-testid="apply-state" className={fieldClass} value={input.licensedState} aria-invalid={errors.licensedState ? true : undefined} aria-describedby="err-state" onChange={(event) => patch({ licensedState: event.target.value })}>
@@ -199,16 +223,34 @@ export function ApplyView() {
             </select>
             {errors.licensedState ? <p id="err-state" role="alert" className="mt-1 text-sm font-medium text-[#6E123F]">{errors.licensedState}</p> : <p id="err-state" className="sr-only" />}
           </div>
-          <Field label={input.licensedState ? `${stateName(input.licensedState)} bar number` : 'Bar number'} id="apply-bar" maxLength={16} hint="The number your state bar issued. Letters, digits, and hyphens only." why="We look this up with your state bar before anything goes live." error={errors.barNumber} value={input.barNumber} transform={(value) => value.replace(/[^A-Za-z0-9-]/g, '').slice(0, 16)} onChange={(value) => patch({ barNumber: value })} />
+          <Field label={input.licensedState ? `${stateName(input.licensedState)} bar number` : 'Bar number'} id="apply-bar" maxLength={16} hint="The number your state bar issued. Letters, digits, and hyphens only." why="We look this up in our public roster, then check it again before anything goes live." error={errors.barNumber} value={input.barNumber} transform={(value) => value.replace(/[^A-Za-z0-9-]/g, '').slice(0, 16)} onChange={(value) => patch({ barNumber: value })} />
           <p className="text-sm"><a className="inline-flex min-h-11 items-center font-semibold text-purple" data-testid="bar-lookup" href={STATE_BAR_LOOKUP[input.licensedState] ?? BAR_SEARCH_URL} target="_blank" rel="noreferrer">{STATE_BAR_LOOKUP[input.licensedState] ? `Open the ${stateName(input.licensedState)} attorney lookup` : 'Find your state bar’s lawyer lookup'}</a></p>
+          {roster ? (
+            <div className="rounded-3xl bg-white p-4 text-sm text-ink" data-testid="roster-match">
+              <p className="font-display text-base font-extrabold text-navy">{roster.name}</p>
+              <p className="mt-1">Admitted on the roster: {roster.admitted}. {roster.yearOnly ? 'That is a year, not a day. It is not a graduation date and not an exam date.' : 'That is the admission date on the roster, not a graduation date and not an exam date.'}</p>
+              {roster.school && roster.school !== 'Not listed' ? <p className="mt-1">Law school on the roster: {roster.school}.</p> : null}
+              {roster.city ? <p className="mt-1">Office city on the roster: {roster.city}.</p> : null}
+              <p className="mt-2">This lookup fills empty fields. It does not claim the profile. Claiming still requires the email confirmation code.</p>
+              <p className="mt-2"><Link className="font-semibold text-purple" href={`/claim/?profile=${encodeURIComponent(roster.path)}`}>Claim this profile with an email code</Link></p>
+            </div>
+          ) : rosterNote ? <p className="text-sm text-ink" data-testid="roster-miss">{rosterNote}</p> : null}
           <div>
             <div className="flex flex-wrap items-center gap-1">
               <label className="text-base font-semibold text-navy" htmlFor="apply-admitted">Admission date</label>
-              <InfoTip text="We confirm you are already admitted in that state. A future date is not accepted." />
+              <InfoTip text="We confirm you are already admitted in that state. A future date is not accepted. A roster year with no day is not filled in as a date." />
             </div>
             <input id="apply-admitted" data-testid="apply-admitted" type="date" className={fieldClass} value={input.admissionDate} aria-invalid={errors.admissionDate ? true : undefined} aria-describedby="err-admitted" onChange={(event) => patch({ admissionDate: event.target.value })} />
             {errors.admissionDate ? <p id="err-admitted" role="alert" className="mt-1 text-sm font-medium text-[#6E123F]">{errors.admissionDate}</p> : <p id="err-admitted" className="sr-only" />}
           </div>
+        </div>
+      ) : null}
+
+      {step === 1 ? (
+        <div className="mt-6 grid gap-5">
+          <Field label="Full name" id="apply-name" why="This is the name clients see on your listing." error={errors.fullName} value={input.fullName} autoComplete="name" onChange={(value) => patch({ fullName: value })} />
+          <Field label="Email" id="apply-email" type="email" why="We email you about the state bar check. This address is never shown on your listing." error={errors.email} value={input.email} autoComplete="email" onChange={(value) => patch({ email: value })} />
+          <Field label="Phone" id="apply-phone" type="tel" required hint={PHONE_HINT} error={errors.phone} value={input.phone} autoComplete="tel" transform={formatUsPhone} onChange={(value) => patch({ phone: value })} />
         </div>
       ) : null}
 

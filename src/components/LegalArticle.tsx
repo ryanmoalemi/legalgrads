@@ -13,6 +13,13 @@ export function LegalArticle({ doc }: { doc: LegalDoc }) {
           {section.paragraphs.map((paragraph, index) => (
             <p key={`${section.heading}-${index}`} className="mt-3 leading-7 text-ink">{paragraph}</p>
           ))}
+          {section.links?.length ? (
+            <ul className="mt-3 space-y-1 text-sm">
+              {section.links.map((link) => (
+                <li key={link.href}><a className="font-semibold text-purple" href={link.href}>{link.label}</a></li>
+              ))}
+            </ul>
+          ) : null}
         </section>
       ))}
       <p className="mt-10 text-sm">

@@ -1,3 +1,4 @@
+import { ROSTER_SOURCES } from './rosters';
 import { CONTACT_EMAIL } from './site';
 
 export interface LegalDoc {
@@ -5,7 +6,7 @@ export interface LegalDoc {
   title: string;
   description: string;
   updated: string;
-  sections: { heading: string; paragraphs: string[] }[];
+  sections: { heading: string; paragraphs: string[]; links?: { href: string; label: string }[] }[];
 }
 
 const updated = '2026-10-21';
@@ -114,7 +115,7 @@ export const DOCS: Record<string, LegalDoc> = {
       {
         heading: 'Your license and insurance',
         paragraphs: [
-          'You must be admitted to practice in the U.S. state or DC that you list. You submit that state, your bar number, and your admission date so Legalgrads can check them. You tell us whether you carry professional liability insurance. If you do not, you agree to make any disclosure to clients that your state’s rules require (for example, California Rule of Professional Conduct 1.4.2). An Insured badge is shown only when you say you carry insurance. Legalgrads does not provide that insurance.',
+          'You must be admitted to practice in the U.S. state or DC that you list. You submit that state, your bar number, and your admission date so Legalgrads can check them. You tell us whether you carry professional liability insurance. If you do not, you agree to make any disclosure to clients that your state’s rules require (for example, California Rule of Professional Conduct 1.4.\u20602). An Insured badge is shown only when you say you carry insurance. Legalgrads does not provide that insurance.',
         ],
       },
       {
@@ -233,8 +234,8 @@ export const DOCS: Record<string, LegalDoc> = {
     updated,
     sections: [
       { heading: 'Who runs the site', paragraphs: ['Legalgrads is built and run by Ryan Moalemi. Questions about any page go to ' + CONTACT_EMAIL + '.'] },
-      { heading: 'Where attorney data comes from', paragraphs: ['Unclaimed attorney pages are built from public licensing records. We show the name, bar number, license status, and admission date or year when the regulator publishes them. Office city is shown when it was published, and left blank when it was not. Each page links to an individual official record when the regulator publishes one. When the regulator publishes only a shared roster, the page links to that roster and does not call it an individual profile. The discipline line points to the regulator and does not assert a clean history. Confirm the current status with the regulator.'] },
-      { heading: 'How listings are checked', paragraphs: ['A claimed listing goes live only after a manual check against the attorney state bar record. If a record changes or an attorney asks us to fix or remove a page, we update it as soon as we can.'] },
+      { heading: 'Where attorney data comes from', paragraphs: ['Unclaimed attorney pages are built from public licensing records. We show the name, bar number, license status, and admission date or year when the regulator publishes them. A year with no day stays a year. An admission date is not a graduation date and not an exam date. Office city is shown when it was published, and left blank when it was not. Each page links to an individual official record when the regulator publishes one. When the regulator publishes only a shared roster, the page links to that roster and does not call it an individual profile. The discipline line points to the regulator and does not assert a clean history. Confirm the current status with the regulator. The lookup pages below are the ones linked from profiles we publish. States with no published roster are not listed.'], links: ROSTER_SOURCES.map((source) => ({ href: source.href, label: `${source.name}: ${source.authority}` })) },
+      { heading: 'How listings are checked', paragraphs: ['A claimed listing goes live only after two checks. The attorney confirms an email code, and a person then reviews the state bar record. The email code alone does not publish the attorney’s own bio. If a record changes or an attorney asks us to fix or remove a page, we update it as soon as we can.'] },
       { heading: 'What we do not do', paragraphs: ['Legalgrads is a browse-only directory. We do not match you with an attorney, we do not sell placement or ranking, and we do not show ratings or reviews on unclaimed pages. Results are ordered by neutral rules such as location and name, never by payment.', 'Legalgrads is not a law firm and is not a state-bar-certified lawyer referral service. Nothing on the site is legal advice.'] },
       { heading: 'Advertising', paragraphs: ['If the site shows ads, they are labeled and kept separate from directory listings. Advertisers never affect which attorneys appear or in what order. See our Privacy and Cookies pages for how ad cookies work and how to opt out.'] },
       { heading: 'Corrections', paragraphs: ['Spot a mistake? Email ' + CONTACT_EMAIL + ' with the page link and what is wrong.'] },

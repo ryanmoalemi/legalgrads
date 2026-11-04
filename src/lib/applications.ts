@@ -5,7 +5,7 @@ import { getSupabase } from './supabase';
 import { supabaseConfigured } from './site';
 import { stateName, US_STATES } from './states';
 
-export const STEP_IDS = ['you', 'license', 'areas', 'practice', 'review'] as const;
+export const STEP_IDS = ['record', 'you', 'areas', 'practice', 'review'] as const;
 export const DRAFT_KEY = 'legalgrads-apply-draft';
 export const BIO_EXAMPLE = 'I help Oakland clients with leases and everyday contracts. I was admitted to the bar in 2025.';
 export const BAR_SEARCH_URL = 'https://www.americanbar.org/groups/legal_services/flh-home/flh-bar-directories-and-lawyer-finders/';
@@ -160,16 +160,16 @@ export function phoneProblem(value: string): string | null {
 export function errorsForStep(step: number, input: ApplicationInput): Record<string, string> {
   const errors: Record<string, string> = {};
   if (step === 0) {
-    if (input.fullName.trim().length < 2) errors.fullName = 'Enter your full name.';
-    if (!validEmail(input.email)) errors.email = 'Enter a valid email address.';
-    const phone = phoneProblem(input.phone);
-    if (phone) errors.phone = phone;
-  }
-  if (step === 1) {
     if (!US_STATES.some((s) => s.code === input.licensedState)) errors.licensedState = 'Choose the state where you are licensed.';
     if (!/^[A-Za-z0-9-]{1,16}$/.test(input.barNumber) || input.barNumber.startsWith('-') || input.barNumber.endsWith('-')) errors.barNumber = 'Use letters, digits, and hyphens only, up to 16.';
     if (!input.admissionDate) errors.admissionDate = 'Enter your admission date.';
     else if (isFutureDate(input.admissionDate)) errors.admissionDate = 'Admission date cannot be in the future.';
+  }
+  if (step === 1) {
+    if (input.fullName.trim().length < 2) errors.fullName = 'Enter your full name.';
+    if (!validEmail(input.email)) errors.email = 'Enter a valid email address.';
+    const phone = phoneProblem(input.phone);
+    if (phone) errors.phone = phone;
   }
   if (step === 2 && input.practiceAreas.length === 0) errors.practiceAreas = 'Choose at least one practice area.';
   if (step === 3) {
