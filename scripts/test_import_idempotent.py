@@ -101,7 +101,54 @@ def test_claimed_profile_is_kept_and_not_duplicated():
         fail("Second claimed import was not idempotent")
 
 
+def test_suppressed_profile_is_not_recreated():
+    from suppression import is_suppressed, load_suppressed
+    keys = load_suppressed()
+    if "ny-6118061" not in keys:
+        fail("ny-6118061 is missing from the suppression list")
+    for rel in ("src/data/unclaimed-ca.json", "src/data/unclaimed-added.json", "public/data/unclaimed-directory.json"):
+        rows = json.loads((ROOT / rel).read_text(encoding="utf-8"))
+        bad = [row for row in rows if is_suppressed(row, keys)]
+        if bad:
+            fail(f"{rel} still publishes {len(bad)} suppressed profiles")
+    added_rows = json.loads((ROOT / "src/data/unclaimed-added.json").read_text(encoding="utf-8"))
+    dudley = [row for row in added_rows if row.get("stateCode") == "NY" and row.get("barNumber") == "6079453"]
+    if len(dudley) != 1 or dudley[0].get("name") != "Dudley Maseko" or dudley[0].get("city") != "north-bethesda-md":
+        fail("North Bethesda neighbor profile changed")
+    row = {
+        "state": "ny", "stateCode": "NY", "stateName": "New York", "barNumber": "6118061",
+        "name": "Suppressed Roster Row", "slug": "suppressed-roster-row-6118061",
+        "city": "north-bethesda-md", "cityName": "North Bethesda",
+        "admitted": "2024", "admittedYear": "2024", "status": "Currently registered",
+        "discipline": "Check NY Courts attorney search", "lawSchool": "Example School of Law",
+        "lastVerified": "Nov 1, 2026", "sourceAuthority": "New York State Unified Court System",
+        "officialLookupUrl": "https://example.test/lookup", "sourceUrl": "https://example.test/new",
+        "recordLinkType": "individual_official_data_record",
+        "profilePath": "/attorneys/ny/north-bethesda-md/suppressed-roster-row-6118061/",
+        "registryRecordUrl": "https://example.test/new", "directoryInclude": 1,
+    }
+    existing = {
+        "slug": "suppressed-roster-row-6118061", "state": "ny", "stateCode": "NY", "stateName": "New York",
+        "city": "north-bethesda-md", "cityName": "North Bethesda", "name": "Suppressed Roster Row",
+        "barNumber": "6118061", "admitted": "2024", "admittedYear": "2024", "status": "Currently registered",
+        "discipline": "Check NY Courts attorney search", "lawSchool": "Example School of Law",
+        "lastVerified": "Nov 1, 2026",
+    }
+    _, added, stats = IMP.import_profiles([], [existing], [row])
+    if any(profile.get("barNumber") == "6118061" for profile in added):
+        fail("suppressed profile stayed in the import output")
+    if stats.get("NY", {}).get("new"):
+        fail("suppressed profile was counted as new")
+    _, again, stats2 = IMP.import_profiles([], [], [row])
+    if again or stats2.get("NY", {}).get("new"):
+        fail("suppressed profile was created from a roster row")
+    ca_kept, _, _ = IMP.import_profiles([{"stateCode": "CA", "barNumber": "354200", "state": "ca", "city": "san-diego", "slug": "kept"}], [], [])
+    if len(ca_kept) != 1 or ca_kept[0]["barNumber"] != "354200":
+        fail("suppression filter dropped a California profile that is not on the list")
+
+
 if __name__ == "__main__":
+    test_suppressed_profile_is_not_recreated()
     test_claimed_profile_is_kept_and_not_duplicated()
     test_second_run_matches_and_adds_nothing()
     print("idempotency ok")

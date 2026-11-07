@@ -5,6 +5,7 @@ Usage: SUPABASE_ACCESS_TOKEN=... python3 scripts/load_claim_contacts.py [--dry]
 import csv, json, os, sys, urllib.request, urllib.parse, collections
 sys.path.insert(0, os.path.dirname(__file__))
 from law_school_domains import law_school_domain
+from suppression import is_suppressed, load_suppressed
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 PROJECT = "qlhwojjdsonjxfeoiqww"
@@ -19,7 +20,8 @@ def site_domain(url):
     return host[4:] if host.startswith("www.") else host
 
 def rows():
-    paths = {(r["s"], r["id"]): r["u"] for r in json.load(open(f"{ROOT}/public/data/unclaimed-directory.json"))}
+    suppressed = load_suppressed()
+    paths = {(r["s"], r["id"]): r["u"] for r in json.load(open(f"{ROOT}/public/data/unclaimed-directory.json")) if not is_suppressed(r, suppressed)}
     ca = {}
     p = f"{ROOT}/data/ca-admits-2024.csv"
     if os.path.exists(p):
@@ -27,6 +29,8 @@ def rows():
     out = []
     for fn in ("unclaimed-added.json", "unclaimed-ca.json"):
         for r in json.load(open(f"{ROOT}/src/data/{fn}")):
+            if is_suppressed(r, suppressed):
+                continue
             path = paths.get((r["stateCode"], r["barNumber"]))
             if not path:
                 continue

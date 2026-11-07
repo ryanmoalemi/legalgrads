@@ -13,6 +13,7 @@ from pathlib import Path
 from urllib.parse import quote
 
 from places import present_profile
+from suppression import is_suppressed
 
 ROOT = Path(__file__).resolve().parent.parent
 OUT = ROOT / "out"
@@ -324,6 +325,8 @@ def load_profiles():
     hubs = {}
     for name in ("unclaimed-ca.json", "unclaimed-added.json"):
         for raw in json.loads((ROOT / "src/data" / name).read_text(encoding="utf-8")):
+            if is_suppressed(raw):
+                continue
             profile, redirect = present_profile(dict(raw))
             profiles.append(profile)
             if redirect:

@@ -10,6 +10,8 @@ import csv, json, re, sys, unicodedata
 from datetime import datetime
 from pathlib import Path
 
+from suppression import is_suppressed, load_suppressed
+
 ROOT = Path(__file__).resolve().parent.parent
 SRC = Path(sys.argv[1] if len(sys.argv) > 1 else '/workspace/legalgrads/data/ca-admits-2024.csv')
 OUT = ROOT / 'src/data/unclaimed-ca.json'
@@ -26,12 +28,17 @@ def slugify(s):
 def titlecase(s):
     return ' '.join(w.capitalize() if w.isupper() or w.islower() else w for w in s.split())
 
-existing = {p['barNumber']: p for p in json.loads(OUT.read_text())} if OUT.exists() else {}
+SUPPRESSED = load_suppressed()
+existing = {p['barNumber']: p for p in json.loads(OUT.read_text()) if not is_suppressed(p, SUPPRESSED)} if OUT.exists() else {}
 rows = {}
 inactive = set()  # bars seen non-Active (or otherwise excluded) in the current CSV
 for r in csv.DictReader(SRC.open(newline='', encoding='utf-8')):
     bar = clean(r.get('bar_number'))
     name = clean(r.get('name'))
+    if bar and is_suppressed({'stateCode': 'CA', 'barNumber': bar}, SUPPRESSED):
+        rows.pop(bar, None)
+        inactive.add(bar)
+        continue
     try:
         d = datetime.strptime(clean(r.get('admit_date')), '%m/%d/%Y')
     except ValueError:

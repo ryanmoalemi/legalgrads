@@ -12,6 +12,8 @@ import re
 import unicodedata
 from pathlib import Path
 
+from suppression import is_suppressed, load_suppressed
+
 ROOT = Path(__file__).resolve().parent.parent
 NDJSON = ROOT / "data-import" / "directory-profiles-2026-11-03.ndjson.gz"
 COVERAGE = ROOT / "data-import" / "coverage.json"
@@ -293,6 +295,9 @@ def load_ndjson(path):
 
 def import_profiles(existing_ca, existing_added, rows):
     """Return (ca_profiles, added_profiles, stats). Does not write files."""
+    suppressed = load_suppressed()
+    existing_ca = [profile for profile in existing_ca if not is_suppressed(profile, suppressed)]
+    existing_added = [profile for profile in existing_added if not is_suppressed(profile, suppressed)]
     index = {}
     for profile in existing_ca + existing_added:
         key = (profile["stateCode"], profile["barNumber"])
@@ -319,6 +324,8 @@ def import_profiles(existing_ca, existing_added, rows):
     fresh = []
     seen_existing = set()
     for row in rows:
+        if is_suppressed(row, suppressed):
+            continue
         key = (row["stateCode"], row["barNumber"])
         current = index.get(key)
         if current is not None and preserved(current):
@@ -375,6 +382,9 @@ def write_outputs(ca_profiles, added_profiles, ca_path, added_path, directory_pa
     # The original California file is preserved byte-for-byte when the objects
     # are the same list loaded from disk. Callers that need that guarantee
     # should skip rewriting when the text is unchanged.
+    suppressed = load_suppressed()
+    ca_profiles = [profile for profile in ca_profiles if not is_suppressed(profile, suppressed)]
+    added_profiles = [profile for profile in added_profiles if not is_suppressed(profile, suppressed)]
     added_path.write_text(json.dumps(added_profiles, indent=1, ensure_ascii=False) + "\n", encoding="utf-8")
     directory = [directory_row(p) for p in ca_profiles]
     directory.extend(directory_row(p) for p in added_profiles)

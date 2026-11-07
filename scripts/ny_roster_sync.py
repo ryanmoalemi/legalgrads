@@ -11,6 +11,8 @@ Usage: ny_roster_sync.py CSV [--apply] [--verified "Nov 4, 2026"]
 import csv, json, re, sys, unicodedata
 from pathlib import Path
 
+from suppression import is_suppressed, load_suppressed
+
 ROOT = Path(__file__).resolve().parent.parent
 ADDED = ROOT / "src/data/unclaimed-added.json"
 DIRECTORY = ROOT / "public/data/unclaimed-directory.json"
@@ -57,17 +59,24 @@ def main():
     src = sys.argv[1]
     apply = "--apply" in sys.argv
     verified = sys.argv[sys.argv.index("--verified") + 1] if "--verified" in sys.argv else ""
+    suppressed = load_suppressed()
     added = json.loads(ADDED.read_text(encoding="utf-8"))
+    removed = len(added)
+    added = [p for p in added if not is_suppressed(p, suppressed)]
+    removed -= len(added)
     idx = {(p["stateCode"], p["barNumber"]): i for i, p in enumerate(added)}
     if len(idx) != len(added):
         raise SystemExit("Duplicate existing keys")
     urls = {f"/attorneys/{p['state']}/{p['city']}/{p['slug']}/" for p in added}
-    stats = {"new": 0, "updated": 0, "unchanged": 0, "skippedInactive": 0, "preserved": 0}
+    stats = {"new": 0, "updated": 0, "unchanged": 0, "skippedInactive": 0, "preserved": 0, "skippedSuppressed": 0, "removed": removed}
     new_urls, fresh = [], []
     for r in csv.DictReader(open(src, encoding="utf-8")):
         key = ("NY", r["registration_number"])
         i = idx.get(key)
         if i is None:
+            if is_suppressed({"stateCode": "NY", "barNumber": r["registration_number"]}, suppressed):
+                stats["skippedSuppressed"] += 1
+                continue
             if r["status"] not in ACTIVE:
                 stats["skippedInactive"] += 1
                 continue
@@ -88,15 +97,17 @@ def main():
                     cur["lastVerified"] = verified
         else:
             stats["unchanged"] += 1
-    if apply and (fresh or stats["updated"]):
+    if apply and (fresh or stats["updated"] or removed):
         for p in fresh:
             pos = next((j for j, q in enumerate(added) if q["stateCode"] == "NY" and q["barNumber"] > p["barNumber"]), None)
             if pos is None:
-                pos = max(j for j, q in enumerate(added) if q["stateCode"] == "NY") + 1
+                ny_positions = [j for j, q in enumerate(added) if q["stateCode"] == "NY"]
+                pos = (max(ny_positions) + 1) if ny_positions else len(added)
             added.insert(pos, p)
         ADDED.write_text(json.dumps(added, indent=1, ensure_ascii=False) + "\n", encoding="utf-8")
-        if fresh:
+        if fresh or removed:
             d = json.loads(DIRECTORY.read_text(encoding="utf-8"))
+            d = [row for row in d if not is_suppressed(row, suppressed)]
             d.extend({"id": p["barNumber"], "n": p["name"], "c": p["cityName"], "z": p.get("officeZip") or "",
                       "a": p["admittedYear"], "u": f"/attorneys/ny/{p['city']}/{p['slug']}/", "s": "NY"} for p in fresh)
             d.sort(key=lambda r: (r["s"], r["id"]))

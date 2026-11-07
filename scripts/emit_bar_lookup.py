@@ -4,6 +4,8 @@ import json
 import re
 from pathlib import Path
 
+from suppression import is_suppressed
+
 ROOT = Path(__file__).resolve().parent.parent
 OUT = ROOT / "public" / "data" / "bar-lookup"
 
@@ -36,7 +38,7 @@ def main():
     profiles += json.loads((ROOT / "src/data/unclaimed-added.json").read_text(encoding="utf-8"))
     by_state = {}
     for profile in profiles:
-        if profile.get("demo"):
+        if profile.get("demo") or is_suppressed(profile):
             continue
         state = profile["stateCode"].lower()
         key = norm_bar(profile["barNumber"])
