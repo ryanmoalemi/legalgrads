@@ -1,5 +1,6 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.49.1';
 import { corsHeaders, json } from '../_shared/mail.ts';
+import { isSuppressedClaim } from '../_shared/suppression.ts';
 
 const TEST = new Set(['ryan@legalgrads.com', 'aftermarketproducts71@gmail.com']);
 const EMAIL = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
@@ -229,6 +230,7 @@ Deno.serve(async (request) => {
   const profilePath = String(payload.profilePath || '');
   const name = String(payload.name || '').trim().slice(0, 160);
   if (!PROFILE_PATH.test(profilePath)) return json({ ok: false, reason: 'bad-profile' }, 400);
+  if (isSuppressedClaim({ name, email, profilePath })) return json({ ok: false, reason: 'suppressed' }, 403);
   const useBarEmail = payload.useBarEmail === true;
 
   async function contactFor(db: NonNullable<ReturnType<typeof client>>): Promise<Contact | null> {

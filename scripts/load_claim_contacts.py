@@ -36,6 +36,8 @@ def rows():
                 continue
             src = ca.get(r["barNumber"]) if r["stateCode"] == "CA" else None
             email = (src or {}).get("email", "").strip().lower()
+            if email and is_suppressed({"email": email}, suppressed):
+                continue
             out.append({
                 "profile_path": path,
                 "bar_email": email if "@" in email else None,

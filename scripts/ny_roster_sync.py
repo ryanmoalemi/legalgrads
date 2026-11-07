@@ -74,7 +74,16 @@ def main():
         key = ("NY", r["registration_number"])
         i = idx.get(key)
         if i is None:
-            if is_suppressed({"stateCode": "NY", "barNumber": r["registration_number"]}, suppressed):
+            raw = {
+                "stateCode": "NY",
+                "barNumber": r.get("registration_number") or "",
+                "first_name": r.get("first_name") or "",
+                "middle_name": r.get("middle_name") or "",
+                "last_name": r.get("last_name") or "",
+                "suffix": r.get("suffix") or "",
+                "email": r.get("email") or "",
+            }
+            if is_suppressed(raw, suppressed):
                 stats["skippedSuppressed"] += 1
                 continue
             if r["status"] not in ACTIVE:

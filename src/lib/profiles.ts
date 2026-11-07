@@ -4,7 +4,7 @@
 // (scripts/import_directory_profiles.py). New rows are unclaimed template output.
 import unclaimedCa from '@/data/unclaimed-ca.json';
 import unclaimedAdded from '@/data/unclaimed-added.json';
-import suppressedProfileKeys from '@/data/suppressed-profiles.json';
+import { isSuppressedRecord } from '@/lib/suppression';
 import zipCentroids from '../../public/data/zip-centroids.json';
 import { miles, type LatLng } from '@/lib/geo';
 import { expandCityName, expandSchool, slugifyPlace, zipRegion } from '@/lib/places';
@@ -122,17 +122,11 @@ function presentProfile(p: AttorneyProfile): AttorneyProfile {
   return next;
 }
 
-const SUPPRESSED_PROFILES = new Set(suppressedProfileKeys);
-
-function suppressedKey(profile: { stateCode: string; barNumber: string }): string {
-  return `${profile.stateCode.toLowerCase()}-${profile.barNumber.toLowerCase()}`;
-}
-
 function publishable(profile: AttorneyProfile): boolean {
-  return !SUPPRESSED_PROFILES.has(suppressedKey(profile));
+  return !isSuppressedRecord(profile);
 }
 
-// Suppressed keys never become pages, hub listings, or sitemap URLs.
+// Suppressed names, emails, and bar keys never become pages, hub listings, or sitemap URLs.
 export const PROFILES: AttorneyProfile[] = [
   ...DEMO_PROFILES,
   ...(unclaimedCa as AttorneyProfile[]).filter(publishable),

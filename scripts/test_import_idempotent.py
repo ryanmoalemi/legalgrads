@@ -103,12 +103,22 @@ def test_claimed_profile_is_kept_and_not_duplicated():
 
 def test_suppressed_profile_is_not_recreated():
     from suppression import is_suppressed, load_suppressed
-    keys = load_suppressed()
-    if "ny-6118061" not in keys:
-        fail("ny-6118061 is missing from the suppression list")
+    rules = load_suppressed()
+    if "ny-6118061" not in rules["keys"] or "joyannaaa@gmail.com" not in rules["emails"]:
+        fail("ny-6118061 or joyannaaa@gmail.com is missing from the suppression list")
+    if not is_suppressed({"stateCode": "MD", "barNumber": "1234567", "name": "Fuller, Joy Anna"}, rules):
+        fail("normalized name was not suppressed for another bar")
+    if not is_suppressed({"stateCode": "DC", "barNumber": "999", "name": "Someone Else", "email": "JoyAnnaaa@gmail.com"}, rules):
+        fail("email was not suppressed")
+    if not is_suppressed({"u": "/attorneys/md/baltimore/joy-anna-fuller-555/"}, rules):
+        fail("slug name was not suppressed")
+    if is_suppressed({"stateCode": "MD", "barNumber": "2222222", "name": "Joy Fuller"}, rules):
+        fail("similar name Joy Fuller was suppressed")
+    if is_suppressed({"stateCode": "AK", "barNumber": "2509072", "name": "Tatum Marie Fuller"}, rules):
+        fail("a different Fuller was suppressed")
     for rel in ("src/data/unclaimed-ca.json", "src/data/unclaimed-added.json", "public/data/unclaimed-directory.json"):
         rows = json.loads((ROOT / rel).read_text(encoding="utf-8"))
-        bad = [row for row in rows if is_suppressed(row, keys)]
+        bad = [row for row in rows if is_suppressed(row, rules)]
         if bad:
             fail(f"{rel} still publishes {len(bad)} suppressed profiles")
     added_rows = json.loads((ROOT / "src/data/unclaimed-added.json").read_text(encoding="utf-8"))

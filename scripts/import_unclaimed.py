@@ -35,7 +35,7 @@ inactive = set()  # bars seen non-Active (or otherwise excluded) in the current 
 for r in csv.DictReader(SRC.open(newline='', encoding='utf-8')):
     bar = clean(r.get('bar_number'))
     name = clean(r.get('name'))
-    if bar and is_suppressed({'stateCode': 'CA', 'barNumber': bar}, SUPPRESSED):
+    if is_suppressed({'stateCode': 'CA', 'barNumber': bar, 'name': name, 'email': clean(r.get('email'))}, SUPPRESSED):
         rows.pop(bar, None)
         inactive.add(bar)
         continue

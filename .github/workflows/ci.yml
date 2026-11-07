@@ -16,5 +16,7 @@ jobs:
       - run: npm ci
       - run: npx playwright install --with-deps chromium
       - run: python3 scripts/test_import_idempotent.py
+      - run: python3 scripts/test_suppression_published.py --data
       - run: npm run build
+      - run: python3 scripts/test_suppression_published.py --output out
       - run: npx playwright test

@@ -167,6 +167,13 @@ export function ApplyView() {
     setBusy(true);
     const photo = await dataUrlToFile(photoDataUrl, input.photoName || 'photo.jpg');
     const result = await submitApplication(input, photo);
+    if (result.channel === 'refused') {
+      setBusy(false);
+      setStep(1);
+      setErrors({ fullName: result.message });
+      window.location.hash = 'you';
+      return;
+    }
     clearDraft();
     window.sessionStorage.setItem('legalgrads-application-result', JSON.stringify(result));
     router.push('/join/confirmation/');

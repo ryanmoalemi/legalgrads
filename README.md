@@ -79,3 +79,7 @@ These routes exist and are not in the header or footer. They render “Not publi
 - `/attorneys/profile/?id=` — public profile, a Joined year from the approval date, and a downloadable “I’m on Legalgrads” image
 
 The find page already lists published profiles when the database has them. It shows “Attorneys joining now — launching soon” when it does not.
+
+## Take down a listing
+
+Add one line to `src/data/suppressed-profiles.json`. Roster imports, profile pages, sitemaps, find-lawyer data, and IndexNow lists skip that file. The steps and the Supabase SQL are in `docs/opt-out.md`.

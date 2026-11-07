@@ -2,7 +2,7 @@ import { SPECIALTIES, specialtyName } from './catalog';
 import { validEmail } from './format';
 import { mailtoHref } from './mailto';
 import { getSupabase } from './supabase';
-import { supabaseConfigured } from './site';
+import { CONTACT_EMAIL, supabaseConfigured } from './site';
 import { stateName, US_STATES } from './states';
 
 export const STEP_IDS = ['record', 'you', 'areas', 'practice', 'review'] as const;
@@ -230,7 +230,7 @@ export function applicationMailto(input: ApplicationInput, reference: string): s
 }
 
 export interface SubmitResult {
-  channel: 'supabase' | 'mailto';
+  channel: 'supabase' | 'mailto' | 'refused';
   mailto: string;
   reference: string;
   name: string;
@@ -298,12 +298,22 @@ export async function submitApplication(input: ApplicationInput, photo: File | n
       attorney_terms_accepted_at: new Date().toISOString(),
     };
     const full = { ...row, licensed_state: input.licensedState, in_person: input.inPerson };
+    const refused = (message?: string) => /suppression list/i.test(message ?? '');
     let inserted = await supabase.from('attorney_applications').insert(full);
+    if (refused(inserted.error?.message)) {
+      return { ...base, channel: 'refused', mailto: '', message: `This listing cannot be published. Email ${CONTACT_EMAIL} if this is a mistake.` };
+    }
     if (inserted.error && /in_person/.test(inserted.error.message)) inserted = await supabase.from('attorney_applications').insert({ ...row, licensed_state: input.licensedState });
+    if (refused(inserted.error?.message)) {
+      return { ...base, channel: 'refused', mailto: '', message: `This listing cannot be published. Email ${CONTACT_EMAIL} if this is a mistake.` };
+    }
     // Until the nullable-rate migration runs, the rate columns are still required. Store a private
     // placeholder that is never shown (listings no longer display rates).
     if (inserted.error && /rate_/i.test(inserted.error.message ?? '')) {
       inserted = await supabase.from('attorney_applications').insert({ ...full, rate_type: 'flat', rate_amount: 25, rate_for: 'not collected', rate_starting_at: false });
+    }
+    if (refused(inserted.error?.message)) {
+      return { ...base, channel: 'refused', mailto: '', message: `This listing cannot be published. Email ${CONTACT_EMAIL} if this is a mistake.` };
     }
     if (inserted.error) throw new Error('insert');
     return {

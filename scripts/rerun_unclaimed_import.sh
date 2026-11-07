@@ -10,5 +10,4 @@ git push -q -u origin $B; /usr/local/bin/gh pr create --base main --title "Refre
 /usr/local/bin/gh pr merge --squash --delete-branch
 # After the Pages deploy finishes, ping IndexNow (Bing/Yandex) with the sitemap URLs.
 RUN=$(sleep 15; /usr/local/bin/gh run list -R ryanmoalemi/legalgrads -w "Deploy to GitHub Pages" -L1 --json databaseId -q '.[0].databaseId'); /usr/local/bin/gh run watch -R ryanmoalemi/legalgrads $RUN --exit-status >/dev/null
-K=$(cat /workspace/legalgrads/indexnow-key.txt)
-curl -s https://legalgrads.com/sitemap.xml | grep -o "<loc>[^<]*" | cut -c6- > /tmp/lg-urls.txt && python3 /workspace/legalgrads/indexnow_batch.py /tmp/lg-urls.txt
+curl -s https://legalgrads.com/sitemap.xml | grep -o "<loc>[^<]*" | cut -c6- > /tmp/lg-urls.txt && python3 "$D/scripts/indexnow_batch.py" /tmp/lg-urls.txt
