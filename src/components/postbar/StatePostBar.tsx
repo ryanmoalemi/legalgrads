@@ -145,6 +145,14 @@ export function StatePostBar({ s }: { s: NationalState }) {
         <ul className="mt-4 grid gap-2 sm:grid-cols-2">
           {s.sources.map((src) => <li key={src.url}><a className="text-purple underline" href={src.url} target="_blank" rel="noopener noreferrer">{src.label}</a></li>)}
         </ul>
+        {s.gaps && s.gaps.length > 0 && (
+          <div className="mt-4 rounded-2xl bg-white p-4 text-sm text-ink">
+            <p className="font-display font-extrabold text-navy">Still not published</p>
+            <ul className="mt-2 space-y-2">
+              {s.gaps.map((gap) => <li key={gap.field}><span className="font-semibold text-navy">{gap.field}.</span> {gap.detail}</li>)}
+            </ul>
+          </div>
+        )}
         <p className="mt-5 text-sm text-ink">Bar exam fees are separate unless a line above includes them. Fees change, so confirm with the licensing body before you pay. General information, not legal advice.</p>
       </section>
 

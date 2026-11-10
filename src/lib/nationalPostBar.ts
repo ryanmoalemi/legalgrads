@@ -66,6 +66,7 @@ export type NationalState = {
   faqs: Faq[];
   sources: Src[];
   heldRoster: boolean;
+  gaps?: { field: string; detail: string }[];
 };
 
 const UBE_LIST: Src = {

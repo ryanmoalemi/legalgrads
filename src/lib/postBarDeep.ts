@@ -344,4 +344,162 @@ export function applyDeep(rows: NationalState[]) {
   }
   const de = rows.find((s) => s.abbr === 'DE');
   if (de) add(de, DE_CEREMONY);
+
+  applyFeeSchedules(rows);
+}
+
+const ID_STATUTE: Src = { label: 'Idaho Code 3-409, license fees (2026 amounts)', url: 'https://legislature.idaho.gov/statutesrules/idstat/Title3/T3CH4/SECT3-409/' };
+const IN_RULE: Src = { label: 'Indiana Admission and Discipline Rule 2, registration fees', url: 'https://rules.incourts.gov/pdf/PDF%20-%20Admission%20Discipline/admission-discipline.pdf' };
+const ME_FEE: Src = { label: 'Maine Board of Overseers fee schedule, adopted October 2026', url: 'https://www.mebaroverseers.org/attorney_services/registration/fee_schedule.html' };
+const LA_DUES: Src = { label: 'Louisiana State Bar Association dues and LADB assessment', url: 'https://www.lsba.org/members/MemberDues.aspx' };
+const MT_QA: Src = { label: 'State Bar of Montana attorney dues table', url: 'https://www.montanabar.org/For-Attorneys/Attorney-Q-A' };
+const NV_FEE: Src = { label: 'State Bar of Nevada annual fees', url: 'https://nvbar.org/licensing-compliance/membership-records/annual-fees-and-disclosures/' };
+const GA_CHART: Src = { label: 'State Bar of Georgia new member license fee notice and proration chart', url: 'https://www.gabar.org/docs/default-source/membership/join/licensefeenoticeprorationschedule.pdf' };
+const HI_FEE: Src = { label: 'Hawaii State Bar 2026 licensing fee schedule', url: 'https://cdn.sailamx.com/14/cms_uploads/9461cce28ebe3e76fb4b931c35a169b0/2026-Licensing-Dues-and-Fees.pdf' };
+const NC_RULE: Src = { label: 'North Carolina State Bar rule .0203, annual membership fees', url: 'https://www.ncbar.gov/for-lawyers/ethics-and-governing-rules/governing-rules/1a-organization-of-the-north-carolina-state-bar/0200-membership-annual-membership-fees/0203-annual-membership-fees-when-due/' };
+const CO_FEE: Src = { label: 'Colorado attorney registration fees, 2026 schedule', url: 'https://www.coloradolegalregulation.com/current-lawyers/fees_registration/' };
+const CO_RULE: Src = { label: 'Colorado Rule 227, registration fee', url: 'https://www.coloradolegalregulation.com/wp-content/uploads/PDF/Registration/Rule%20227.pdf' };
+const CO_OATH: Src = { label: 'Colorado Office of Attorney Registration, oath schedule', url: 'https://www.coloradolegalregulation.com/current-lawyers/newlyadmitted/' };
+const MA_FEE: Src = { label: 'Board of Bar Overseers in-house registration instructions (Rules 4:02 and 4:03 fee table)', url: 'https://bbopublic.blob.core.windows.net/web/f/InHouseInitial.pdf' };
+
+function setFee(rows: NationalState[], abbr: string, edit: (s: NationalState) => void) {
+  const s = rows.find((row) => row.abbr === abbr);
+  if (!s || s.upfront) return;
+  edit(s);
+}
+
+function applyFeeSchedules(rows: NationalState[]) {
+  setFee(rows, 'ID', (s) => {
+    s.upfront = { low: 130, high: 200, label: '2026 license fee in the calendar year of Idaho admission' };
+    s.upfrontNote = 'Idaho Code 3-409 sets 2026 active and house-counsel fees at $200 if admitted before July 1 and $130 if admitted after July 1. The next three calendar years are $350, then $485. A clients\' assistance fund assessment, not to exceed $20, is separate. The statute does not set this year\'s exact assessment.';
+    s.feeRelief = true;
+    s.feeReliefShort = '$130 if admitted after July 1';
+    s.costs = [
+      { label: '2026 license fee, admitted before July 1', amount: 200, note: 'Calendar year of admission. Idaho Code 3-409(3)(a)(i).', source: ID_STATUTE },
+      { label: '2026 license fee, admitted after July 1', amount: 130, note: 'Calendar year of admission. Idaho Code 3-409(3)(a)(ii).', source: ID_STATUTE },
+    ];
+    add(s, ID_STATUTE);
+  });
+  setFee(rows, 'IN', (s) => {
+    s.upfront = { low: 180, high: 180, label: 'Annual active registration fee' };
+    s.upfrontNote = 'Admission and Discipline Rule 2, effective July 1, 2023: active attorneys pay $180. A lawyer admitted after August 1 pays the same $180 within 10 days of admission or by October 1, whichever is later. The rule does not prorate that $180. Inactive is half if an inactivity affidavit is filed by October 1.';
+    s.feeReliefShort = 'No proration. Inactive is half with an affidavit.';
+    s.costs = [
+      { label: 'Active registration', amount: 180, note: 'Same amount if admitted after August 1. Due within 10 days or by October 1, whichever is later.', source: IN_RULE },
+    ];
+    add(s, IN_RULE);
+  });
+  setFee(rows, 'ME', (s) => {
+    s.upfront = { low: 215, high: 215, label: 'License fee, admitted less than 3 years' };
+    s.upfrontNote = 'The Board of Overseers schedule, adopted October 2026, lists $215 for attorneys admitted less than 3 years and $320 for those admitted more than 3 and less than 50 years. The fees include the mandatory Lawyers\' Fund for Client Protection and MAP assessments. Maine Bar Rule 4(a).';
+    s.feeRelief = true;
+    s.feeReliefShort = '$215 if admitted less than 3 years';
+    s.costs = [
+      { label: 'License fee, admitted less than 3 years', amount: 215, note: 'Schedule adopted October 2026. Includes LFCP and MAP.', source: ME_FEE },
+    ];
+    add(s, ME_FEE);
+  });
+  setFee(rows, 'LA', (s) => {
+    s.upfront = { low: 250, high: 250, label: 'LSBA dues plus LADB assessment, admitted 3 years or less' };
+    s.upfrontNote = 'The LSBA dues page lists $80 in dues and a $170 Louisiana Attorney Disciplinary Board assessment for members admitted 3 years or less. Members admitted more than 3 years are $200 plus $235. The table does not print a year. Checked Nov 10, 2026. This page does not use the attorney roster.';
+    s.feeRelief = true;
+    s.feeReliefShort = '$250 total if admitted 3 years or less';
+    s.costs = [
+      { label: 'LSBA dues, admitted 3 years or less', amount: 80, note: 'Current dues table. No roster data.', source: LA_DUES },
+      { label: 'LADB assessment, admitted 3 years or less', amount: 170, note: 'Listed beside the dues on the same table.', source: LA_DUES },
+    ];
+    add(s, LA_DUES);
+  });
+  setFee(rows, 'MT', (s) => {
+    s.upfront = { low: 220, high: 220, label: 'Listed New-Active total before the footnote' };
+    s.upfrontNote = 'The State Bar table lists New-Active at $220: $50 dues, $25 license tax, $20 Lawyers\' Fund, $0 CLE fee, and $125 discipline counsel. The footnote says a pro-rated amount applies to the remainder of the fiscal year of admission (April 1 to March 31) and must be paid before swearing in. The page does not print the monthly fraction.';
+    s.feeRelief = true;
+    s.feeReliefShort = 'New-Active $220, then prorated. Formula not printed.';
+    s.costs = [
+      { label: 'New-Active total on the dues table', amount: 220, note: 'Footnote: prorated for the rest of the fiscal year of admission, due before the oath.', source: MT_QA },
+    ];
+    add(s, MT_QA);
+  });
+  setFee(rows, 'NV', (s) => {
+    s.upfront = { low: 250, high: 250, label: 'Active renewal, admitted less than 5 years in any jurisdiction' };
+    s.upfrontNote = 'The State Bar annual-fees page lists $250 for an active member admitted in any jurisdiction less than 5 years, counted from the first calendar year of admission anywhere. Five years or more is $450. Due January 1. A $100 late fee attaches March 2. The page does not print a separate proration rule.';
+    s.feeRelief = true;
+    s.feeReliefShort = '$250 if admitted less than 5 years';
+    s.costs = [
+      { label: 'Active renewal, less than 5 years', amount: 250, note: 'Due January 1. First calendar year of admission in any jurisdiction.', source: NV_FEE },
+    ];
+    add(s, NV_FEE);
+  });
+  setFee(rows, 'GA', (s) => {
+    s.upfront = { low: 211, high: 260, label: 'Active license plus $15 assessments, September through November chart' };
+    s.upfrontNote = 'The new-member notice says prorated fees apply to oaths from August 1 through May 14, and the chart prints three months: September $245 license plus $15 assessments, total $260 active; October $220 plus $15, total $235; November $196 plus $15, total $211. Other months say to call. A July oath owes the full annual license fee, and that full-year dollar is not printed on the chart. Enroll within 60 days or add $100.';
+    s.feeRelief = true;
+    s.feeReliefShort = 'Chart: $260 Sep, $235 Oct, $211 Nov';
+    s.costs = [
+      { label: 'September oath, active total', amount: 260, note: '$245 license fee plus $15 mandatory assessments.', source: GA_CHART },
+      { label: 'October oath, active total', amount: 235, note: '$220 license fee plus $15 assessments.', source: GA_CHART },
+      { label: 'November oath, active total', amount: 211, note: '$196 license fee plus $15 assessments.', source: GA_CHART },
+    ];
+    add(s, GA_CHART);
+  });
+  setFee(rows, 'HI', (s) => {
+    s.upfront = { low: 444, high: 444, label: '2026 active private practice, admitted 2023 through 2026' };
+    s.upfrontNote = 'The 2026 licensing fee schedule, calendar year January 1 to December 31, lists active private practitioners and in-house counsel with 1 to 4 years of practice (admitted 2023 through 2026) at $444: $150 HSBA, $15 processing, $200 Disciplinary Board, $35 Lawyers\' Fund for Client Protection, and $44 Attorneys and Judges Assistance Program. The Supreme Court sets the assessments. Government lawyers in that band are $409. The year of admission to any bar counts as a full year. No mid-year proration is printed.';
+    s.feeRelief = true;
+    s.feeReliefShort = '$444 for 1 to 4 years, not the $689 rate';
+    s.costs = [
+      { label: '2026 active private, admitted 2023-2026', amount: 444, note: 'Mandatory dues and Supreme Court assessments on the 2026 schedule.', source: HI_FEE },
+    ];
+    add(s, HI_FEE);
+  });
+  setFee(rows, 'NC', (s) => {
+    s.upfront = { low: 0, high: 0, label: 'Dues in the year of first admission by examination' };
+    s.upfrontNote = 'North Carolina State Bar rule .0203 says fees are not prorated, with this exception: a person licensed in North Carolina for the first time by examination is not liable for dues or the Client Security Fund assessment during the year of admission. The rule does not print the later-year dollar on that page.';
+    s.feeRelief = true;
+    s.feeReliefShort = '$0 dues in the year of admission by exam';
+    s.costs = [
+      { label: 'Dues and Client Security Fund, year of first admission by exam', amount: 0, note: 'Rule .0203(c)(1). Not prorated in other cases.', source: NC_RULE },
+    ];
+    add(s, NC_RULE);
+  });
+  setFee(rows, 'CO', (s) => {
+    s.upfront = { low: 0, high: 190, label: 'No fee until the January after admission, then $190' };
+    s.upfrontNote = 'Rule 227 says a lawyer files a registration statement at admission, and no annual fee is payable until January 1 following admission. The 2026 fee page then charges $190 active if first admission in Colorado or any other state was after January 1, 2023, and $395 if it was before that date. Due February 28.';
+    s.feeRelief = true;
+    s.feeReliefShort = '$0 until the January after admission, then $190';
+    s.costs = [
+      { label: 'Annual fee in the year of admission', amount: 0, note: 'Rule 227: no annual fee until January 1 following admission.', source: CO_RULE },
+      { label: 'Active fee if first admission anywhere was after Jan 1, 2023', amount: 190, note: '2026 schedule. Due February 28 once the fee year starts.', source: CO_FEE },
+    ];
+    s.ceremonies = [{
+      name: 'Remote Zoom oath, Office of Attorney Registration',
+      when: 'Dec 2, Dec 10, Dec 17, Dec 23, and Dec 30, 2026, at 2:00 p.m. The usual Thursday 2:00 p.m. Zoom oath is skipped on Nov 26, Dec 3, Dec 24, and Dec 31.',
+      fee: NOT_PUBLISHED,
+      href: CO_OATH.url,
+    }];
+    add(s, CO_FEE); add(s, CO_RULE); add(s, CO_OATH);
+  });
+  setFee(rows, 'MA', (s) => {
+    s.upfront = { low: 220, high: 271, label: 'Registration fee, fewer than five years' };
+    s.upfrontNote = 'The Board of Bar Overseers states the registration fee under Supreme Judicial Court Rules 4:02 and 4:03, including a $51 optional Access to Justice fee, is $271 for attorneys registered fewer than five years. Opting out of the $51 leaves $220. Fees are not prorated for a partial year. The billing cycle is June 1 to May 31.';
+    s.feeReliefShort = 'Not prorated. $51 Access to Justice fee is optional.';
+    s.costs = [
+      { label: 'Registration, fewer than five years, with the optional $51', amount: 271, note: 'Rules 4:02 and 4:03, as printed on the BBO registration instructions.', source: MA_FEE },
+      { label: 'Same fee if the $51 is declined', amount: 220, note: 'The instructions say to subtract $51 to opt out.', source: MA_FEE },
+    ];
+    add(s, MA_FEE);
+  });
+
+  const note = (abbr: string, field: string, detail: string) => {
+    const s = rows.find((row) => row.abbr === abbr);
+    if (!s) return;
+    s.gaps = s.gaps ?? [];
+    s.gaps.push({ field, detail });
+  };
+  note('AK', 'Dues', 'The September 2026 new-member packet says dues are prorated and due February 1, and it does not print the dollar schedule. Checked Nov 10, 2026. Alaska Bar Association, (907) 272-7469.');
+  note('OR', 'Dues for a 2026 admission', 'The 2026 fee FAQ prints $683 only for lawyers admitted before January 1, 2026, and a 30-day deadline for 2026 admissions, not the dollar. Checked Nov 10, 2026. Oregon State Bar, (503) 620-0222.');
+  note('CO', 'Ceremony fee', 'The oath page says registration includes an online card payment and does not print that amount. Checked Nov 10, 2026. attorney_registration@coloradosupremecourt.us.');
+  note('IL', 'Ceremony fee', 'The Supreme Court ceremony page for November 4, 2026 does not print a fee. Checked Nov 10, 2026. SC_BarMatters@IllinoisCourts.gov.');
+  note('DE', 'Dues and ceremony fee', 'Rule 69 says the registration assessment is set by the Supreme Court and does not print the dollar. The July 2026 class page sets the December 9, 2026 ceremony and does not print a ceremony fee. Checked Nov 10, 2026. ARMS_BBE@delaware.gov.');
+  note('OH', 'Registration fee', 'The ceremony FAQ prints the November 16, 2026 date and a $30 wall certificate only if the oath is later. It does not print the annual registration dollar. Checked Nov 10, 2026.');
 }
