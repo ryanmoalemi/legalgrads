@@ -1,3 +1,5 @@
+import { applyDeep } from '@/lib/postBarDeep';
+
 // National post-bar facts checked on Nov 10, 2026.
 // California stays in post-bar-licensing.json and is not repeated here.
 // A figure is "Not published" when the official page we opened did not state it.
@@ -530,6 +532,7 @@ function build(): NationalState[] {
     addSource(s, VA_RESULTS);
   });
 
+  applyDeep(rows);
   return rows;
 }
 
@@ -537,7 +540,9 @@ export const NATIONAL_STATES: NationalState[] = build();
 export const nationalBySlug = (slug: string) => NATIONAL_STATES.find((s) => s.slug === slug);
 
 export function money(n: number) {
-  return n === 0 ? '$0' : `$${n.toLocaleString('en-US', { maximumFractionDigits: 2 })}`;
+  if (n === 0) return '$0';
+  const digits = Number.isInteger(n) ? 0 : 2;
+  return `$${n.toLocaleString('en-US', { minimumFractionDigits: digits, maximumFractionDigits: 2 })}`;
 }
 
 export function upfrontText(s: Pick<NationalState, 'upfront'>) {

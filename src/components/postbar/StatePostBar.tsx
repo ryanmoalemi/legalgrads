@@ -72,7 +72,7 @@ export function StatePostBar({ s }: { s: NationalState }) {
 
       <div className="mt-8 grid gap-3 sm:grid-cols-2">
         <Fact label="July 2026 results released" value={s.resultsRelease} detail="Data through the source listed below." />
-        <Fact label="July 2026 pass rate" value={s.passRate} detail={s.passRate === NOT_PUBLISHED ? 'Not on the official page checked for this state.' : s.passRateDetail} />
+        <Fact label="July 2026 pass rate" value={s.passRate} detail={s.passRate === NOT_PUBLISHED && s.passRateDetail === NOT_PUBLISHED ? 'Not on the official page checked for this state.' : s.passRateDetail} />
         <Fact label="Passing score" value={s.passScore} detail={s.passScoreDetail} />
         <Fact label="UBE transfers" value={s.ubeShort} detail={s.ubeDetail} />
       </div>
