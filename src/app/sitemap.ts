@@ -1,5 +1,7 @@
 import type { MetadataRoute } from 'next';
 import { SPECIALTIES } from '@/lib/catalog';
+import { NATIONAL_STATES } from '@/lib/nationalPostBar';
+import { TRACKER_PATH } from '@/lib/postBar';
 import { REAL_PROFILES, cityGroups, cityPath, profilePath } from '@/lib/profiles';
 export const dynamic = 'force-static';
 const B = 'https://legalgrads.com';
@@ -16,6 +18,7 @@ function allItems(): MetadataRoute.Sitemap {
     ...[...new Set(groups.map((g) => g.state))].map((s) => ({ url: `${B}/attorneys/${s}/` })),
     ...groups.map((g) => ({ url: B + cityPath(g.state, g.city) })),
     ...REAL_PROFILES.map((p) => ({ url: B + profilePath(p), ...(p.lastVerified ? { lastModified: new Date(p.lastVerified) } : {}) })),
+    ...NATIONAL_STATES.filter((state) => !STATIC.includes(`${TRACKER_PATH}${state.slug}/`)).map((state) => ({ url: `${B}${TRACKER_PATH}${state.slug}/` })),
   ];
 }
 
