@@ -261,7 +261,9 @@ test('no public view counter, promise page, and sitemap entry', async ({ page, r
     await boot(page, '/free-listing-promise/');
     await expect(page.getByRole('heading', { level: 1 })).toHaveText('Your listing is free. Always.');
     await expect(page.getByTestId('promise-claim')).toHaveText('Claim my free profile');
-    await expect(page.locator('main')).toContainText('Paid placements will be clearly labeled as sponsored advertisements.');
+    await expect(page.getByRole('heading', { level: 2, name: 'Optional: sponsored upgrade for more visibility' })).toBeVisible();
+    await expect(page.locator('main')).toContainText('Sponsored placements will be clearly labeled as sponsored advertisements.');
+    await expect(page.locator('main')).not.toContainText('What might cost money');
     await expect(page.locator('main')).not.toContainText(/\u2014|\u2013/);
     await noOverflow(page);
   }

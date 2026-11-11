@@ -22,9 +22,9 @@ export function FreeListingPromiseView() {
         <p>There is no trial to expire and no renewal fee. Your listing does not become a paid product as your practice grows.</p>
         <p>You also get private stats for your profile: recorded profile views, website clicks, contact clicks, and delivered inquiries. Only you can see them.</p>
       </Section>
-      <Section title="What might cost money in the future?">
-        <p>We may introduce optional sponsored placements for attorneys who want additional visibility. Choosing a sponsored placement will be entirely up to you. You will never need to buy one to keep your standard listing or its included contact features.</p>
-        <p>Paid placements will be clearly labeled as sponsored advertisements. Paying for placement will not mean that LegalGrads recommends a lawyer or rates that lawyer more highly.</p>
+      <Section title="Optional: sponsored upgrade for more visibility">
+        <p>We plan to offer an optional sponsored upgrade for attorneys who want extra visibility. Your free listing, along with its contact features, stays free forever. Choosing the upgrade is entirely up to you.</p>
+        <p>Sponsored placements will be clearly labeled as sponsored advertisements. Paying for an upgrade will not mean that LegalGrads recommends a lawyer or ranks that lawyer higher in merit.</p>
       </Section>
       <Section title="What does “always free” cover?">
         <p>This promise applies to the standard listing and features described above for as long as LegalGrads operates its directory. Profiles must meet our licensing, eligibility, and content requirements.</p>
