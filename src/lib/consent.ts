@@ -28,6 +28,11 @@ export function writeConsent(next: Omit<ConsentRecord, 'necessary' | 'updatedAt'
     updatedAt: next.updatedAt ?? new Date().toISOString(),
   };
   window.localStorage.setItem(CONSENT_KEY, JSON.stringify(record));
+  const gtag = (window as unknown as { gtag?: (...args: unknown[]) => void }).gtag;
+  if (typeof gtag === 'function') {
+    const ads = record.marketing ? 'granted' : 'denied';
+    gtag('consent', 'update', { analytics_storage: record.analytics ? 'granted' : 'denied', ad_storage: ads, ad_user_data: ads, ad_personalization: ads });
+  }
   if (!record.analytics && !record.marketing) {
     window.localStorage.removeItem(LOG_KEY);
   }
@@ -38,12 +43,12 @@ export function track(channel: 'analytics' | 'marketing', name: string): { permi
   const consent = readConsent();
   const permitted = !!consent && consent[channel];
   if (!permitted) {
-    return { permitted: false, reason: `${channel} is off, so “${name}” was blocked. No tracker was loaded.` };
+    return { permitted: false, reason: `${channel} is off, so “${name}” was blocked.` };
   }
   const log = JSON.parse(window.localStorage.getItem(LOG_KEY) || '[]') as { channel: string; name: string; at: string }[];
   log.push({ channel, name, at: new Date().toISOString() });
   window.localStorage.setItem(LOG_KEY, JSON.stringify(log));
-  return { permitted: true, reason: `Recorded a local ${channel} event “${name}”. Nothing left this browser.` };
+  return { permitted: true, reason: `Recorded a local ${channel} event “${name}” in this browser.` };
 }
 
 export function analyticsLog(): { channel: string; name: string; at: string }[] {

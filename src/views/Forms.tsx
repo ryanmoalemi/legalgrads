@@ -24,7 +24,7 @@ export function CookieSettingsView() {
   }, []);
   return (
     <div className="mx-auto max-w-xl px-4 py-10">
-      <PageIntro title="Cookie settings" body="Necessary storage stays on. Optional categories start off. Nothing here loads a third-party tracker." />
+      <PageIntro title="Cookie settings" body="Necessary storage stays on. Optional categories start off. Google Analytics runs without cookies until you turn analytics on." />
       <form className="mt-6 grid gap-3" onSubmit={(event) => {
         event.preventDefault();
         writeConsent({ analytics, marketing });

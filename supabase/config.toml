@@ -6,3 +6,6 @@ verify_jwt = false
 
 [functions.claim-notify]
 verify_jwt = false
+
+[functions.owner-tools]
+verify_jwt = false

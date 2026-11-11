@@ -71,6 +71,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           dangerouslySetInnerHTML={{
             __html: `window.dataLayer = window.dataLayer || [];
 function gtag(){dataLayer.push(arguments);}
+var lgc={};try{lgc=JSON.parse(localStorage.getItem('legalgrads-consent')||'{}')||{}}catch(e){}gtag('consent','default',{analytics_storage:lgc.analytics?'granted':'denied',ad_storage:lgc.marketing?'granted':'denied',ad_user_data:lgc.marketing?'granted':'denied',ad_personalization:lgc.marketing?'granted':'denied'});
 gtag('js', new Date());
 gtag('config', 'G-CHX0PZJH8W');`,
           }}

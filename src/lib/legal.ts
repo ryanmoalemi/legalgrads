@@ -10,6 +10,10 @@ export interface LegalDoc {
 }
 
 const updated = '2026-10-21';
+const updatedNov = '2026-11-11';
+
+export const INQUIRY_NOTICE = 'Send a brief description only. Do not include confidential details or documents. Sending a request does not by itself hire a lawyer. The lawyer must confirm availability, check for conflicts, and agree to represent you.';
+export const SPONSORED_LABEL = 'Any sponsored placement will be clearly labeled as sponsored, kept separate from standard listings, and will not change how standard listings are ordered or described.';
 const contact = `Questions and privacy requests go to ${CONTACT_EMAIL}. Legalgrads has not published a street address or phone number.`;
 
 export const DOCS: Record<string, LegalDoc> = {
@@ -72,8 +76,9 @@ export const DOCS: Record<string, LegalDoc> = {
           'If you join the consumer waitlist, we collect your email address and the page you signed up from.',
           'If you apply as an attorney, we collect your name, email, phone, whether you want your phone on the public listing, state of licensure, bar number, admission date, practice areas, cities served, bio, languages, contact method, optional photo, your professional-liability insurance choice, and the time you agreed to the Attorney Terms.',
           'If you message an attorney from a listing, we collect your name, email, optional phone, and the message.',
-          'We store a cookie preference on your device. If you opt in, a local analytics note stays in that browser. We do not load third-party advertising trackers.',
-          'Attorney profile pages show a first-party, cookieless view count. When a profile loads, our server records one view per visitor per profile per day using a one-way hash of the IP address and browser type with a salt that changes daily and is then discarded. We never store the IP address, and nothing is saved in your browser. Only the daily totals per profile are kept, to show how many people viewed it.',
+          'If you send a request from a claimed attorney profile, we email your name, email, optional phone, optional business name, and your description to that attorney so they can reply to you directly. We do not keep a copy of the description. We keep a short delivery record (time, profile, and one-way hashes of your email and network address) for 90 days to count delivered requests and to stop spam.',
+          'We store a cookie preference on your device. Google Analytics loads on our pages to count visits. Until you accept analytics, it runs in a cookieless mode (Google Consent Mode) and stores nothing in your browser. If you accept, Google Analytics may set its cookies. We do not load advertising trackers.',
+          'Attorney profile pages record first-party, cookieless counts of page views, website-link taps, and phone-number taps. Our server counts one of each per visitor per profile per day using a one-way hash of the network address and browser type with a salt that changes daily and is then discarded. We never store the network address, nothing is saved in your browser, and known bots and link previews are skipped. These counts are shown only to the attorney who claimed the profile, on a private stats page. There is no public view counter.',
         ],
       },
       {
@@ -93,7 +98,7 @@ export const DOCS: Record<string, LegalDoc> = {
       {
         heading: 'Retention and requests',
         paragraphs: [
-          'We keep applications while a listing is active and as needed for the bar-review record. Email ' + CONTACT_EMAIL + ' to request access, correction, or deletion. We may keep a short note that a request was completed, without the old message, where we need it for security.',
+          'We keep applications while a listing is active and as needed for the bar-review record. Request delivery records are deleted after 90 days. Email ' + CONTACT_EMAIL + ' to request access, correction, or deletion. We may keep a short note that a request was completed, without the old message, where we need it for security.',
           'Legalgrads does not sell personal information. To opt out of any future sale or share, email ' + CONTACT_EMAIL + ' with the subject “Do not sell or share.”',
         ],
       },
@@ -102,32 +107,56 @@ export const DOCS: Record<string, LegalDoc> = {
   'attorney-terms': {
     slug: 'attorney-terms',
     title: 'Attorney Terms',
-    description: 'In short: Legalgrads is a directory, not a referral service. We do not take a referral fee or a share of your legal fees. You write the listing and you are responsible for it. We publish it only after a person checks your state bar record. Email ryan@legalgrads.com to change or remove it. Attorney login is not available yet.',
-    updated,
+    description: 'In short: LegalGrads is a directory, not a referral service. Your standard listing is free for life. We take no referral fee and no share of your legal fees. You write your profile and you are responsible for it. Email ryan@legalgrads.com to change or remove it.',
+    updated: updatedNov,
     sections: [
       {
         heading: 'Free listing',
         paragraphs: [
-          'The listing is free, and it shows the year you joined Legalgrads. That mark is not a quality rating and not a benefit to clients. Legalgrads takes no referral fee and no share of your legal fees. Your email stays private. Clients reach you through our secure contact form.',
-          'A later premium product, if Legalgrads offers one, will be a flat fee for extra visibility only. It will not be priced per lead and it will not be a percentage of legal fees.',
+          'Your standard listing is free for life. You never pay to claim it, keep it, or edit it. Legalgrads takes no referral fee and no share of your legal fees.',
+          'Listings created through the attorney application show the year you joined Legalgrads. That mark is not a quality rating and not a benefit to clients.',
+          'Optional sponsored placements may be offered in the future. If they are, they will be a flat fee for extra visibility only. They will not be priced per lead and will not be a percentage of legal fees. ' + SPONSORED_LABEL,
         ],
+        links: [{ href: '/free-listing-promise/', label: 'Our free listing promise' }],
       },
       {
-        heading: 'Your license and insurance',
+        heading: 'Claiming an existing profile',
         paragraphs: [
-          'You must be admitted to practice in the U.S. state or DC that you list. You submit that state, your bar number, and your admission date so Legalgrads can check them. You tell us whether you carry professional liability insurance. If you do not, you agree to make any disclosure to clients that your state’s rules require (for example, California Rule of Professional Conduct 1.4.\u20602). An Insured badge is shown only when you say you carry insurance. Legalgrads does not provide that insurance.',
+          'Many profiles start as unclaimed pages built from public licensing records. To claim one, open the profile, choose Claim my free profile, and confirm that you are the attorney. When the State Bar record lists an email address, we send a six-digit confirmation code to that address. Otherwise we send it to the email address you enter. The code expires in 30 minutes, and you can ask for a new one.',
+          'If the email matches the official record, a firm domain on file, or your law school domain, your claim is confirmed and your edits can show on your profile. If it does not match, your claim goes to manual review, and your edits stay hidden from the public until we confirm it. You may be asked to upload a photo of your bar card. Your bio and any services you type yourself wait for a short review before they show.',
+          'The confirmation code signs you in on the device you used. There is no password login. Anyone who believes a profile was claimed by the wrong person can report it, and we hide that claim while we check.',
         ],
       },
       {
-        heading: 'Verification before anything goes live',
+        heading: 'What you can add',
+        paragraphs: [
+          'A claimed profile can show your photo, a short bio, the services you offer, the kinds of clients you work with, how you hold consultations and whether they are free or paid, how you bill (hourly, fixed fee, or quoted), optional fixed fees, your availability with the date you last updated it, your phone number, your website, and your preferred contact method. Fields you leave blank stay off your profile. If you add no fee details, your profile says Ask about fees.',
+          'You can turn on a request form. Requests are emailed to your verified email address with the sender as the reply-to address. LegalGrads does not keep the message, does not screen it for legal merit, and does not decide whether you take the matter. The form tells the sender: ' + INQUIRY_NOTICE,
+          'You can see private stats for the last 30 days: profile views, website clicks, contact clicks, and delivered requests. Only you can see them.',
+        ],
+      },
+      {
+        heading: 'Applying for a new listing',
         paragraphs: [
           'Submitting an application does not publish a listing. Legalgrads manually checks your state bar record. The listing goes live only after that review is marked verified. Legalgrads may reject an application or unpublish a listing.',
         ],
       },
       {
+        heading: 'Your license and insurance',
+        paragraphs: [
+          'You must be admitted to practice in the U.S. state or DC that you list. You tell us whether you carry professional liability insurance. If you do not, you agree to make any disclosure to clients that your state’s rules require (for example, California Rule of Professional Conduct 1.4.\u20602). An Insured badge is shown only when you say you carry insurance. Legalgrads does not provide that insurance.',
+        ],
+      },
+      {
         heading: 'Your advertising',
         paragraphs: [
-          'You are responsible for your own advertising content, including your bio, photo, and contact link. You agree that your listing will comply with the rules of professional conduct on lawyer communications and advertising in each state where you are licensed (in California, for example, Rules 7.1 and 7.2 and the Business and Professions Code). Legalgrads does not review your listing as a substitute for your own duties.',
+          'You are responsible for your own advertising content, including your bio, photo, services, fees, availability, and contact details. Keep them accurate and current. You agree that your profile will comply with the rules of professional conduct on lawyer communications and advertising in each state where you are licensed (in California, for example, Rules 7.1 and 7.2 and the Business and Professions Code). Legalgrads does not review your profile as a substitute for your own duties.',
+        ],
+      },
+      {
+        heading: 'Changes and removal',
+        paragraphs: [
+          'Email ryan@legalgrads.com to change or remove your profile, or use Request removal on the profile page.',
         ],
       },
       {
@@ -147,7 +176,8 @@ export const DOCS: Record<string, LegalDoc> = {
       {
         heading: 'What we store',
         paragraphs: [
-          'Strictly necessary storage remembers your cookie choice. If Supabase sign-in is enabled in a later phase, the browser may also store that session. Optional analytics and marketing stay off unless you opt in. Opt-in events are recorded only in this browser. No third-party tracker is loaded.',
+          'Strictly necessary storage remembers your cookie choice. If you claim a profile, the browser also stores your sign-in for that profile. Google Analytics loads on our pages to count visits. Until you accept analytics, it runs in a cookieless mode (Google Consent Mode) and sets no cookies. If you accept analytics, Google Analytics may set its cookies. Marketing stays off unless you opt in.',
+          'Attorney profile pages also keep first-party, cookieless counts of views and link taps for the attorney who claimed the profile. They store nothing in your browser. See the Privacy Policy for details.',
           'Use Cookie settings to change your choice. ' + contact,
         ],
       },
@@ -236,7 +266,7 @@ export const DOCS: Record<string, LegalDoc> = {
       { heading: 'Who runs the site', paragraphs: ['Legalgrads is built and run by Ryan Moalemi. Questions about any page go to ' + CONTACT_EMAIL + '.'] },
       { heading: 'Where attorney data comes from', paragraphs: ['Unclaimed attorney pages are built from public licensing records. We show the name, bar number, license status, and admission date or year when the regulator publishes them. A year with no day stays a year. An admission date is not a graduation date and not an exam date. Office city is shown when it was published, and left blank when it was not. Each page links to an individual official record when the regulator publishes one. When the regulator publishes only a shared roster, the page links to that roster and does not call it an individual profile. The discipline line points to the regulator and does not assert a clean history. Confirm the current status with the regulator. The lookup pages below are the ones linked from profiles we publish. States with no published roster are not listed.'], links: ROSTER_SOURCES.map((source) => ({ href: source.href, label: `${source.name}: ${source.authority}` })) },
       { heading: 'How listings are checked', paragraphs: ['A claimed listing goes live only after two checks. The attorney confirms an email code, and a person then reviews the state bar record. The email code alone does not publish the attorney’s own bio. If a record changes or an attorney asks us to fix or remove a page, we update it as soon as we can.'] },
-      { heading: 'What we do not do', paragraphs: ['Legalgrads is a browse-only directory. We do not match you with an attorney, we do not sell placement or ranking, and we do not show ratings or reviews on unclaimed pages. Results are ordered by neutral rules such as location and name, never by payment.', 'Legalgrads is not a law firm and is not a state-bar-certified lawyer referral service. Nothing on the site is legal advice.'] },
+      { heading: 'What we do not do', paragraphs: ['Legalgrads is a browse-only directory. We do not match you with an attorney, we do not sell ranking in directory results, and we do not show ratings or reviews on unclaimed pages. Results are ordered by neutral rules such as location and name, never by payment. If optional sponsored placements are offered in the future, they will be labeled as sponsored and kept separate from directory results.', 'Legalgrads is not a law firm and is not a state-bar-certified lawyer referral service. Nothing on the site is legal advice.'] },
       { heading: 'Advertising', paragraphs: ['If the site shows ads, they are labeled and kept separate from directory listings. Advertisers never affect which attorneys appear or in what order. See our Privacy and Cookies pages for how ad cookies work and how to opt out.'] },
       { heading: 'Corrections', paragraphs: ['Spot a mistake? Email ' + CONTACT_EMAIL + ' with the page link and what is wrong.'] },
     ],
@@ -275,6 +305,7 @@ export const LEGAL_LINKS: { href: string; title: string }[] = [
   { href: '/terms/', title: 'Terms of Service' },
   { href: '/privacy/', title: 'Privacy Policy' },
   { href: '/attorney-terms/', title: 'Attorney Terms' },
+  { href: '/free-listing-promise/', title: 'Free Listing Promise' },
   { href: '/cookies/', title: 'Cookie Policy' },
   { href: '/disclaimers/', title: 'Disclaimers' },
   { href: '/attorney-advertising/', title: 'Attorney Advertising' },
