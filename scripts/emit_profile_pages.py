@@ -22,6 +22,24 @@ CSS_OUT = OUT / "css/attorney-profile.css"
 SITE = "https://legalgrads.com"
 GA = "G-CHX0PZJH8W"
 
+# Same favicon tags the Next.js root layout emits for the rest of the site.
+FAVICON_HEAD = (
+    '<link rel="icon" href="/favicon.svg" type="image/svg+xml">'
+    '<link rel="icon" href="/icons/icon-192.png" sizes="192x192" type="image/png">'
+    '<link rel="icon" href="/icons/icon-512.png" sizes="512x512" type="image/png">'
+    '<link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">'
+    '<link rel="manifest" href="/site.webmanifest">'
+)
+FAVICON_MARKERS = (
+    'href="/favicon.svg"',
+    'href="/icons/icon-192.png"',
+    'href="/icons/icon-512.png"',
+    'rel="apple-touch-icon"',
+    'href="/icons/apple-touch-icon.png"',
+    'rel="manifest"',
+    'href="/site.webmanifest"',
+)
+
 
 def esc(value):
     return html.escape(str(value), quote=True)
@@ -39,8 +57,15 @@ def removal_href(path):
     return "/data-deletion/?profile=" + quote(path, safe="")
 
 
+def assert_favicon(html_text, path):
+    for marker in FAVICON_MARKERS:
+        if marker not in html_text:
+            raise SystemExit(f"Favicon tag missing on {path}: {marker}")
+
+
 def assert_claim_links(html_text, path, profile):
     href = claim_href(path)
+    assert_favicon(html_text, path)
     joined = join_href(profile)
     removal = removal_href(path)
     if f'href="{href}"' not in html_text or f'href="{joined}"' not in html_text:
@@ -306,6 +331,7 @@ def page_html(p):
     return (
         "<!DOCTYPE html><html lang=\"en\"><head><meta charset=\"utf-8\">"
         "<meta name=\"viewport\" content=\"width=device-width,initial-scale=1\">"
+        f"{FAVICON_HEAD}"
         f"<title>{esc(title)}</title><meta name=\"description\" content=\"{esc(desc)}\">"
         f"<link rel=\"canonical\" href=\"{esc(url)}\">"
         f"<meta property=\"og:title\" content=\"{esc(title)}\">"
@@ -342,6 +368,7 @@ def redirect_html(target):
     url = SITE + target
     return (
         '<!DOCTYPE html><html lang="en"><head><meta charset="utf-8">'
+        f"{FAVICON_HEAD}"
         f'<link rel="canonical" href="{esc(url)}">'
         f'<meta http-equiv="refresh" content="0;url={esc(target)}">'
         f'<script>location.replace("{esc(target)}")</script>'
@@ -358,6 +385,27 @@ def write_redirect(old, new):
         return
     folder.mkdir(parents=True, exist_ok=True)
     index.write_text(redirect_html(new), encoding="utf-8")
+
+
+def assert_attorney_favicons(root):
+    """Fail the build if any page under /attorneys/ is missing favicon tags."""
+    if not root.is_dir():
+        raise SystemExit(f"{root} is missing")
+    missing = []
+    checked = 0
+    for path in root.rglob("*.html"):
+        text = path.read_text(encoding="utf-8", errors="replace")
+        checked += 1
+        for marker in FAVICON_MARKERS:
+            if marker not in text:
+                missing.append(f"{path}: {marker}")
+                break
+    if checked == 0:
+        raise SystemExit(f"No HTML pages found under {root}")
+    if missing:
+        preview = "\n".join(missing[:10])
+        raise SystemExit(f"{len(missing)} generated pages missing favicon tags.\n{preview}")
+    print(f"favicon scan ok ({checked} pages)")
 
 
 def main():
@@ -395,6 +443,7 @@ def main():
         raise SystemExit("Existing California page picked up new-state license wording")
     for old, new in {**redirects, **hubs}.items():
         write_redirect(old, new)
+    assert_attorney_favicons(OUT / "attorneys")
     parts = sorted(OUT.joinpath("sitemap").glob("*.xml"))
     if parts and not (OUT / "sitemap.xml").exists():
         body = ["<?xml version=\"1.0\" encoding=\"UTF-8\"?>",
