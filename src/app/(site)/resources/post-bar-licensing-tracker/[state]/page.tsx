@@ -10,14 +10,29 @@ import { CaBudget } from '@/components/postbar/CaBudget';
 import { CaLawSchools } from '@/components/postbar/CaLawSchools';
 import { CaStatus } from '@/components/postbar/CaStatus';
 import { RetakeHighlight } from '@/components/postbar/RetakeHighlight';
+import { StatePostBar } from '@/components/postbar/StatePostBar';
 import { ALL_STATES, CA_EMBED_PATH, TRACKER_PATH, money, prettyDate, range, stateBySlug } from '@/lib/postBar';
+import { NATIONAL_STATES, nationalBySlug } from '@/lib/nationalPostBar';
 
 export const dynamicParams = false;
-export function generateStaticParams() { return ALL_STATES.map((s) => ({ state: s.slug })); }
+export function generateStaticParams() {
+  const slugs = new Set<string>([...ALL_STATES.map((s) => s.slug), ...NATIONAL_STATES.map((s) => s.slug)]);
+  return [...slugs].map((state) => ({ state }));
+}
 
 type Props = { params: Promise<{ state: string }> };
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const s = stateBySlug((await params).state);
+  const slug = (await params).state;
+  if (slug !== 'california') {
+    const national = nationalBySlug(slug);
+    if (national) {
+      const title = `${national.name} Post-Bar Licensing Costs, Deadlines & 1st-Year CLE (2026-2027)`;
+      const description = `${national.name} post-bar fees, first-year CLE, results, and ceremonies. Figures that are not on an official source are marked Not published.`;
+      const path = `${TRACKER_PATH}${national.slug}/`;
+      return { title, description, alternates: { canonical: path }, openGraph: { title, description, url: path } };
+    }
+  }
+  const s = stateBySlug(slug);
   if (!s) return {};
   const title = s.slug === 'california' ? 'California Post-Bar Licensing Costs, Deadlines & 1st-Year CLE (2026-2027)' : `${s.name} Swearing-In Fees & First-Year CLE 2026-2027`;
   const description = s.slug === 'california'
@@ -38,7 +53,12 @@ function Card({ n, title, children, className = '' }: { n: string; title: string
 }
 
 export default async function Page({ params }: Props) {
-  const s = stateBySlug((await params).state);
+  const slug = (await params).state;
+  if (slug !== 'california') {
+    const national = nationalBySlug(slug);
+    if (national) return <StatePostBar s={national} />;
+  }
+  const s = stateBySlug(slug);
   if (!s) notFound();
   if (!s.costs) return <StateStub s={s} />;
   if (!s.cle || !s.costs || !s.timeline || !s.portability || !s.faq) notFound();
