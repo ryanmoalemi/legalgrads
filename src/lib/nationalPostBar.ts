@@ -9,6 +9,10 @@ export const NOT_PUBLISHED = 'Not published';
 
 export type Src = { label: string; url: string };
 
+export function sourceKey(src: Src) {
+  return src.url || src.label;
+}
+
 export type CostLine = {
   label: string;
   amount: number | null;
@@ -296,6 +300,10 @@ const VA_RESULTS: Src = {
   label: 'Virginia Board of Bar Examiners results',
   url: 'https://barexam.virginia.gov/results',
 };
+const VA_EMAIL: Src = {
+  label: 'Virginia State Bar, Regulatory Compliance/Membership, email to LegalGrads, Nov 11, 2026',
+  url: '',
+};
 
 const TX_MONTHS: { id: string; label: string; dues: number; note?: string }[] = [
   ['2026-06', 'Jun 2026', 74],
@@ -324,7 +332,7 @@ function patch(list: NationalState[], abbr: string, edit: (row: NationalState) =
 }
 
 function addSource(row: NationalState, src: Src) {
-  if (!row.sources.some((s) => s.url === src.url)) row.sources.push(src);
+  if (!row.sources.some((s) => sourceKey(s) === sourceKey(src))) row.sources.push(src);
 }
 
 function build(): NationalState[] {
@@ -523,14 +531,27 @@ function build(): NationalState[] {
   });
 
   patch(rows, 'VA', (s) => {
+    s.lastVerified = '2026-11-11';
     s.resultsRelease = 'Oct 9, 2026';
+    s.upfront = { low: 0, high: 160, label: 'Prorated dues for newly admitted (bar exam) attorneys' };
+    s.upfrontNote = 'The Virginia State Bar says newly admitted (bar exam) attorneys pay prorated dues: Active $160; Associate (inactive) $62.50. Dues are waived for anyone admitted or licensed in April, May or June.';
+    s.feeRelief = true;
+    s.feeReliefShort = 'Dues waived if admitted or licensed in April, May or June';
+    s.costs = [
+      { label: 'Active prorated dues, newly admitted by bar exam', amount: 160, note: 'Prorated dues for newly admitted (bar exam) attorneys. Waived if admitted or licensed in April, May or June.', source: VA_EMAIL },
+      { label: 'Associate (inactive) prorated dues, newly admitted by bar exam', amount: 62.5, note: 'Prorated dues for newly admitted (bar exam) attorneys who choose Associate (inactive) status. Waived if admitted or licensed in April, May or June.', source: VA_EMAIL },
+      { label: 'Dues if admitted or licensed in April, May or June', amount: 0, note: 'The Virginia State Bar says dues are waived for anyone admitted or licensed in April, May or June.', source: VA_EMAIL },
+    ];
     s.ceremonies = [
-      { name: 'Virginia admission ceremony', when: 'Dec 2, 2026', fee: NOT_PUBLISHED, href: VA_RESULTS.url },
+      { name: 'Admission & Orientation (A&O) Ceremony', when: 'Dec 2, 2026', fee: '$0', href: VA_RESULTS.url },
     ];
     s.faqs = [
-      { q: 'When did Virginia release July 2026 results, and when is the ceremony?', a: 'The Board says List One lawyers are licensed effective Oct 9, 2026, with results in the portal by 5:00 p.m. that day. The same notice schedules an admission ceremony for Dec 2, 2026. It does not publish a ceremony fee.' },
+      { q: 'When did Virginia release July 2026 results, and when is the ceremony?', a: 'The Board says List One lawyers are licensed effective Oct 9, 2026, with results in the portal by 5:00 p.m. that day. The same notice schedules an admission ceremony for Dec 2, 2026. The Virginia State Bar says it charges no fee to attend the Admission & Orientation (A&O) Ceremony.' },
+      { q: 'What does a newly admitted Virginia lawyer pay in dues?', a: 'The Virginia State Bar says newly admitted (bar exam) attorneys pay prorated dues: Active $160; Associate (inactive) $62.50. Dues are waived for anyone admitted or licensed in April, May or June.' },
     ];
     addSource(s, VA_RESULTS);
+    addSource(s, VA_EMAIL);
+    s.sources = [VA_EMAIL, ...s.sources.filter((src) => sourceKey(src) !== sourceKey(VA_EMAIL))];
   });
 
   applyDeep(rows);
