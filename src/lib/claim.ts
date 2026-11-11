@@ -43,6 +43,46 @@ export interface OwnerClaim {
   useBarEmail?: boolean;
   /** False while a claim waits for manual review. Edits stay hidden from the public until approved. */
   approved?: boolean;
+  serviceList?: string[];
+  clientTypes?: string[];
+  consultModes?: string[];
+  consultFee?: '' | 'free' | 'paid';
+  consultPrice?: string;
+  billing?: string[];
+  fixedFees?: { service: string; price: string }[];
+  availability?: '' | 'accepting' | 'limited' | 'not';
+  availabilityUpdatedAt?: string;
+  contactPref?: '' | 'phone' | 'website' | 'inquiry';
+  inquiriesEnabled?: boolean;
+}
+
+/** Supabase public config: baked in at build time, or set on window by /js/supabase-public.js. */
+export function publicSupabase(): { url: string; key: string } | null {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  if (url && key) return { url: url.replace(/\/$/, ''), key };
+  if (typeof window !== 'undefined') {
+    const cfg = (window as unknown as { LEGALGRADS_SUPABASE?: { url?: string; key?: string } }).LEGALGRADS_SUPABASE;
+    if (cfg?.url && cfg.key) return { url: String(cfg.url).replace(/\/$/, ''), key: String(cfg.key) };
+  }
+  return null;
+}
+
+export async function callFunction<T = ClaimApiResult>(name: string, body: Record<string, unknown>): Promise<T | null> {
+  const cfg = publicSupabase();
+  if (!cfg) return null;
+  try {
+    const response = await fetch(`${cfg.url}/functions/v1/${name}`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json', apikey: cfg.key, authorization: `Bearer ${cfg.key}` },
+      body: JSON.stringify(body),
+    });
+    const data = await response.json().catch(() => null);
+    if (!data || typeof data !== 'object') return null;
+    return data as T;
+  } catch {
+    return null;
+  }
 }
 
 export interface ClaimOptions {
@@ -247,25 +287,7 @@ function clearPending(): void {
 }
 
 async function postClaim(body: Record<string, unknown>): Promise<ClaimApiResult | null> {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-  if (!url || !key) return null;
-  try {
-    const response = await fetch(`${url.replace(/\/$/, '')}/functions/v1/claim-notify`, {
-      method: 'POST',
-      headers: {
-        'content-type': 'application/json',
-        apikey: key,
-        authorization: `Bearer ${key}`,
-      },
-      body: JSON.stringify(body),
-    });
-    const data = await response.json().catch(() => null);
-    if (!data || typeof data !== 'object') return null;
-    return data as ClaimApiResult;
-  } catch {
-    return null;
-  }
+  return callFunction<ClaimApiResult>('claim-notify', body);
 }
 
 function deliveryFailure(remote: ClaimApiResult | null): string {
@@ -274,6 +296,11 @@ function deliveryFailure(remote: ClaimApiResult | null): string {
   if (remote.reason === 'domain-not-verified') return 'The legalgrads.com sender is not verified in Resend yet, so no code was emailed.';
   if (remote.reason === 'missing-api-key') return 'Resend is not configured, so no code was emailed.';
   if (remote.reason === 'storage-not-ready') return 'Claim storage is not ready in Supabase yet, so no code was emailed.';
+  if (remote.reason === 'rate-limit') return 'Too many codes were requested for this email in the last hour. Wait a little, then try again, or email ryan@legalgrads.com.';
+  if (remote.reason === 'bar-mismatch') return 'That bar number does not match this profile.';
+  if (remote.reason === 'no-bar-email') return 'The State Bar record has no email we can use. Choose "I no longer use that address" and enter your email.';
+  if (remote.reason === 'bad-email') return 'Enter a valid email address.';
+  if (remote.reason === 'suppressed') return 'This profile cannot be claimed online. Email ryan@legalgrads.com for help.';
   return 'We could not email a confirmation code.';
 }
 
@@ -381,11 +408,12 @@ export async function confirmClaimCode(listing: DirectoryListing, codeInput: str
       clearPending();
       return { ok: false, message: 'This profile is already claimed. We saved your request for review. If this is your profile, use the bar email on file or report a wrong claim.' };
     }
-    if (!remote?.ok || !remote.claimToken) return { ok: false, message: 'That code does not match.' };
+    if (!remote) return { ok: false, message: 'We could not reach the claim service. Check your connection and try again.' };
+    if (!remote.ok || !remote.claimToken) return { ok: false, message: 'That code does not match or has expired. Check the newest email, or send a new code.' };
     token = remote.claimToken;
     approved = remote.approved !== false;
   } else if (pending.code !== entered) {
-    return { ok: false, message: 'That code does not match.' };
+    return { ok: false, message: 'That code does not match or has expired. Check the newest email, or send a new code.' };
   } else {
     token = makeClaimToken();
   }
@@ -432,38 +460,80 @@ export async function confirmClaimCode(listing: DirectoryListing, codeInput: str
   };
 }
 
-export async function saveOwnerEdit(claim: OwnerClaim): Promise<{ remote: boolean; message: string }> {
+export function ownerEditPayload(claim: OwnerClaim): Record<string, unknown> {
+  return {
+    bio: claim.bio,
+    services: claim.services,
+    phone: claim.phone,
+    contactLink: claim.contactLink,
+    practiceAreas: claim.practiceAreas,
+    photoDataUrl: claim.photoDataUrl,
+    fullName: claim.name,
+    serviceList: claim.serviceList || [],
+    clientTypes: claim.clientTypes || [],
+    consultModes: claim.consultModes || [],
+    consultFee: claim.consultFee || '',
+    consultPrice: claim.consultPrice || '',
+    billing: claim.billing || [],
+    fixedFees: claim.fixedFees || [],
+    availability: claim.availability || '',
+    contactPref: claim.contactPref || '',
+    inquiriesEnabled: claim.inquiriesEnabled !== false,
+  };
+}
+
+function ownerAuth(claim: OwnerClaim): Record<string, unknown> {
+  return { email: claim.useBarEmail ? '' : claim.email, useBarEmail: Boolean(claim.useBarEmail), profilePath: claim.profilePath, claimToken: claim.claimToken };
+}
+
+export async function saveOwnerEdit(claim: OwnerClaim): Promise<{ remote: boolean; ok: boolean; message: string; claim: OwnerClaim }> {
   saveClaim(claim);
-  const remote = await postClaim({
-    action: 'save',
-    email: claim.useBarEmail ? '' : claim.email,
-    useBarEmail: Boolean(claim.useBarEmail),
-    profilePath: claim.profilePath,
-    claimToken: claim.claimToken,
-    edit: {
-      bio: claim.bio,
-      services: claim.services,
-      phone: claim.phone,
-      contactLink: claim.contactLink,
-      practiceAreas: claim.practiceAreas,
-      photoDataUrl: claim.photoDataUrl,
-      fullName: claim.name,
-    },
-  });
+  const remote = await callFunction<ClaimApiResult & { availabilityUpdatedAt?: string }>('owner-tools', { action: 'save', ...ownerAuth(claim), edit: ownerEditPayload(claim) });
   if (remote?.ok) {
+    const next = { ...claim, availabilityUpdatedAt: remote.availabilityUpdatedAt || claim.availabilityUpdatedAt || '' };
+    saveClaim(next);
     return {
       remote: true,
+      ok: true,
+      claim: next,
       message: claim.approved === false
-        ? 'Saved. Your claim is pending review, so these edits stay hidden from the public until we confirm it.'
+        ? 'Submitted. Your claim is pending review, so these edits stay hidden from the public until we confirm it.'
         : remote.textPending
-          ? 'Saved. Your bio and services text waits for a quick review before it shows. Your other edits show now.'
+          ? 'Saved. Your bio and custom services wait for a quick review before they show. Everything else shows now.'
           : 'Saved. Your edits show on your public profile.',
     };
   }
+  if (remote && remote.reason === 'bad-link') return { remote: true, ok: false, claim, message: 'The website must start with https://' };
+  if (remote && remote.reason === 'bad-token') return { remote: true, ok: false, claim, message: 'Your sign-in on this device has expired. Claim the profile again to get a new code.' };
   return {
     remote: false,
+    ok: true,
+    claim,
     message: 'Saved on this device. The public page in this browser shows these edits. Claim storage in Supabase did not accept them yet.',
   };
+}
+
+export interface OwnerStats {
+  since: string;
+  views: number;
+  websiteClicks: number;
+  phoneClicks: number;
+  inquiries: number;
+}
+
+export async function loadOwnerStats(claim: OwnerClaim): Promise<{ ok: boolean; stats?: OwnerStats; message: string }> {
+  const remote = await callFunction<{ ok?: boolean; reason?: string } & Partial<OwnerStats>>('owner-tools', { action: 'dashboard', ...ownerAuth(claim) });
+  if (!remote) return { ok: false, message: 'Stats need the LegalGrads server, which this page could not reach.' };
+  if (!remote.ok) return { ok: false, message: remote.reason === 'bad-token' ? 'Your sign-in on this device has expired. Claim the profile again to see stats.' : 'Stats are not available right now.' };
+  return {
+    ok: true,
+    message: '',
+    stats: { since: remote.since || '', views: remote.views ?? 0, websiteClicks: remote.websiteClicks ?? 0, phoneClicks: remote.phoneClicks ?? 0, inquiries: remote.inquiries ?? 0 },
+  };
+}
+
+export function dashboardHref(profilePath: string): string {
+  return `/attorney/dashboard/?profile=${encodeURIComponent(profilePath)}`;
 }
 
 export function readPhotoFile(file: File): Promise<string> {

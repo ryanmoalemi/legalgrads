@@ -70,7 +70,14 @@ test('both claim buttons and removal links resolve for every sample state', asyn
     expect(html, path).toContain('Claim this free profile');
     expect(removalHits, path).toBe(true);
     expect(html, path).toContain('/js/owner-edits.js');
-    expect(html, path).toContain('We email you a confirmation code.');
+    expect(html, path).toContain('is this your profile?');
+    expect(html, path).toContain('Free for life. Never pay for your standard listing.');
+    expect(html, path).toContain('href="/free-listing-promise/"');
+    expect(html, path).toContain('About this profile');
+    expect(html, path).toContain('Profile claimed');
+    expect(html, path).toContain('License status checked');
+    expect(html, path).toContain('Suggest a correction');
+    expect(html, path).not.toMatch(/Founding Member|verified bar badge|physical letter|separate from claiming|\u{1F393}|\u{1F389}/u);
     expect(html, path).not.toContain('mailed to your State Bar');
     expect(html, path).not.toMatch(/\u2014|\u2013/);
   }
@@ -84,10 +91,9 @@ test('unknown profile claim page is a real page', async ({ page }) => {
 test('a non-test email does not reveal a code', async ({ page }) => {
   await boot(page, `/claim/?profile=${encodeURIComponent(CALLIE)}`);
   await expect(page.getByTestId('claim-listing')).toContainText('Callie Yahyavi');
-  await page.getByTestId('claim-bar-number').fill('369241');
   await page.getByTestId('claim-attest').check();
   await page.getByTestId('claim-email').fill('someone@example.com');
-  await page.getByRole('button', { name: 'Email me a code' }).click();
+  await page.getByRole('button', { name: 'Email my confirmation code' }).click();
   await expect(page.getByTestId('claim-error')).toBeVisible();
   await expect(page.getByTestId('claim-code')).toHaveCount(0);
   await expect(page.getByTestId('claim-error')).not.toContainText(/\d{6}/);
@@ -96,25 +102,25 @@ test('a non-test email does not reveal a code', async ({ page }) => {
 test('wyoming claim page keeps the official hyphenated bar number', async ({ page }) => {
   await boot(page, `/claim/?profile=${encodeURIComponent('/attorneys/wy/office-unlisted/ryan-facinelli-86661/')}`);
   await expect(page.getByTestId('claim-listing')).toContainText('Ryan Facinelli');
-  await expect(page.getByTestId('claim-listing')).toContainText('Bar 8-6661');
+  await expect(page.getByTestId('claim-listing')).toContainText('Bar number 8-6661');
 });
 
 test('test inbox can claim, edit, and see the edit on the public page', async ({ page }) => {
   await boot(page, CALLIE);
   await page.setViewportSize({ width: 390, height: 844 });
   await expect(page.getByRole('link', { name: 'Claim this free profile' })).toHaveAttribute('href', '/join/?state=CA&bar=369241');
-  await expect(page.getByRole('heading', { name: 'Looking for a business attorney in Escondido?' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Callie, is this your profile?' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Need a lawyer for your business?' })).toBeVisible();
+  await expect(page.locator('#claim-state')).toHaveText('Not yet');
   await page.getByRole('link', { name: 'Claim my free profile' }).click();
   await expect(page).toHaveURL(/\/claim\/\?profile=/);
   await expect(page.getByTestId('claim-listing')).toContainText('Callie Yahyavi');
-  await expect(page.getByTestId('claim-listing')).toContainText('Bar 369241');
-  await page.getByTestId('claim-bar-number').fill('111111');
+  await expect(page.getByTestId('claim-listing')).toContainText('Bar number 369241');
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText('Make this profile yours.');
+  await expect(page.getByTestId('claim-free')).toContainText('Your standard listing is free. Always.');
   await page.getByTestId('claim-attest').check();
   await page.getByTestId('claim-email').fill('ryan@legalgrads.com');
-  await page.getByRole('button', { name: 'Email me a code' }).click();
-  await expect(page.getByTestId('claim-error')).toContainText('bar number does not match');
-  await page.getByTestId('claim-bar-number').fill('0369-241');
-  await page.getByRole('button', { name: 'Email me a code' }).click();
+  await page.getByRole('button', { name: 'Email my confirmation code' }).click();
   const code = (await page.getByTestId('claim-code').innerText()).replace(/\D/g, '');
   expect(code).toMatch(/^\d{6}$/);
   await page.getByTestId('claim-code-input').fill('000000');
@@ -122,11 +128,7 @@ test('test inbox can claim, edit, and see the edit on the public page', async ({
   await expect(page.getByTestId('claim-error')).toContainText('does not match');
   await page.getByTestId('claim-code-input').fill(code);
   await page.getByRole('button', { name: 'Confirm and sign in' }).click();
-  const welcome = page.getByTestId('welcome-email');
-  await expect(welcome).toContainText('From: Legalgrads <hello@legalgrads.com>');
-  await expect(welcome).toContainText('Edit your profile:');
-  await expect(welcome).not.toContainText(/\u2014|\u2013/);
-  await page.getByTestId('claim-edit-link').click();
+  await expect(page).toHaveURL(/\/attorney\/profile\/\?profile=/);
   await expect(page.getByRole('heading', { level: 1 })).toHaveText('Edit your profile');
   await expect(page.getByText('Signed in on this device as ryan@legalgrads.com')).toBeVisible();
   const bio = 'I help Escondido clients with contracts and everyday business questions.';
@@ -134,13 +136,13 @@ test('test inbox can claim, edit, and see the edit on the public page', async ({
   await page.getByTestId('owner-services').fill('Contract review and formation paperwork.');
   await page.getByTestId('owner-phone').fill('4155551212');
   await page.getByTestId('owner-link').fill('https://example.com');
-  await page.getByTestId('owner-area-contracts').check();
+  await page.getByTestId('owner-area-contracts').locator('xpath=..').click();
   await page.getByTestId('owner-photo').setInputFiles({
     name: 'photo.png',
     mimeType: 'image/png',
     buffer: Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==', 'base64'),
   });
-  await expect(page.locator('img[alt=""]')).toBeVisible();
+  await expect(page.locator('img[alt=""]').first()).toBeVisible();
   await page.getByTestId('owner-save').click();
   await expect(page.getByTestId('owner-status')).toContainText('Saved on this device');
   await page.reload();
@@ -150,6 +152,7 @@ test('test inbox can claim, edit, and see the edit on the public page', async ({
   await expect(page.locator('#owner-edit')).toContainText('Contract review');
   await expect(page.locator('#owner-edit')).toContainText('Contracts');
   await expect(page.locator('.chip.solid')).toHaveText('Claimed on this device');
+  await expect(page.locator('#claim-state')).toHaveText('On this device');
   await page.getByRole('link', { name: 'Request removal' }).click();
   await expect(page).toHaveURL(/\/data-deletion\/\?profile=/);
   await expect(page.getByTestId('removal-profile')).toContainText(CALLIE);

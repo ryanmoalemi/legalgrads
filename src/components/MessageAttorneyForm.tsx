@@ -1,4 +1,5 @@
 'use client';
+import { INQUIRY_NOTICE } from '@/lib/legal';
 
 import { FormEvent, useState } from 'react';
 import { messageProblems, sendAttorneyMessage } from '@/lib/messages';
@@ -52,7 +53,8 @@ export function MessageAttorneyForm({ profileId }: { profileId?: string }) {
       }}
     >
       <h3 id="message-attorney-title" className="font-display text-lg font-extrabold">Message this attorney</h3>
-      <p className="mt-1 text-sm text-ink">Your email stays private. The attorney’s email stays private. Legalgrads relays the message after automatic spam screening, which uses AI. Links are not allowed. Do not include confidential details; sending a message does not create an attorney-client relationship.</p>
+      <p className="mt-1 text-sm text-ink">Your email stays private. The attorney’s email stays private. Legalgrads relays the message after automatic spam screening, which uses AI. Links are not allowed.</p>
+      <p data-testid="message-notice" className="mt-2 rounded-2xl bg-white px-3 py-2 text-sm text-navy">{INQUIRY_NOTICE}</p>
       <div className="absolute -left-[10000px] h-px w-px overflow-hidden" aria-hidden="true">
         <label>
           Company website

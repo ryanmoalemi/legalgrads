@@ -13,7 +13,7 @@ const NAV = [
   { href: '/for-attorneys/', label: 'For Attorneys' },
 ];
 
-const joinClass = 'inline-flex min-h-11 items-center justify-center rounded-full bg-pink px-4 py-2 font-display text-sm font-semibold text-white';
+const joinClass = 'inline-flex min-h-11 items-center justify-center rounded-full bg-pinkdark px-4 py-2 font-display text-sm font-semibold text-white';
 
 export function Header() {
   const [open, setOpen] = useState(false);
@@ -69,6 +69,7 @@ const FOOTER = [
     ['/join/', 'Join free'],
     ['/resources/post-bar-licensing-tracker/', 'Post-bar licensing tracker'],
     ['/attorney-terms/', 'Attorney Terms'],
+    ['/free-listing-promise/', 'Free listing promise'],
     ['/attorney-advertising/', 'Attorney advertising'],
     ['/directory-disclosure/', 'Directory disclosure'],
   ]],
@@ -162,7 +163,7 @@ export function CookieBanner() {
     >
       <p className={`font-display text-sm font-bold cookie-join-hide`}>Cookies</p>
       <p className="cookie-join-short text-sm text-ink">Optional cookies stay off unless you accept.</p>
-      <p className={`mt-1 text-sm text-ink cookie-join-hide`}>Strictly necessary storage is always on. Analytics and marketing stay off unless you opt in. No third-party tracker is loaded either way.</p>
+      <p className={`mt-1 text-sm text-ink cookie-join-hide`}>Strictly necessary storage is always on. Google Analytics counts visits without cookies unless you accept analytics. Marketing stays off unless you opt in.</p>
       <div className="cookie-actions mt-3 flex flex-wrap gap-2">
         <button type="button" data-testid="cookie-accept" className="min-h-11 rounded-full bg-navy px-3 py-2 font-display text-sm font-semibold text-white" onClick={() => choose(true, true)}>Accept</button>
         <button type="button" data-testid="cookie-reject" className="min-h-11 rounded-full bg-cream px-3 py-2 font-display text-sm font-semibold" onClick={() => choose(false, false)}>Reject optional</button>

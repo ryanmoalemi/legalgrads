@@ -19,6 +19,7 @@ export function ForAttorneysView() {
       <Link href="/join/" data-testid="founding-cta" className="mt-6 inline-flex min-h-11 items-center rounded-full bg-pink px-6 py-3 font-display text-base font-semibold text-white">
         Join free
       </Link>
+      <p className="mt-3 text-sm text-ink">Already listed from State Bar records? Find your profile with your state and bar number on the same page and claim it. <Link className="font-semibold text-purple underline" href="/free-listing-promise/">Our free listing promise</Link></p>
       <ul className="mt-10 grid gap-4 sm:grid-cols-3">
         {[
           ['Free listing', 'You are not charged to be in the directory.'],

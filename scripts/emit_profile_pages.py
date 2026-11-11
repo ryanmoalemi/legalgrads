@@ -51,8 +51,12 @@ def assert_claim_links(html_text, path, profile):
         raise SystemExit(f"Bad copy on {path}")
     if "/js/owner-edits.js" not in html_text:
         raise SystemExit(f"Owner script missing on {path}")
-    if "We email you a confirmation code." not in html_text:
-        raise SystemExit(f"Claim copy missing on {path}")
+    for needed in ("is this your profile?", "Free for life. Never pay for your standard listing.", 'href="/free-listing-promise/"', "About this profile", "Ask about fees"):
+        if needed not in html_text:
+            raise SystemExit(f"Claim copy missing on {path}: {needed}")
+    for banned in ("What we know", "Founding Member", "separate from claiming", "physical letter", "🎉", "🎓"):
+        if banned in html_text:
+            raise SystemExit(f"Old copy left on {path}: {banned}")
 
 
 def calbar(bar):
@@ -190,14 +194,14 @@ def license_html(p):
     status_cls = ' class="ok"' if p.get("status") == "Active" else ""
     bar = ext(href, f"#{p['barNumber']} ↗") if href else esc(f"#{p['barNumber']}")
     if not p.get("recordLinkType"):
-        head = "🎓 License (from the State Bar)"
+        head = "License (from the State Bar)"
         who_label, who = "State bar", p["stateName"]
         verified_from = f"State Bar of {p['stateName']}"
         check = "Check the official profile"
     else:
         authority = p.get("sourceAuthority") or p["stateName"]
         ca = p.get("stateCode") == "CA" and p.get("recordLinkType") == "individual_official_profile"
-        head = "🎓 License (from the regulator)"
+        head = "License (from the regulator)"
         who_label, who = "Regulator", authority
         verified_from = f"State Bar of {p['stateName']}" if ca else authority
         if not p.get("registryRecordUrl"):
@@ -205,54 +209,47 @@ def license_html(p):
         else:
             label = link_label(p)
             check = "Check the official profile" if ca or label == "official profile" else "Check the official record"
-    lookup = ""
     check_html = (" " + ext(href, check)) if href else ""
     return (
         f'<div class="card"><h2>{head}</h2><div class="lic">'
         f"<div><small>{who_label}</small><b>{esc(who)}</b></div>"
         f"<div><small>Bar number</small><b>{bar}</b></div>"
-        f"<div><small>Admitted</small><b>{esc(p['admitted'])}</b></div>"
-        f"<div><small>Status</small><b{status_cls}>● {esc(p['status'])}</b></div>"
+        f"<div><small>Admitted in {esc(p['stateName'])}</small><b>{esc(p['admitted'])}</b></div>"
+        f"<div><small>License status</small><b{status_cls}>{esc(p['status'])}</b></div>"
         f"<div><small>Public discipline</small><b>{esc(p['discipline'])}</b></div>"
         f"<div><small>Law school</small><b>{esc(p['lawSchool'])}</b></div></div>"
-        f'<p class="verified">✓ Last verified from {esc(verified_from)} records on {esc(p["lastVerified"])}.{check_html}{lookup}</p></div>'
+        f'<p class="verified">License status checked {esc(p["lastVerified"])} from {esc(verified_from)} records.{check_html}</p></div>'
     )
 
 
-def know_html(p, fn):
+def record_source(p):
+    """Where the public record came from, and the link to it."""
     href = official_href(p)
-    if not p.get("recordLinkType") or (p.get("stateCode") == "CA" and p.get("recordLinkType") == "individual_official_profile"):
+    if legacy_copy(p):
         link_href = calbar(p["barNumber"]) if not p.get("recordLinkType") else href
-        return (
-            '<div class="card"><h2>What we know</h2><p>This basic listing was created from public State Bar of '
-            f"{esc(p['stateName'])} records. {esc(fn)} hasn&#39;t added a photo, services, or contact details yet. "
-            f"Contact details shown by the State Bar are available on the {ext(link_href, 'official profile')}.</p></div>"
-        )
-    authority = p.get("sourceAuthority") or p["stateName"]
+        return f"public State Bar of {esc(p['stateName'])} records", ext(link_href, "View official State Bar record"), ""
+    authority = esc(p.get("sourceAuthority") or p["stateName"])
     if not p.get("registryRecordUrl"):
-        href = p.get("officialLookupUrl") or ""
-        link = ext(href, SEARCH_LABEL) if href else SEARCH_LABEL
-        return (
-            '<div class="card"><h2>What we know</h2><p>This basic listing was created from public '
-            f"{esc(authority)} records. {esc(fn)} hasn&#39;t added a photo, services, or contact details yet. {link}</p></div>"
-        )
+        lookup = p.get("officialLookupUrl") or ""
+        return f"public {authority} records", (ext(lookup, "Search the official lookup") if lookup else ""), ""
     if p.get("recordLinkType") == "shared_official_roster_page":
-        link = ext(href, "That link") if href else "The link"
-        return (
-            '<div class="card"><h2>What we know</h2><p>This basic listing was created from a public roster published by '
-            f"{esc(authority)}. {esc(fn)} hasn&#39;t added a photo, services, or contact details yet. {link} opens a shared roster. It is not an individual profile.</p></div>"
-        )
-    if p.get("recordLinkType") == "individual_official_data_record":
-        link = ext(href, "The official record") if href else "The official record"
-        return (
-            '<div class="card"><h2>What we know</h2><p>This basic listing was created from public '
-            f"{esc(authority)} records. {esc(fn)} hasn&#39;t added a photo, services, or contact details yet. {link} is the registration data for this bar number.</p></div>"
-        )
-    link = ext(href, "The official profile") if href else "The official profile"
+        return f"a public roster published by {authority}", (ext(href, "View the official roster") if href else ""), " It is a shared roster, not an individual record."
+    return f"public {authority} records", (ext(href, "View official record") if href else ""), ""
+
+
+def about_html(p, fn):
+    source, link, note = record_source(p)
+    link_line = f'<p class="small" style="margin-top:12px">{link}{note}</p>' if link or note else ""
     return (
-        '<div class="card"><h2>What we know</h2><p>This basic listing was created from public '
-        f"{esc(authority)} records. {esc(fn)} hasn&#39;t added a photo, services, or contact details yet. {link} is linked above.</p></div>"
+        f'<div class="card"><h2>About this profile</h2><p>This profile was created from {source}. '
+        f'<span id="about-claim">{esc(fn)} has not yet claimed it or confirmed services, fees, or availability on LegalGrads.</span></p>'
+        f'<ul class="facts"><li><span>Profile claimed</span><span id="claim-state">Not yet</span></li>'
+        f"<li><span>Fees</span><span id=\"fees-state\">Ask about fees</span></li></ul>{link_line}</div>"
     )
+
+
+def correction_href(path):
+    return "mailto:ryan@legalgrads.com?subject=" + quote("Correction for " + path, safe="")
 
 
 LEGACY_DISC = (
@@ -283,22 +280,27 @@ def page_html(p):
     disc = LEGACY_DISC if legacy_copy(p) else NEUTRAL_DISC
     city_href = f"/attorneys/{p['state']}/{p['city']}/"
     state_href = f"/attorneys/{p['state']}/"
+    where = esc(p["stateName"]) if p["city"] == "office-unlisted" else esc(crumb)
     body = (
         f'<div class="lgp"><main class="wrap">'
         f'<nav class="crumbs" aria-label="Breadcrumb"><a href="/">Home</a> › <a href="{state_href}">{esc(p["stateName"])}</a> › <a href="{city_href}">{esc(crumb)}</a> › {esc(p["name"])}</nav>'
-        f'<section class="hero"><div class="avatar" aria-label="No photo">{esc(initials)}<span class="tassel">🎓</span></div><div>'
+        f'<section class="hero"><div class="avatar" aria-label="No photo">{esc(initials)}</div><div>'
         f"<h1>{esc(p['name'])}</h1><div class=\"head\">Attorney · {esc(place)}</div>"
-        f'<div class="chips"><span class="chip solid">Unclaimed profile</span><span class="chip">📍 {esc(place)}</span>'
-        f"<span class=\"chip\">🎓 Admitted {esc(p['admittedYear'])}</span><span class=\"chip\">● {esc(p['status'])} license</span></div>"
-        f"</div></section><div class=\"grid\"><div>{license_html(p)}{know_html(p, fn)}{disc}"
+        f'<div class="chips"><span class="chip solid">Unclaimed profile</span><span class="chip">{esc(place)}</span>'
+        f"<span class=\"chip\">Admitted in {esc(p['stateName'])} {esc(p['admittedYear'])}</span><span class=\"chip\">{esc(p['status'])} license</span></div>"
+        f"</div></section><div class=\"grid\"><div>{about_html(p, fn)}{license_html(p)}{disc}"
         f'<p class="small" style="margin-top:12px">Are you {esc(fn)} and want this listing taken down? <a href="{removal_href(path)}">Request removal</a></p></div>'
-        f'<aside><div class="card claim"><h2>Are you this attorney?<br>Claim your free profile 🎉</h2><ul>'
-        f"<li>Add your photo, bio &amp; services</li><li>Get a verified bar badge</li><li>Become a Founding Member: always free</li></ul>"
+        f'<aside><div class="card claim"><h2>{esc(fn)}, is this your profile?</h2><p class="lead">Help local business owners find you.</p>'
+        f"<p class=\"small\">Claim your free profile to show small business owners in {where} what legal services you offer, how you work, and how to contact you.</p><ul>"
+        f"<li>Describe the services you offer.</li><li>Add your photo, background, and consultation options.</li><li>Share your fees, availability, and preferred way to connect.</li></ul>"
         f'<a class="btn pink" href="{claim_href(path)}">Claim my free profile</a>'
-        f'<p class="small" style="margin-top:8px">We email you a confirmation code. Legalgrads does not mail a physical letter.</p></div>'
-        f'<div class="card"><h2>Looking for a business attorney in {esc(crumb)}?</h2><p class="small">This is separate from claiming the profile above. Browse attorneys who have verified their own listings and contact them directly.</p>'
-        f'<a class="btn out" href="/find-lawyer/">Browse the directory</a>'
-        f'<p class="small" style="margin-top:10px"><a href="{city_href}">More attorneys in {esc(crumb)}</a></p></div></aside></div>'
+        f'<p class="small promise">Free for life. Never pay for your standard listing.</p>'
+        f'<p class="small">Optional sponsored placements may be offered in the future.</p>'
+        f'<p class="small"><a href="/free-listing-promise/">Our free listing promise</a></p></div>'
+        f'<div class="card"><h2>Need a lawyer for your business?</h2><p class="small">Browse attorney profiles, review the services they offer, and choose whom to contact.</p>'
+        f'<a class="btn out" href="/find-lawyer/">Explore attorney profiles</a>'
+        f'<p class="small" style="margin-top:10px"><a href="{city_href}">More attorneys in {esc(crumb)}</a></p>'
+        f'<p class="small" style="margin-top:6px"><a href="{correction_href(path)}">Suggest a correction</a></p></div></aside></div>'
         f'<div class="sticky"><a class="btn pink" href="{join_href(p)}">Claim this free profile</a></div></main></div>'
     )
     return (
@@ -312,7 +314,7 @@ def page_html(p):
         "<meta property=\"og:type\" content=\"profile\">"
         "<link rel=\"stylesheet\" href=\"/css/attorney-profile.css\">"
         f"<script async src=\"https://www.googletagmanager.com/gtag/js?id={GA}\"></script>"
-        "<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());"
+        "<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}var lgc={};try{lgc=JSON.parse(localStorage.getItem('legalgrads-consent')||'{}')||{}}catch(e){}gtag('consent','default',{analytics_storage:lgc.analytics?'granted':'denied',ad_storage:lgc.marketing?'granted':'denied',ad_user_data:lgc.marketing?'granted':'denied',ad_personalization:lgc.marketing?'granted':'denied'});gtag('js',new Date());"
         f"gtag('config','{GA}');</script>"
         f'<script type="application/ld+json">{json_ld(p)}</script></head><body>{body}'
         '<script src="/js/owner-edits.js" defer></script></body></html>'
