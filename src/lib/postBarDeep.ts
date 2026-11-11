@@ -1,4 +1,4 @@
-import { NOT_PUBLISHED, type NationalState, type Src } from '@/lib/nationalPostBar';
+import { NOT_PUBLISHED, sourceKey, type NationalState, type Src } from '@/lib/nationalPostBar';
 
 const RATES: Src = {
   label: 'NCBE July 2026 bar exam pass rates (table updated Nov 4, 2026)',
@@ -174,7 +174,7 @@ const CLE_BY_STATE: Record<string, Cle> = {
 };
 
 function add(s: NationalState, src: Src) {
-  if (!s.sources.some((item) => item.url === src.url)) s.sources.push(src);
+  if (!s.sources.some((item) => sourceKey(item) === sourceKey(src))) s.sources.push(src);
 }
 
 function rateDetail(exam: Exam) {

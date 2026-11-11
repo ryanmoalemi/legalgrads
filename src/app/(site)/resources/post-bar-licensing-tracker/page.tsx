@@ -2,7 +2,8 @@ import type { Metadata } from 'next';
 import { EmbedBox } from '@/components/postbar/EmbedBox';
 import { HubTable, type HubRow } from '@/components/postbar/HubTable';
 import { ALL_STATES, POST_BAR, TRACKER_PATH, prettyDate, range } from '@/lib/postBar';
-import { CHECKED, NATIONAL_STATES, NOT_PUBLISHED, money, upfrontText } from '@/lib/nationalPostBar';
+import { CHECKED, NATIONAL_STATES, NOT_PUBLISHED, money, sourceKey, upfrontText } from '@/lib/nationalPostBar';
+import { OfficialSource } from '@/components/postbar/OfficialSource';
 
 const title = 'Post-Bar Licensing Costs in All 50 States and D.C. (2026-2027)';
 const description = 'Swearing-in fees, first-year CLE, and UBE transfers for every state and D.C. Official sources only. Missing figures are marked Not published. Free to embed.';
@@ -88,7 +89,7 @@ export default function Page() {
         </div>
         <div className="mt-6 rounded-2xl bg-cream p-4 text-sm text-ink" data-testid="methods">
           <h3 className="font-display text-base font-extrabold text-navy">Methods</h3>
-          <p className="mt-2">Non-California rows were checked on {prettyDate(CHECKED)} against the state bar, court, or board page linked on that state, or against NCBE for UBE adoption and published passing scores. California figures are the ones already published on the California page. {NOT_PUBLISHED} means the official page we opened did not state that figure. This tracker does not estimate a missing number. Louisiana uses public admission rules only and does not use an attorney roster. General information, not legal advice.</p>
+          <p className="mt-2">Non-California rows were checked on {prettyDate(CHECKED)} against the state bar, court, or board page linked on that state, or against NCBE for UBE adoption and published passing scores. Some figures come from a written reply by the licensing body and are cited on that state's page as a source. California figures are the ones already published on the California page. {NOT_PUBLISHED} means the official page we opened did not state that figure. This tracker does not estimate a missing number. Louisiana uses public admission rules only and does not use an attorney roster. General information, not legal advice.</p>
         </div>
       </section>
 
@@ -137,7 +138,7 @@ export default function Page() {
         <h2 className="font-display text-xl font-extrabold text-navy">Official sources</h2>
         <ul className="mt-4 grid gap-2 text-sm sm:grid-cols-2">
           {NATIONAL_STATES.flatMap((state) => state.sources.slice(0, 2).map((src) => (
-            <li key={state.abbr + src.url}><span className="font-semibold text-navy">{state.abbr}:</span> <a className="text-purple underline" href={src.url} target="_blank" rel="noopener noreferrer">{src.label}</a></li>
+            <li key={state.abbr + sourceKey(src)}><span className="font-semibold text-navy">{state.abbr}:</span> <OfficialSource src={src} /></li>
           )))}
         </ul>
         <p className="mt-5 text-sm text-ink">Confirm a fee with the licensing body before you pay. General information, not legal advice.</p>

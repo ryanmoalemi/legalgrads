@@ -517,3 +517,17 @@ test('join roster lookup keeps a year-only admission as a year', async ({ page }
   await expect(page.getByTestId('roster-match')).toContainText('not a graduation date');
   await expect(page.getByTestId('apply-admitted')).toHaveValue('');
 });
+
+test('Virginia tracker cites the State Bar email for dues and a free A&O ceremony', async ({ page }) => {
+  await page.goto('/resources/post-bar-licensing-tracker/virginia/');
+  await expect(page.getByTestId('upfront')).toContainText('$0 to $160');
+  const receipt = page.getByTestId('gatekeeping-receipt');
+  await expect(receipt).toContainText('$160');
+  await expect(receipt).toContainText('$62.50');
+  await expect(receipt).toContainText('Source: Virginia State Bar, Regulatory Compliance/Membership, email to LegalGrads, Nov 11, 2026');
+  const ceremony = page.getByTestId('ceremony-table');
+  await expect(ceremony).toContainText('Admission & Orientation (A&O) Ceremony');
+  await expect(ceremony).toContainText('Dec 2, 2026');
+  await expect(ceremony).toContainText('Fee: $0');
+  await expect(page.locator('main')).toContainText('Dues are waived for anyone admitted or licensed in April, May or June.');
+});

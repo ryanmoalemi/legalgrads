@@ -2,7 +2,8 @@ import Link from 'next/link';
 import { EmbedBox } from '@/components/postbar/EmbedBox';
 import { StateFeeTool } from '@/components/postbar/StateTools';
 import { prettyDate, TRACKER_PATH } from '@/lib/postBar';
-import { money, NOT_PUBLISHED, upfrontText, type NationalState } from '@/lib/nationalPostBar';
+import { money, NOT_PUBLISHED, sourceKey, upfrontText, type NationalState } from '@/lib/nationalPostBar';
+import { OfficialSource } from '@/components/postbar/OfficialSource';
 
 function Fact({ label, value, detail }: { label: string; value: string; detail?: string }) {
   return (
@@ -60,7 +61,7 @@ export function StatePostBar({ s }: { s: NationalState }) {
               <div className="min-w-0 max-w-xl">
                 <p className="font-semibold">{line.label}</p>
                 <p className="text-sm text-white/75">{line.note}</p>
-                <a className="text-sm text-pink underline" href={line.source.url} target="_blank" rel="noopener noreferrer">{line.source.label}</a>
+                <OfficialSource src={line.source} className={line.source.url ? 'text-sm text-pink underline' : 'text-sm text-pink'} />
               </div>
               <p className="font-display text-2xl font-extrabold">{line.amount === null ? NOT_PUBLISHED : money(line.amount)}</p>
             </li>
@@ -143,7 +144,7 @@ export function StatePostBar({ s }: { s: NationalState }) {
         <h2 className="font-display text-xl font-extrabold text-navy">Official sources</h2>
         <p className="mt-2 text-sm text-ink">Checked {prettyDate(s.lastVerified)}. If a figure is not on the linked page, this tracker says {NOT_PUBLISHED}.</p>
         <ul className="mt-4 grid gap-2 sm:grid-cols-2">
-          {s.sources.map((src) => <li key={src.url}><a className="text-purple underline" href={src.url} target="_blank" rel="noopener noreferrer">{src.label}</a></li>)}
+          {s.sources.map((src) => <li key={sourceKey(src)}><OfficialSource src={src} /></li>)}
         </ul>
         {s.gaps && s.gaps.length > 0 && (
           <div className="mt-4 rounded-2xl bg-white p-4 text-sm text-ink">
