@@ -166,6 +166,7 @@ test('verified claimed profile shows the request form with the notice, honeypot,
   const card = page.locator('#inquiry');
   await expect(card.getByRole('heading', { name: 'Ask about your legal needs' })).toBeVisible();
   await expect(page.getByTestId('inquiry-notice')).toHaveText(NOTICE);
+  await expect(page.getByTestId('inquiry-recipient')).toContainText('emailed to Callie Yahyavi');
   const noticeBox = await page.getByTestId('inquiry-notice').boundingBox();
   const formBox = await page.getByTestId('inquiry-form').boundingBox();
   expect(noticeBox!.y).toBeLessThan(formBox!.y);
@@ -258,9 +259,9 @@ test('no public view counter, promise page, and sitemap entry', async ({ page, r
   for (const width of [390, 1440]) {
     await page.setViewportSize({ width, height: 900 });
     await boot(page, '/free-listing-promise/');
-    await expect(page.getByRole('heading', { level: 1 })).toHaveText('Our free listing promise');
+    await expect(page.getByRole('heading', { level: 1 })).toHaveText('Your listing is free. Always.');
     await expect(page.getByTestId('promise-claim')).toHaveText('Claim my free profile');
-    await expect(page.locator('main')).toContainText('Optional sponsored placements may be offered in the future.');
+    await expect(page.locator('main')).toContainText('Paid placements will be clearly labeled as sponsored advertisements.');
     await expect(page.locator('main')).not.toContainText(/\u2014|\u2013/);
     await noOverflow(page);
   }
@@ -274,6 +275,6 @@ test('no public view counter, promise page, and sitemap entry', async ({ page, r
   expect(found).toBe(true);
   await boot(page, '/attorney-terms/');
   await expect(page.locator('main')).toContainText('Optional sponsored placements may be offered in the future.');
-  await expect(page.locator('main')).toContainText('Any sponsored placement will be clearly labeled as sponsored');
+  await expect(page.locator('main')).toContainText('Paid placements will be clearly labeled as sponsored advertisements.');
   await expect(page.locator('main a[href="/free-listing-promise/"]').first()).toBeVisible();
 });

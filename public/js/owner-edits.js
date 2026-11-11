@@ -113,9 +113,15 @@
     host.appendChild(p);
   }
 
-  function inquiryForm(cfg, firstName) {
+  function actionLabel(claim) {
+    return claim.consultModes && claim.consultModes.length ? 'Request a consultation' : 'Ask about your legal needs';
+  }
+
+  function inquiryForm(cfg, firstName, claim) {
     var card = el('div', { class: 'card', id: 'inquiry' });
-    card.appendChild(el('h2', {}, 'Ask about your legal needs'));
+    var h1 = document.querySelector('.lgp h1');
+    card.appendChild(el('h2', {}, actionLabel(claim)));
+    card.appendChild(el('p', { class: 'small', 'data-testid': 'inquiry-recipient' }, 'Your request is emailed to ' + (h1 ? h1.textContent : firstName) + ', who replies to you directly. LegalGrads does not keep a copy.'));
     card.appendChild(el('p', { class: 'note', 'data-testid': 'inquiry-notice' }, NOTICE));
     var form = el('form', { 'data-testid': 'inquiry-form', novalidate: '' });
     var started = Date.now();
@@ -200,12 +206,12 @@
       }
       box.appendChild(card);
     }
-    if (verified && cfg && claim.inquiriesEnabled !== false) box.insertBefore(inquiryForm(cfg, firstName), claim.contactPref === 'inquiry' || !claim.contactPref ? box.firstChild : null);
+    if (verified && cfg && claim.inquiriesEnabled !== false) box.insertBefore(inquiryForm(cfg, firstName, claim), claim.contactPref === 'inquiry' || !claim.contactPref ? box.firstChild : null);
     aside.insertBefore(box, aside.firstChild);
     var sticky = document.querySelector('.lgp .sticky a');
     if (verified && sticky) {
       if (document.getElementById('inquiry')) {
-        sticky.textContent = 'Ask about your legal needs';
+        sticky.textContent = actionLabel(claim);
         sticky.setAttribute('href', '#inquiry');
       } else if (digits.length >= 10) {
         sticky.textContent = 'Call ' + firstName;

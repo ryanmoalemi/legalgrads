@@ -124,7 +124,7 @@ export function AttorneyProfilePage({ p }: { p: AttorneyProfile }) {
           <aside>
             <div className="card claim"><h2>{fn}, is this your profile?</h2><p className="lead">Help local business owners find you.</p>
               <p className="small">Claim your free profile to show small business owners in {p.city === 'office-unlisted' ? p.stateName : crumbCity} what legal services you offer, how you work, and how to contact you.</p>
-              <ul><li>Describe the services you offer.</li><li>Add your photo and background.</li><li>Share your phone number and website.</li></ul>
+              <ul><li>Describe the services you offer.</li><li>Add your photo, background, and consultation options.</li><li>Share your fees, availability, and preferred way to connect.</li></ul>
               <Link className="btn pink" href={claimHref(profilePath(p))}>Claim my free profile</Link>
               <p className="small promise">Free for life. Never pay for your standard listing.</p>
               <p className="small">Optional sponsored placements may be offered in the future.</p>

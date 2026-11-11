@@ -83,7 +83,7 @@ export function ProfilePreview({ claim }: { claim: OwnerClaim }) {
         {claim.billing?.includes('fixed') && claim.fixedFees?.length ? <ul className="list-disc pl-5">{claim.fixedFees.map((fee) => <li key={fee.service}>{fee.service}: {fee.price}</li>)}</ul> : null}
         {avail ? <p><b>Availability:</b> {avail}{claim.availabilityUpdatedAt ? ` (updated ${shortDate(claim.availabilityUpdatedAt)})` : ''}</p> : null}
         <div className="flex flex-wrap gap-2">
-          {claim.contactPref === 'inquiry' || (claim.inquiriesEnabled !== false && !claim.contactPref) ? <span className="rounded-full bg-[#C2006A] px-3 py-2 font-semibold text-white">Ask about your legal needs</span> : null}
+          {claim.contactPref === 'inquiry' || (claim.inquiriesEnabled !== false && !claim.contactPref) ? <span className="rounded-full bg-[#C2006A] px-3 py-2 font-semibold text-white">{claim.consultModes?.length ? 'Request a consultation' : 'Ask about your legal needs'}</span> : null}
           {claim.phone ? <span className="rounded-full border border-navy/20 px-3 py-2">{claim.phone}</span> : null}
           {claim.contactLink ? <span className="rounded-full border border-navy/20 px-3 py-2">Website</span> : null}
         </div>

@@ -13,7 +13,7 @@ const updated = '2026-10-21';
 const updatedNov = '2026-11-11';
 
 export const INQUIRY_NOTICE = 'Send a brief description only. Do not include confidential details or documents. Sending a request does not by itself hire a lawyer. The lawyer must confirm availability, check for conflicts, and agree to represent you.';
-export const SPONSORED_LABEL = 'Any sponsored placement will be clearly labeled as sponsored, kept separate from standard listings, and will not change how standard listings are ordered or described.';
+export const SPONSORED_LABEL = 'Paid placements will be clearly labeled as sponsored advertisements. Paying for placement will not mean that LegalGrads recommends a lawyer or rates that lawyer more highly, and it will not change how standard listings are ordered or described.';
 const contact = `Questions and privacy requests go to ${CONTACT_EMAIL}. Legalgrads has not published a street address or phone number.`;
 
 export const DOCS: Record<string, LegalDoc> = {

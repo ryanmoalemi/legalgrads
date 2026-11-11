@@ -292,7 +292,7 @@ def page_html(p):
         f'<p class="small" style="margin-top:12px">Are you {esc(fn)} and want this listing taken down? <a href="{removal_href(path)}">Request removal</a></p></div>'
         f'<aside><div class="card claim"><h2>{esc(fn)}, is this your profile?</h2><p class="lead">Help local business owners find you.</p>'
         f"<p class=\"small\">Claim your free profile to show small business owners in {where} what legal services you offer, how you work, and how to contact you.</p><ul>"
-        f"<li>Describe the services you offer.</li><li>Add your photo and background.</li><li>Share your phone number and website.</li></ul>"
+        f"<li>Describe the services you offer.</li><li>Add your photo, background, and consultation options.</li><li>Share your fees, availability, and preferred way to connect.</li></ul>"
         f'<a class="btn pink" href="{claim_href(path)}">Claim my free profile</a>'
         f'<p class="small promise">Free for life. Never pay for your standard listing.</p>'
         f'<p class="small">Optional sponsored placements may be offered in the future.</p>'
