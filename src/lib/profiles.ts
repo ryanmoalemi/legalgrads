@@ -9,6 +9,7 @@ import zipCentroids from '../../public/data/zip-centroids.json';
 import { miles, type LatLng } from '@/lib/geo';
 import { expandCityName, expandSchool, slugifyPlace, zipRegion } from '@/lib/places';
 import { US_STATES } from '@/lib/states';
+import placeIndex from '@/data/place-index.json';
 
 const STATE_SUFFIXES = new Set(US_STATES.map((item) => item.code.toLowerCase()));
 export type ProfileService = { icon: string; title: string; detail: string };
@@ -134,8 +135,25 @@ export const PROFILES: AttorneyProfile[] = [
 ].map(presentProfile);
 
 export const REAL_PROFILES = PROFILES.filter((p) => !p.demo);
+export type PlaceKind = 'L' | 'O' | 'U' | 'I';
+/** Directory placement for one record. Source fields stay untouched; see scripts/build_places.py. */
+export type Place = { hub: string; name: string; region: string; kind: PlaceKind };
+const PLACES = placeIndex as unknown as Record<string, [string, string, string, PlaceKind]>;
+
+export function placeOf(p: AttorneyProfile): Place {
+  const hit = PLACES[`${p.state}|${p.barNumber}`];
+  if (hit) return { hub: hit[0], name: hit[1], region: hit[2], kind: hit[3] };
+  if (p.city === 'international-offices') return { hub: p.city, name: 'Offices outside the U.S.', region: '', kind: 'I' };
+  if (cityUnknown(p)) return { hub: p.city, name: 'Office location not listed', region: '', kind: 'U' };
+  const region = p.officeState && p.officeState !== p.stateCode ? p.officeState : '';
+  return { hub: p.city, name: displayCity(p.cityName), region, kind: region ? 'O' : 'L' };
+}
+
 export type CityGroup = {
   state: string; stateName: string; stateCode: string; city: string; cityName: string; profiles: AttorneyProfile[];
+  kind: PlaceKind; region: string;
+  /** Other spellings published on the records in this group, so the city filter finds them. */
+  aliases: string[];
   nearby?: { href: string; label: string }[];
   nearbyByDistance?: boolean;
 };
@@ -144,9 +162,13 @@ export function cityGroups(): CityGroup[] {
   if (cityGroupCache) return cityGroupCache;
   const m = new Map<string, CityGroup>();
   for (const p of REAL_PROFILES) {
-    const k = `${p.state}/${p.city}`;
-    if (!m.has(k)) m.set(k, { state: p.state, stateName: p.stateName, stateCode: p.stateCode, city: p.city, cityName: displayCity(p.cityName), profiles: [] });
-    m.get(k)!.profiles.push(p);
+    const place = placeOf(p);
+    const k = `${p.state}/${place.hub}`;
+    if (!m.has(k)) m.set(k, { state: p.state, stateName: p.stateName, stateCode: p.stateCode, city: place.hub, cityName: place.name, kind: place.kind, region: place.region, aliases: [], profiles: [] });
+    const g = m.get(k)!;
+    g.profiles.push(p);
+    const raw = displayCity(p.cityName);
+    if (place.kind !== 'U' && place.kind !== 'I' && raw && raw.toLowerCase() !== place.name.toLowerCase() && !g.aliases.includes(raw)) g.aliases.push(raw);
   }
   for (const g of m.values()) g.profiles.sort((a, b) => a.name.localeCompare(b.name));
   const groups = [...m.values()].sort((a, b) => b.profiles.length - a.profiles.length || a.cityName.localeCompare(b.cityName));
@@ -220,14 +242,9 @@ export function placeLabel(p: AttorneyProfile): string {
   return `${city}, ${p.stateCode}`;
 }
 
-/** State-index label. Existing California cities keep the city name already published. */
+/** State-index label: "San Diego", "Denver, CO", "Office location not listed" or "Offices outside the U.S.". */
 export function cityListLabel(g: CityGroup): string {
-  if (g.city === 'office-unlisted') return 'Office unlisted';
-  if (g.profiles.length && g.profiles.every((p) => cityUnknown(p))) return 'Office city not listed';
-  const officeStates = new Set(g.profiles.map((p) => p.officeState).filter(Boolean));
-  const labels = new Set(g.profiles.map((p) => p.locationLabel).filter(Boolean));
-  const outOfState = g.profiles.every((p) => p.officeState) && officeStates.size === 1 && [...officeStates][0] !== g.stateCode;
-  if (outOfState && labels.size === 1) return placeLabel(g.profiles[0]);
+  if (g.kind === 'O') return `${g.cityName}, ${g.region}`;
   return g.cityName;
 }
 

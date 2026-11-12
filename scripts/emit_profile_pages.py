@@ -6,13 +6,15 @@ the same visible listing text, SEO tags, GA tag, and JSON-LD as the React
 template. Shared CSS is one file. No per-page RSC payload is written.
 """
 import html
+import collections
 import json
 import os
 import re
 from pathlib import Path
 from urllib.parse import quote
 
-from places import city_unknown, display_city, present_profile
+from places import display_city, place_of, place_unknown, present_profile
+city_unknown = place_unknown  # every page check below uses the normalized directory place
 from profile_chrome import FOOTER_MARKER, HEADER_MARKER, footer_html, header_html, icon
 from suppression import is_suppressed
 
@@ -128,13 +130,10 @@ def calbar(bar):
 
 def place_label(p):
     """Visible office place. Unknown cities never print as "California, CA"."""
-    if city_unknown(p):
+    place = place_of(p)
+    if place["kind"] in ("U", "I"):
         return ""
-    city = display_city(p["cityName"])
-    if p.get("locationLabel"):
-        label = p["locationLabel"]
-        return label.replace(p["cityName"] + ",", city + ",", 1) if city != p["cityName"] else label
-    return f"{city}, {p['stateCode']}"
+    return f"{place['name']}, {place['region'] or p['stateCode']}"
 
 
 def where_line(p):
@@ -144,13 +143,14 @@ def where_line(p):
 
 
 def crumb_label(p):
-    if p["city"] == "office-unlisted":
-        return "Office unlisted"
-    if city_unknown(p):
-        return "Office city not listed"
-    if p.get("officeState") and p.get("officeState") != p["stateCode"] and p.get("locationLabel"):
-        return place_label(p)
-    return display_city(p["cityName"])
+    place = place_of(p)
+    if place["kind"] == "O":
+        return f"{place['name']}, {place['region']}"
+    return place["name"]
+
+
+def hub_path(p):
+    return f"/attorneys/{p['state']}/{place_of(p)['hub']}/"
 
 
 def profile_path(p):
@@ -198,7 +198,7 @@ def seo_description(p):
     if (not p.get("recordLinkType") or ca_in) and city_unknown(p):
         return f"{p['name']} is an attorney licensed in {p['stateName']}, admitted in {p['admitted']}{school}. License #{p['barNumber']} from State Bar records."
     if not p.get("recordLinkType") or ca_in:
-        return f"{p['name']} is a {display_city(p['cityName'])}, {p['stateCode']} attorney admitted in {p['admitted']}{school}. License #{p['barNumber']} from State Bar records."
+        return f"{p['name']} is a {place_of(p)['name']}, {p['stateCode']} attorney admitted in {p['admitted']}{school}. License #{p['barNumber']} from State Bar records."
     authority = p.get("sourceAuthority") or f"{p['stateName']} licensing authority"
     if city_unknown(p):
         return f"{p['name']} is licensed in {p['stateName']} and was admitted in {p['admitted']}{school}. No office city was published. License #{p['barNumber']} from {authority} records."
@@ -221,9 +221,9 @@ def school_label(p):
 def json_ld(p):
     url = SITE + profile_path(p)
     if not p.get("recordLinkType"):
-        address = {"@type": "PostalAddress", "addressRegion": p.get("officeState") or p["stateCode"], "addressCountry": "US"}
+        address = {"@type": "PostalAddress", "addressRegion": place_of(p)["region"] or p.get("officeState") or p["stateCode"], "addressCountry": "US"}
         if not city_unknown(p):
-            address["addressLocality"] = p["cityName"]
+            address["addressLocality"] = place_of(p)["name"]
         if p.get("officeZip"):
             address["postalCode"] = p["officeZip"]
         person = {
@@ -241,7 +241,7 @@ def json_ld(p):
     else:
         address = {"@type": "PostalAddress", "addressCountry": "US"}
         if not city_unknown(p):
-            address["addressLocality"] = p["cityName"]
+            address["addressLocality"] = place_of(p)["name"]
         if p.get("officeState"):
             address["addressRegion"] = p["officeState"]
         elif p["city"] != "office-unlisted":
@@ -272,7 +272,7 @@ def json_ld(p):
             "itemListElement": [
                 {"@type": "ListItem", "position": 1, "name": "Home", "item": f"{SITE}/"},
                 {"@type": "ListItem", "position": 2, "name": p["stateName"], "item": f"{SITE}/attorneys/{p['state']}/"},
-                {"@type": "ListItem", "position": 3, "name": crumb_label(p), "item": f"{SITE}/attorneys/{p['state']}/{p['city']}/"},
+                {"@type": "ListItem", "position": 3, "name": crumb_label(p), "item": f"{SITE}{hub_path(p)}"},
                 {"@type": "ListItem", "position": 4, "name": p["name"], "item": url},
             ],
         },
@@ -429,7 +429,7 @@ def page_html(p):
     initials = "".join(w[0] for w in p["name"].split(" ") if w)[:2].upper()
     crumb = crumb_label(p)
     disc = LEGACY_DISC if legacy_copy(p) else NEUTRAL_DISC
-    city_href = f"/attorneys/{p['state']}/{p['city']}/"
+    city_href = hub_path(p)
     state_href = f"/attorneys/{p['state']}/"
     bar_value = license_parts(p)[-1]
     more_label = f"More attorneys licensed in {esc(p['stateName'])}" if city_unknown(p) else f"More attorneys in {esc(crumb)}"
@@ -501,6 +501,52 @@ def load_profiles():
                 redirects[old] = new
                 hubs[hub_old] = hub_new
     return profiles, redirects, hubs
+
+
+CITY_PAGE_SIZE = 100  # same as CITY_PAGE_SIZE in src/components/CityDirectory.tsx
+
+
+def hub_redirects(profiles):
+    """City hubs whose records all moved to another directory group (a merged spelling, an
+    out-of-state office, or the single unknown-location group) redirect to where most of them went.
+    Profile URLs never change, so only hub and hub-page URLs need this."""
+    new_hubs = {(p["state"], place_of(p)["hub"]) for p in profiles}
+    moved = collections.defaultdict(collections.Counter)
+    for p in profiles:
+        moved[(p["state"], p["city"])][place_of(p)["hub"]] += 1
+    out = {}
+    for (state, old), targets in moved.items():
+        if (state, old) in new_hubs:
+            continue
+        target = targets.most_common(1)[0][0]
+        out[f"/attorneys/{state}/{old}/"] = f"/attorneys/{state}/{target}/"
+        pages = -(-sum(targets.values()) // CITY_PAGE_SIZE)
+        for n in range(2, pages + 1):
+            out[f"/attorneys/{state}/{old}/page/{n}/"] = f"/attorneys/{state}/{target}/"
+    return out
+
+
+def write_directory_places(profiles):
+    """The search page reads /data/unclaimed-directory.json. Give each row the normalized
+    office place ("c") and, for offices outside the licensing state, the office state ("r")."""
+    path = OUT / "data" / "unclaimed-directory.json"
+    if not path.exists():
+        return
+    by_path = {profile_path(p): place_of(p) for p in profiles}
+    rows = json.loads(path.read_text(encoding="utf-8"))
+    for row in rows:
+        place = by_path.get(row.get("u"))
+        if not place:
+            continue
+        if place["kind"] == "U":
+            row["c"] = "Office unlisted"
+        elif place["kind"] in ("L", "O"):
+            row["c"] = place["name"]
+        if place["kind"] == "O":
+            row["r"] = place["region"]
+        elif place["kind"] == "I":
+            row["r"] = "INTL"
+    path.write_text(json.dumps(rows, separators=(",", ":"), ensure_ascii=False), encoding="utf-8")
 
 
 def redirect_html(target):
@@ -639,6 +685,9 @@ def main():
         raise SystemExit("Existing California page picked up new-state license wording")
     for old, new in {**redirects, **hubs}.items():
         write_redirect(old, new)
+    for old, new in hub_redirects(profiles).items():
+        write_redirect(old, new)
+    write_directory_places(profiles)
     assert_attorney_favicons(OUT / "attorneys")
     scan_attorney_pages(OUT / "attorneys")
     parts = sorted(OUT.joinpath("sitemap").glob("*.xml"))

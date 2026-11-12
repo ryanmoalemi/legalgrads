@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "python3 scripts/emit_bar_lookup.py && next build && python3 scripts/emit_profile_pages.py",
+    "build": "python3 scripts/build_places.py && python3 scripts/emit_bar_lookup.py && next build && python3 scripts/emit_profile_pages.py",
     "test": "playwright test",
     "icons": "node scripts/generate-brand-images.mjs"
   },

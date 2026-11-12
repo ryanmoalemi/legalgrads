@@ -4,6 +4,7 @@ import json
 import re
 from pathlib import Path
 
+from places import place_of, present_profile
 from suppression import is_suppressed
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -20,9 +21,9 @@ def row(profile):
     year_only = len(admitted) == 4 and admitted.isdigit()
     raw_date = profile.get("admissionDate") or ""
     admission = "" if year_only else raw_date if re.fullmatch(r"\d{4}-\d{2}-\d{2}", raw_date) else ""
-    city = profile.get("cityName") or ""
-    if profile.get("city") == "office-unlisted":
-        city = ""
+    # Same normalized office place as the directory: blank when unknown, "City, ST" outside the state.
+    place = place_of(present_profile(dict(profile))[0])
+    city = "" if place["kind"] in ("U", "I") else f"{place['name']}, {place['region']}" if place["kind"] == "O" else place["name"]
     return [
         profile.get("name") or "",
         admitted,

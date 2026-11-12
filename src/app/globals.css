@@ -292,3 +292,11 @@ body[data-cookie-open] [aria-invalid='true'] {
 .lg-hub__pager { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
 .lg-hub__pager a, .lg-hub__pager span { min-width: 44px; min-height: 44px; display: inline-flex; align-items: center; justify-content: center; padding: 0 12px; border-radius: 10px; border: 1px solid var(--lg-border); background: var(--lg-white); text-decoration: none; }
 .lg-hub__pager [aria-current="page"] { background: var(--lg-navy); color: var(--lg-white); border-color: var(--lg-navy); }
+
+/* Hidden must win over the grid and flex display rules used by hub sections. */
+.lg-hub [hidden] { display: none !important; }
+.lg-hub__search { max-width: 520px; }
+.lg-hub__namerow { display: flex; gap: 8px; align-items: stretch; }
+.lg-hub__namerow .lg-input { flex: 1; min-width: 0; }
+.lg-hub__namesearch { display: grid; gap: 8px; max-width: 560px; }
+.lg-hub__rows { grid-template-columns: repeat(auto-fill, minmax(min(100%, 440px), 1fr)); }
