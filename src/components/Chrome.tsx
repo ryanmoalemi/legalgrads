@@ -5,6 +5,7 @@ import { usePathname } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 import { Logo } from './Logo';
 import { readConsent, writeConsent } from '@/lib/consent';
+import { needsAnalyticsConsent } from '@/lib/consent-region';
 import { CONTACT_EMAIL } from '@/lib/site';
 import { claimHref, normalizeProfilePath } from '@/lib/claim';
 
@@ -140,7 +141,7 @@ export function CookieBanner() {
   const joinStep = path === '/join' || path === '/join/';
   const [open, setOpen] = useState(false);
   useEffect(() => {
-    setOpen(!readConsent());
+    setOpen(!readConsent() && needsAnalyticsConsent());
   }, []);
   useEffect(() => {
     if (!open) {
@@ -154,8 +155,8 @@ export function CookieBanner() {
   }, [open]);
   if (!open) return null;
 
-  function choose(analytics: boolean, marketing: boolean) {
-    writeConsent({ analytics, marketing });
+  function choose(analytics: boolean) {
+    writeConsent({ analytics, marketing: false });
     setOpen(false);
   }
 
@@ -165,14 +166,20 @@ export function CookieBanner() {
       className={`cookie-banner rounded-3xl bg-white p-3 shadow-card ${joinStep ? 'cookie-banner-join' : ''}`}
       role="dialog"
       aria-label="Cookie consent"
+      aria-labelledby="cookie-banner-title"
+      aria-describedby="cookie-banner-desc"
     >
-      <p className={`font-display text-sm font-bold cookie-join-hide`}>Cookies</p>
-      <p className="cookie-join-short text-sm text-ink">Optional cookies stay off unless you accept.</p>
-      <p className={`mt-1 text-sm text-ink cookie-join-hide`}>Strictly necessary storage is always on. Google Analytics counts visits without cookies unless you accept analytics. Marketing stays off unless you opt in.</p>
-      <div className="cookie-actions mt-3 flex flex-wrap gap-2">
-        <button type="button" data-testid="cookie-accept" className="min-h-11 rounded-full bg-navy px-3 py-2 font-display text-sm font-semibold text-white" onClick={() => choose(true, true)}>Accept</button>
-        <button type="button" data-testid="cookie-reject" className="min-h-11 rounded-full bg-cream px-3 py-2 font-display text-sm font-semibold" onClick={() => choose(false, false)}>Reject optional</button>
-        <Link href="/cookie-settings/" data-testid="cookie-customize" className="inline-flex min-h-11 items-center rounded-full px-3 py-2 font-display text-sm font-semibold text-purple" onClick={() => setOpen(false)}>Customize</Link>
+      <p id="cookie-banner-title" className="font-display text-sm font-bold cookie-join-hide">Cookies</p>
+      <p className="cookie-join-short text-ink">Analytics stay off unless you accept.</p>
+      <p id="cookie-banner-desc" className="mt-1 text-sm text-ink cookie-join-hide">
+        Analytics cookies help us count visits. They stay off in your region until you choose. Marketing stays off unless you opt in. You can change this later.
+      </p>
+      <div className="cookie-actions mt-3 flex flex-wrap items-center gap-2">
+        <button type="button" data-testid="cookie-accept" className="cookie-choice cookie-choice-accept" onClick={() => choose(true)}>Accept</button>
+        <button type="button" data-testid="cookie-reject" className="cookie-choice cookie-choice-reject" onClick={() => choose(false)}>Reject</button>
+        <Link href="/cookie-settings/" data-testid="cookie-customize" className="cookie-settings-link inline-flex min-h-11 items-center font-display text-sm font-semibold text-purple underline" onClick={() => setOpen(false)}>
+          Cookie settings
+        </Link>
       </div>
     </div>
   );

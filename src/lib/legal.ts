@@ -11,6 +11,7 @@ export interface LegalDoc {
 
 const updated = '2026-10-21';
 const updatedNov = '2026-11-11';
+const updatedConsent = '2026-11-12';
 
 export const INQUIRY_NOTICE = 'Send a brief description only. Do not include confidential details or documents. Sending a request does not by itself hire a lawyer. The lawyer must confirm availability, check for conflicts, and agree to represent you.';
 export const SPONSORED_LABEL = 'Paid placements will be clearly labeled as sponsored advertisements. Paying for placement will not mean that LegalGrads recommends a lawyer or rates that lawyer more highly, and it will not change how standard listings are ordered or described.';
@@ -61,7 +62,7 @@ export const DOCS: Record<string, LegalDoc> = {
     slug: 'privacy',
     title: 'Privacy Policy',
     description: 'What Legalgrads collects, why, and how to reach us.',
-    updated,
+    updated: updatedConsent,
     sections: [
       {
         heading: 'Who this policy covers',
@@ -77,7 +78,7 @@ export const DOCS: Record<string, LegalDoc> = {
           'If you apply as an attorney, we collect your name, email, phone, whether you want your phone on the public listing, state of licensure, bar number, admission date, practice areas, cities served, bio, languages, contact method, optional photo, your professional-liability insurance choice, and the time you agreed to the Attorney Terms.',
           'If you message an attorney from a listing, we collect your name, email, optional phone, and the message.',
           'If you send a request from a claimed attorney profile, we email your name, email, optional phone, optional business name, and your description to that attorney so they can reply to you directly. We do not keep a copy of the description. We keep a short delivery record (time, profile, and one-way hashes of your email and network address) for 90 days to count delivered requests and to stop spam.',
-          'We store a cookie preference on your device. Google Analytics loads on our pages to count visits. Until you accept analytics, it runs in a cookieless mode (Google Consent Mode) and stores nothing in your browser. If you accept, Google Analytics may set its cookies. We do not load advertising trackers.',
+          'We store a cookie preference on your device when you make a choice. Google Analytics loads on our pages to count visits. Outside the European Union, the European Economic Area, the United Kingdom, and Switzerland, analytics is on by default. In those regions, Google Analytics runs in a cookieless mode (Google Consent Mode) and stores nothing in your browser until you accept. If analytics is on, whether by default or because you accepted, Google Analytics may set its cookies. A choice you save in Cookie settings overrides the default. We do not load advertising trackers unless you opt in to marketing.',
           'Attorney profile pages record first-party, cookieless counts of page views, website-link taps, and phone-number taps. Our server counts one of each per visitor per profile per day using a one-way hash of the network address and browser type with a salt that changes daily and is then discarded. We never store the network address, nothing is saved in your browser, and known bots and link previews are skipped. These counts are shown only to the attorney who claimed the profile, on a private stats page. There is no public view counter.',
         ],
       },
@@ -171,12 +172,12 @@ export const DOCS: Record<string, LegalDoc> = {
     slug: 'cookies',
     title: 'Cookie Policy',
     description: 'How this site stores preferences in the browser.',
-    updated,
+    updated: updatedConsent,
     sections: [
       {
         heading: 'What we store',
         paragraphs: [
-          'Strictly necessary storage remembers your cookie choice. If you claim a profile, the browser also stores your sign-in for that profile. Google Analytics loads on our pages to count visits. Until you accept analytics, it runs in a cookieless mode (Google Consent Mode) and sets no cookies. If you accept analytics, Google Analytics may set its cookies. Marketing stays off unless you opt in.',
+          'Strictly necessary storage remembers your cookie choice. If you claim a profile, the browser also stores your sign-in for that profile. Google Analytics loads on our pages to count visits. Outside the European Union, the European Economic Area, the United Kingdom, and Switzerland, analytics is on by default. In those regions it stays off, and Google Analytics runs in a cookieless mode (Google Consent Mode) and sets no cookies, until you accept. If analytics is on, Google Analytics may set its cookies. Marketing stays off unless you opt in. A choice you save in Cookie settings overrides the default.',
           'Attorney profile pages also keep first-party, cookieless counts of views and link taps for the attorney who claimed the profile. They store nothing in your browser. See the Privacy Policy for details.',
           'Use Cookie settings to change your choice. ' + contact,
         ],
