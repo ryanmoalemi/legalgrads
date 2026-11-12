@@ -8,12 +8,15 @@ test('home is a real directory pitch with no fictional attorneys', async ({ page
   await expect(page.getByTestId('attorney-announcement')).toHaveCount(0);
   await expect(page.getByTestId('home-how')).toContainText('Browse attorneys near you');
   const joined = `Joined ${new Date().getFullYear()}`;
-  await expect(page.getByTestId('nav-join')).toHaveText('Attorneys: join free');
-  await expect(page.getByTestId('nav-join')).toHaveAttribute('href', '/join/');
+  await expect(page.getByTestId('nav-claim')).toHaveText('Claim your free profile');
+  await expect(page.getByTestId('nav-claim')).toHaveAttribute('href', '/claim/');
+  await expect(page.locator('header')).not.toContainText('Sign in');
   await expect(page.getByTestId('home-attorney-cta')).toHaveText('Attorneys: join free');
   await expect(page.locator('h1')).toContainText('Licensed near you.');
   await expect(page.locator('main')).not.toContainText(/\bHire\b|Ready to work for you/);
-  await expect(page.locator('footer')).not.toContainText(/Pricing|Referral disclosure/);
+  await expect(page.locator('footer')).not.toContainText('Referral disclosure');
+  await expect(page.locator('footer a[href="/pricing/"]')).toHaveCount(0);
+  await expect(page.locator('footer a[href="/free-listing-promise/"]')).toHaveCount(1);
   await expect(page.locator('footer')).toContainText('Directory disclosure');
   await expect(page.getByTestId('home-attorney-cta')).toHaveAttribute('href', '/join/');
   const forAttorneys = page.getByTestId('home-for-attorneys');
@@ -62,7 +65,7 @@ test('home email pill fits and focus ring follows the pill on small phones', asy
     await input.focus();
     const outline = await input.evaluate((el) => { const cs = getComputedStyle(el); return cs.outlineStyle === 'none' || cs.outlineColor === 'rgba(0, 0, 0, 0)'; });
     expect(outline).toBe(true);
-    expect(await page.locator('.waitlist-pill').evaluate((el) => getComputedStyle(el).boxShadow)).toContain('rgb(122, 0, 255)');
+    expect(await page.locator('.waitlist-pill').evaluate((el) => getComputedStyle(el).boxShadow)).toContain('rgb(113, 0, 200)');
     const banner = page.getByTestId('cookie-banner');
     if (await banner.count()) await expect(banner).toBeHidden();
   }

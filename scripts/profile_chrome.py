@@ -4,41 +4,49 @@ The Next.js pages get the same header from src/components/Chrome.tsx. Static pro
 pages are plain HTML, so this file mirrors that header with links that work without JS.
 """
 
+import json
+from pathlib import Path
+
 HEADER_MARKER = 'data-lg-header="1"'
 FOOTER_MARKER = 'data-lg-footer="1"'
 
 def logo(small=False):
     size = 30 if small else 40
-    mark = f'<img src="/logos/legalgrads_mark.svg" width="{size}" height="{size}" alt="">'
+    mark = "" if small else f'<img src="/logos/legalgrads_mark.svg" width="{size}" height="{size}" alt="">'
     return f'<span class="lg-logo{" sm" if small else ""}">{mark}<span class="lg-word"><span>Legal</span><span class="lg-grad">Grads</span></span></span>'
 
 
-NAV = (("/find-lawyer/", "Find an attorney"), ("/how-it-works/", "How it works"), ("/for-attorneys/", "For attorneys"))
+NAV_DATA = json.loads((Path(__file__).resolve().parent.parent / "src/data/site-nav.json").read_text(encoding="utf-8"))
+NAV = tuple(tuple(item) for item in NAV_DATA["primary"])
+MENU_ICON = '<svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18M3 12h18M3 18h18" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>'
 
 
-def header_html():
+def header_html(claim_href="/claim/"):
+    """Same structure and classes as Header in src/components/Chrome.tsx. One nav element serves
+    desktop and the phone menu, so links are not duplicated in 55k pages. No password sign in."""
     links = "".join(f'<a href="{h}">{t}</a>' for h, t in NAV)
     return (
-        f'<header class="lg-head" {HEADER_MARKER}><div class="lg-head-in">'
+        f'<header class="lg-header" {HEADER_MARKER}><div class="lg-container lg-header__inner">'
         f'<a href="/" class="lg-home" aria-label="LegalGrads home">{logo()}</a>'
-        f'<nav class="lg-nav" aria-label="Primary">{links}</nav>'
-        '<div class="lg-right"><a class="lg-signin" href="/attorney/login/">Sign in</a>'
-        '<a class="lg-cta" href="/find-lawyer/">Find an attorney</a></div>'
-        '<details class="lg-menu"><summary aria-label="Menu"><svg width="24" height="18" viewBox="0 0 26 20" aria-hidden="true">'
-        '<path d="M1 2h24M1 10h24M1 18h24" stroke="#0B0B3B" stroke-width="2.4" stroke-linecap="round"/></svg></summary>'
-        f'<nav aria-label="Mobile">{links}<a href="/attorney/login/">Sign in</a><a class="lg-cta" href="/find-lawyer/">Find an attorney</a></nav></details>'
+        f'<button type="button" class="lg-menu-toggle" aria-expanded="false" aria-controls="lg-menu">{MENU_ICON}<span class="lg-sr">Open menu</span></button>'
+        f'<div id="lg-menu" class="lg-menu"><nav class="lg-nav" aria-label="Primary">{links}</nav>'
+        f'<a class="lg-btn lg-btn--secondary" href="{claim_href}">{NAV_DATA["claimLabel"]}</a></div>'
         "</div></header>"
     )
 
 
-def footer_html(removal, correction):
+def footer_html():
+    """Navy footer with every current destination (same data as SiteFooter in Chrome.tsx)."""
+    groups = "".join(
+        f"<div><h2>{title}</h2>" + "".join(f'<a href="{h}">{t}</a>' for h, t in links) + "</div>"
+        for title, links in NAV_DATA["footer"]
+    )
     return (
-        f'<footer class="lg-foot" {FOOTER_MARKER}><div class="lg-foot-in">'
-        f'<a href="/" aria-label="LegalGrads home">{logo(small=True)}</a>'
-        '<nav aria-label="Footer"><a href="/directory-disclosure/">Public records</a>'
-        f'<a href="{correction}">Suggest a correction</a><a href="{removal}">Request removal</a>'
-        '<a href="/privacy/">Privacy</a><a href="/terms/">Terms</a></nav></div>'
-        '<p class="lg-copy">&copy; 2026 LegalGrads. Not a law firm and not a lawyer referral service.</p></footer>'
+        f'<footer class="lg-footer" {FOOTER_MARKER}><div class="lg-container"><div class="lg-footer__grid">'
+        f'<div class="lg-footer__about"><a href="/" aria-label="LegalGrads home">{logo(small=True)}</a>'
+        '<p><a href="mailto:ryan@legalgrads.com">ryan@legalgrads.com</a></p></div>'
+        f'<nav aria-label="Footer" class="lg-footer__links">{groups}</nav></div>'
+        f'<p class="lg-footer__copy">{NAV_DATA["copyright"].replace(chr(169), "&copy;")}</p></div></footer>'
     )
 
 
@@ -52,4 +60,4 @@ def icon(name):
     """Line icon from the shared sprite (public/icons/profile-icons.svg), so each page stays small."""
     if name not in ICON_NAMES:
         raise ValueError(name)
-    return f'<svg class="ic ic-{name}" width="22" height="22" aria-hidden="true"><use href="{SPRITE}#{name}"/></svg>'
+    return f'<svg class="ic" aria-hidden="true"><use href="{SPRITE}#{name}"/></svg>'

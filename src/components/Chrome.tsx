@@ -2,128 +2,133 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Logo } from './Logo';
 import { readConsent, writeConsent } from '@/lib/consent';
 import { CONTACT_EMAIL } from '@/lib/site';
+import { claimHref, normalizeProfilePath } from '@/lib/claim';
 
-const NAV = [
-  { href: '/find-lawyer/', label: 'Find an attorney' },
-  { href: '/how-it-works/', label: 'How It Works' },
-  { href: '/for-attorneys/', label: 'For Attorneys' },
-];
+import SITE_NAV from '@/data/site-nav.json';
 
-const joinClass = 'inline-flex min-h-11 items-center justify-center rounded-full bg-pinkdark px-4 py-2 font-display text-sm font-semibold text-white';
+const NAV = SITE_NAV.primary as [string, string][];
+const FOOTER = SITE_NAV.footer as [string, [string, string][]][];
+
+/** Header claim action: the visitor's selected profile when the page carries ?profile=, otherwise the claim lookup. */
+function useHeaderClaimHref(path: string): string {
+  const [href, setHref] = useState('/claim/');
+  useEffect(() => {
+    const raw = new URLSearchParams(window.location.search).get('profile');
+    const profile = normalizeProfilePath(raw);
+    setHref(profile ? claimHref(profile) : '/claim/');
+  }, [path]);
+  return href;
+}
+
+function MenuIcon({ open }: { open: boolean }) {
+  return (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      {open ? <path d="M5 5l14 14M19 5 5 19" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" /> : <path d="M3 6h18M3 12h18M3 18h18" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" />}
+    </svg>
+  );
+}
 
 export function Header() {
   const [open, setOpen] = useState(false);
-  const path = usePathname();
+  const path = usePathname() || '/';
+  const claim = useHeaderClaimHref(path);
+  const button = useRef<HTMLButtonElement>(null);
+  const menu = useRef<HTMLDivElement>(null);
   useEffect(() => setOpen(false), [path]);
+  useEffect(() => {
+    if (!open) return;
+    function onKey(event: KeyboardEvent) {
+      if (event.key === 'Escape') {
+        setOpen(false);
+        button.current?.focus();
+      }
+    }
+    function onClick(event: MouseEvent) {
+      const target = event.target as Node;
+      if (!menu.current?.contains(target) && !button.current?.contains(target)) setOpen(false);
+    }
+    document.addEventListener('keydown', onKey);
+    document.addEventListener('click', onClick);
+    return () => {
+      document.removeEventListener('keydown', onKey);
+      document.removeEventListener('click', onClick);
+    };
+  }, [open]);
 
   return (
-    <header className="relative z-40">
-      <div className="mx-auto flex max-w-6xl items-center gap-3 px-4 py-4">
-        <Link href="/" aria-label="LegalGrads home" className="shrink-0">
+    <header className="lg-header" data-lg-header="1">
+      <div className="lg-container lg-header__inner">
+        <Link href="/" aria-label="LegalGrads home" className="lg-home">
           <Logo />
         </Link>
-        <nav className="ml-auto hidden items-center gap-6 lg:flex" aria-label="Primary">
-          {NAV.map((item) => (
-            <Link key={item.href} href={item.href} className="font-display text-sm font-semibold text-navy/80 hover:text-navy">{item.label}</Link>
-          ))}
-          <Link href="/join/" data-testid="nav-join" className={joinClass}>Attorneys: join free</Link>
-        </nav>
-        <div className="ml-auto flex items-center gap-2 lg:hidden">
-          <button type="button" className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-xl text-navy" aria-label="Menu" aria-expanded={open} data-testid="nav-toggle" onClick={() => setOpen((v) => !v)}>
-            <svg width="26" height="20" viewBox="0 0 26 20" fill="none" aria-hidden="true">
-              <path d="M1 2h24M1 10h24M1 18h24" stroke="#0B0B3B" strokeWidth="2.4" strokeLinecap="round" />
-            </svg>
-          </button>
+        <button
+          ref={button}
+          type="button"
+          className="lg-menu-toggle"
+          aria-expanded={open}
+          aria-controls="lg-menu"
+          data-testid="nav-toggle"
+          onClick={() => setOpen((v) => !v)}
+        >
+          <MenuIcon open={open} />
+          <span className="lg-sr">{open ? 'Close menu' : 'Open menu'}</span>
+        </button>
+        <div ref={menu} id="lg-menu" className={`lg-menu${open ? ' is-open' : ''}`}>
+          <nav className="lg-nav" aria-label="Primary">
+            {NAV.map(([href, label]) => (
+              <Link key={href} href={href} aria-current={path === href || path === href.replace(/\/$/, '') ? 'page' : undefined}>{label}</Link>
+            ))}
+          </nav>
+          <a href={claim} data-testid="nav-claim" className="lg-btn lg-btn--secondary">{SITE_NAV.claimLabel}</a>
         </div>
       </div>
-      {open ? (
-        <nav className="mx-4 mb-3 rounded-3xl bg-white p-4 shadow-card lg:hidden" aria-label="Mobile">
-          {NAV.map((item) => (
-            <Link key={item.href} href={item.href} className="block rounded-2xl px-3 py-3 font-display font-semibold">{item.label}</Link>
-          ))}
-          <Link href="/join/" className={`${joinClass} mt-2 w-full`}>Attorneys: join free</Link>
-          <Link href="/specialties/" className="block rounded-2xl px-3 py-3 font-display font-semibold">Practice Areas</Link>
-        </nav>
-      ) : null}
     </header>
   );
 }
 
-const FOOTER = [
-  ['Product', [
-    ['/find-lawyer/', 'Find an attorney'],
-    ['/specialties/', 'Practice Areas'],
-    ['/how-it-works/', 'How It Works'],
-    ['/about/', 'About'],
-    ['/faq/', 'FAQ'],
-    ['/how-we-build-legalgrads/', 'How we build LegalGrads'],
-    ['/contact/', 'Contact'],
-    ['/sitemap/', 'Site map'],
-  ]],
-  ['Attorneys', [
-    ['/for-attorneys/', 'For Attorneys'],
-    ['/join/', 'Join free'],
-    ['/resources/post-bar-licensing-tracker/', 'Post-bar licensing tracker'],
-    ['/attorney-terms/', 'Attorney Terms'],
-    ['/free-listing-promise/', 'Free listing promise'],
-    ['/attorney-advertising/', 'Attorney advertising'],
-    ['/directory-disclosure/', 'Directory disclosure'],
-  ]],
-  ['Legal', [
-    ['/legal/', 'Legal'],
-    ['/terms/', 'Terms'],
-    ['/privacy/', 'Privacy'],
-    ['/cookies/', 'Cookies'],
-    ['/cookie-settings/', 'Cookie settings'],
-    ['/disclaimers/', 'Disclaimers'],
-    ['/accessibility/', 'Accessibility'],
-  ]],
-  ['Privacy', [
-    ['/do-not-sell-or-share/', 'Do not sell or share'],
-    ['/privacy-request/', 'Privacy request'],
-    ['/data-deletion/', 'Data deletion'],
-    ['/security/', 'Security'],
-    ['/report-abuse/', 'Report abuse'],
-  ]],
-] as const;
+export function SiteFooter() {
+  return (
+    <footer className="lg-footer" data-lg-footer="1">
+      <div className="lg-container">
+        <div className="lg-footer__grid">
+          <div className="lg-footer__about">
+            <Logo variant="white" />
+            <p>{SITE_NAV.footerNote}</p>
+            <p><a className="underline" href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a></p>
+          </div>
+          <nav aria-label="Footer" className="lg-footer__links">
+            {FOOTER.map(([title, links]) => (
+              <div key={title}>
+                <h2>{title}</h2>
+                {links.map(([href, label]) => (
+                  <Link key={href} href={href}>{label}</Link>
+                ))}
+              </div>
+            ))}
+          </nav>
+        </div>
+        <p className="lg-footer__copy">{SITE_NAV.copyright}</p>
+      </div>
+    </footer>
+  );
+}
 
 export function Footer() {
   const path = usePathname() || '';
   const join = path === '/join' || path.startsWith('/join/');
   if (join) return <JoinFooter reserveActionBar={!path.includes('confirmation')} />;
-  return (
-    <footer className="mt-16 bg-navy text-white">
-      <div className="mx-auto grid max-w-6xl gap-8 px-4 py-12 sm:grid-cols-2 lg:grid-cols-5">
-        <div>
-          <Logo variant="white" />
-          <p className="mt-4 text-sm text-white/75">A directory of newly licensed U.S. attorneys. LegalGrads is not a law firm and not a state-bar-certified lawyer referral service. Listings are free, with no per-lead fees.</p>
-          <p className="mt-3 text-sm"><a className="underline" href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a></p>
-        </div>
-        {FOOTER.map(([title, links]) => (
-          <div key={title}>
-            <h2 className="font-display text-sm font-bold">{title}</h2>
-            <ul className="mt-3 space-y-2 text-sm text-white/80">
-              {links.map(([href, label]) => (
-                <li key={href}><Link className="hover:text-white" href={href}>{label}</Link></li>
-              ))}
-            </ul>
-          </div>
-        ))}
-      </div>
-      <p className="border-t border-white/10 px-4 py-4 text-center text-xs text-white/60">© 2026 LegalGrads. Informational resource only; not legal advice.</p>
-    </footer>
-  );
+  return <SiteFooter />;
 }
 
 function JoinFooter({ reserveActionBar }: { reserveActionBar: boolean }) {
   return (
     <>
-      <footer data-testid="join-footer" className="px-4 py-6 text-center text-xs text-navy/70">
-        <p>© 2026 LegalGrads · <Link className="font-semibold text-purple" href="/terms/">Terms</Link> · <Link className="font-semibold text-purple" href="/privacy/">Privacy</Link></p>
+      <footer data-testid="join-footer" className="px-4 py-6 text-center text-sm text-ink">
+        <p>© 2026 LegalGrads · <Link className="font-semibold text-purple underline" href="/terms/">Terms</Link> · <Link className="font-semibold text-purple underline" href="/privacy/">Privacy</Link> · <Link className="font-semibold text-purple underline" href="/legal/">Legal</Link> · <a className="font-semibold text-purple underline" href={`mailto:${CONTACT_EMAIL}`}>Support</a></p>
       </footer>
       {reserveActionBar ? <div className="join-footer-pad" aria-hidden="true" /> : null}
     </>

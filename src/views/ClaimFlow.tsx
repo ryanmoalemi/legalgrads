@@ -7,6 +7,7 @@ import {
   type ClaimOptions,
   IDENTITY_NOTE,
   attestationFor,
+  claimHref,
   confirmClaimCode,
   fetchClaimOptions,
   reportWrongClaim,
@@ -18,9 +19,9 @@ import {
 } from '@/lib/claim';
 import { ProfileEditorView } from '@/views/Phase2';
 import { OwnerEditorView } from '@/views/OwnerEditor';
-import { stateName } from '@/lib/states';
+import { US_STATES, stateName } from '@/lib/states';
+import { lookupRoster } from '@/lib/rosterLookup';
 import { knownCity } from '@/lib/places';
-import { PageIntro } from '@/components/ui';
 
 export function ClaimView() {
   const params = useSearchParams();
@@ -78,7 +79,7 @@ export function ClaimView() {
 
   useEffect(() => {
     if (!profilePath) {
-      setLookup('bad');
+      setLookup(params.get('profile') ? 'bad' : 'ready');
       return;
     }
     const pending = pendingFor(profilePath);
@@ -152,88 +153,148 @@ export function ClaimView() {
   }
 
   const wait = Math.max(0, Math.ceil((resendAt - now) / 1000));
+  const stateLabel = listing ? stateName(listing.stateCode) || listing.stateCode : '';
+  const initials = listing ? listing.name.split(' ').filter(Boolean).map((w) => w[0]).join('').slice(0, 2).toUpperCase() : '';
+  const lookupMode = !profilePath && !reportMode;
 
   return (
-    <div className="mx-auto max-w-xl px-4 py-10">
-      <PageIntro
-        kicker="Attorneys"
-        title={reportMode ? 'Report a wrong claim' : 'Make this profile yours.'}
-        body={reportMode ? 'Tell us if this profile was claimed by the wrong person.' : 'Show small business owners what you do and how to contact you.'}
-      />
-      {!reportMode ? (
-        <ol className="mt-4 flex flex-wrap gap-2 text-xs font-semibold" aria-label="Steps">
-          <li className={`rounded-full px-3 py-1 ${codeStep ? 'bg-white text-ink' : 'bg-navy text-white'}`} aria-current={codeStep ? undefined : 'step'}>1. Get a code</li>
-          <li className={`rounded-full px-3 py-1 ${codeStep ? 'bg-navy text-white' : 'bg-white text-ink'}`} aria-current={codeStep ? 'step' : undefined}>2. Enter the code</li>
-          <li className="rounded-full bg-white px-3 py-1 text-ink">3. Edit your profile</li>
-        </ol>
-      ) : null}
-      {lookup === 'loading' ? <p className="mt-6 text-sm">Loading this listing…</p> : null}
-      {lookup === 'bad' ? <p role="alert" className="mt-6 text-sm text-pinkdark">That profile link is not valid.</p> : null}
-      {lookup === 'missing' ? <p role="alert" className="mt-6 text-sm">That listing is not in the directory.</p> : null}
-      {listing ? (
-        <div data-testid="claim-listing" className="mt-6 rounded-3xl bg-white p-4 text-sm">
-          <p className="font-display text-2xl font-extrabold text-navy">{listing.name}</p>
-          <p data-testid="claim-place">{knownCity(listing.city, listing.stateCode) ? `${listing.city} · Licensed in ${stateName(listing.stateCode) || listing.stateCode}` : `Licensed in ${stateName(listing.stateCode) || listing.stateCode}`}</p>
-          <p>Bar number {listing.barNumber}{listing.admitted ? ` · admitted ${listing.admitted}` : ''}</p>
-          {reportMode ? null : <p data-testid="claim-free" className="mt-3 font-semibold text-navy">Your standard listing is free. Always. <a className="font-semibold text-purple underline" href={`/free-listing-promise/?profile=${encodeURIComponent(listing.profilePath)}`}>Our free listing promise</a></p>}
+    <div className="lg-claim">
+      <section className="lg-band">
+        <div className="lg-container lg-claim__band">
+          <h1>{reportMode ? 'Report a wrong claim' : lookupMode ? 'Find your profile to claim it.' : 'Make this profile yours.'}</h1>
+          <p className="lg-sub">{reportMode ? 'Tell us if this profile was claimed by the wrong person.' : lookupMode ? 'Your standard listing is free. Always.' : 'Show business owners what you offer and how to contact you.'}</p>
+          <span className="lg-accent" aria-hidden="true" />
         </div>
-      ) : null}
-      {listing && reportMode && !reported ? (
-        <form data-testid="report-form" className="mt-6 grid gap-3 rounded-3xl bg-white p-4" onSubmit={(event) => void sendReport(event)}>
-          <p className="font-semibold">Report a wrong claim</p>
-          <p className="text-sm">If someone else claimed this profile, tell us. We hide their edits while we check the official bar record.</p>
-          <label className="text-sm font-medium">Your email (optional)
-            <input data-testid="report-email" type="email" value={reportEmail} onChange={(event) => setReportEmail(event.target.value)} className="mt-1 w-full rounded-2xl border border-navy/10 px-3 py-3" />
-          </label>
-          <label className="text-sm font-medium">What is wrong
-            <textarea data-testid="report-note" rows={3} value={reportNote} onChange={(event) => setReportNote(event.target.value)} className="mt-1 w-full rounded-2xl border border-navy/10 px-3 py-3" />
-          </label>
-          <button data-testid="report-submit" type="submit" disabled={busy} className="min-h-11 rounded-full bg-navy font-display font-semibold text-white disabled:opacity-50">Report this claim</button>
-        </form>
-      ) : null}
-      {listing && !codeStep && (!reportMode || reported) ? (
-        <form className="mt-6 grid gap-3" onSubmit={(event) => void sendCode(event)}>
-          <label className="flex items-start gap-3 rounded-2xl bg-white p-3 text-sm">
-            <input data-testid="claim-attest" type="checkbox" required checked={attest} onChange={(event) => setAttest(event.target.checked)} className="mt-1 h-5 w-5 flex-none" />
-            <span>{attestationFor(listing.name)}</span>
-          </label>
-          <p data-testid="claim-identity" className="text-sm">{IDENTITY_NOTE} Misuse rules are in the <a className="font-semibold text-purple underline" href="/attorney-terms/">Attorney Terms</a>.</p>
-          {useBar ? (
-            <>
-              <p data-testid="claim-bar-email" className="text-sm">We will send a confirmation code to the email address in your State Bar record: <b>{options?.barEmailMasked}</b>.</p>
-              <button type="submit" disabled={busy} className="min-h-12 rounded-full bg-pinkdark font-display font-semibold text-white disabled:opacity-50">{busy ? 'Sending…' : 'Email my confirmation code'}</button>
-              <button type="button" data-testid="claim-other-email" className="min-h-11 text-sm font-semibold text-purple" onClick={() => setOtherEmail(true)}>I no longer use that address</button>
-            </>
-          ) : (
-            <>
-              <label className="text-sm font-medium">Your email
-                <input data-testid="claim-email" type="email" inputMode="email" autoComplete="email" required value={email} onChange={(event) => setEmail(event.target.value)} className="mt-1 w-full rounded-2xl border border-navy/10 px-3 py-3" />
-              </label>
-              <p data-testid="claim-how" className="text-sm">We will email a confirmation code to this address.</p>
-              {options?.firmDomain ? <p data-testid="claim-firm-hint" className="text-sm">A work email at <b>{options.firmDomain}</b> is matched to your official record without manual review.</p> : null}
-              {options?.lawSchoolDomain ? <p data-testid="claim-school-hint" className="text-sm">New lawyer? A law school email at <b>{options.lawSchoolDomain}</b> is also matched without manual review.</p> : null}
-              <p className="text-sm">If your email does not match the official bar record, your claim goes to manual review and your edits stay hidden from the public until we confirm it.</p>
-              <button type="submit" disabled={busy} className="min-h-12 rounded-full bg-pinkdark font-display font-semibold text-white disabled:opacity-50">{busy ? 'Sending…' : 'Email my confirmation code'}</button>
-            </>
-          )}
-        </form>
-      ) : null}
-      {shownCode ? <p data-testid="claim-code" className="mt-4 text-sm">Test code: {shownCode}</p> : null}
-      {listing && codeStep ? (
-        <form className="mt-6 grid gap-3" onSubmit={(event) => void verify(event)}>
-          <label className="text-sm font-medium">Confirmation code
-            <input data-testid="claim-code-input" autoFocus inputMode="numeric" pattern="[0-9]*" maxLength={6} autoComplete="one-time-code" value={code} onChange={(event) => setCode(event.target.value.replace(/\D/g, ''))} className="mt-1 w-full rounded-2xl border border-navy/10 px-3 py-3 text-2xl tracking-[0.4em]" />
-          </label>
-          <button type="submit" disabled={busy || code.length !== 6} className="min-h-12 rounded-full bg-navy font-display font-semibold text-white disabled:opacity-50">Confirm and sign in</button>
-          <div className="flex flex-wrap items-center justify-between gap-2 text-sm">
-            <button type="button" data-testid="claim-resend" disabled={busy || wait > 0} onClick={() => void sendCode()} className="min-h-11 font-semibold text-purple disabled:text-ink">{wait > 0 ? `Send a new code in ${wait}s` : 'Send a new code'}</button>
-            <button type="button" data-testid="claim-change-email" onClick={changeEmail} className="min-h-11 font-semibold text-purple">Use a different email</button>
+      </section>
+      <div className="lg-claim__body">
+        {lookupMode ? <ClaimLookup /> : null}
+        {!lookupMode && !reportMode ? (
+          <ol className="lg-claim__steps" aria-label="Steps">
+            <li aria-current={codeStep ? undefined : 'step'} className={codeStep ? '' : 'is-current'}>1. Get a code</li>
+            <li aria-current={codeStep ? 'step' : undefined} className={codeStep ? 'is-current' : ''}>2. Enter the code</li>
+            <li>3. Edit your profile</li>
+          </ol>
+        ) : null}
+        {profilePath && lookup === 'loading' ? <p role="status" className="lg-claim__card">Loading this listing…</p> : null}
+        {lookup === 'bad' && profilePath ? <p role="alert" className="lg-notice lg-notice--error">That profile link is not valid. Look up your profile below.</p> : null}
+        {lookup === 'missing' ? <p role="alert" className="lg-notice lg-notice--error">That listing is not in the directory. Look up your profile below, or apply for a new listing.</p> : null}
+        {profilePath && (lookup === 'bad' || lookup === 'missing') ? <ClaimLookup /> : null}
+        {listing ? (
+          <div data-testid="claim-listing" className="lg-claim__card lg-claim__who">
+            <div className="lg-claim__id">
+              <span className="lg-avatar" aria-hidden="true">{initials}</span>
+              <div>
+                <p className="lg-claim__name">{listing.name}</p>
+                <p data-testid="claim-place">{knownCity(listing.city, listing.stateCode) ? `${listing.city} · Licensed in ${stateLabel}` : `Licensed in ${stateLabel}`}</p>
+                <p>Bar number {listing.barNumber}{listing.admitted ? ` · admitted ${listing.admitted}` : ''}</p>
+              </div>
+            </div>
+            {reportMode ? null : <p data-testid="claim-free" className="lg-notice"><span>Your standard listing is free. Always. <a href={`/free-listing-promise/?profile=${encodeURIComponent(listing.profilePath)}`}>Our free listing promise</a></span></p>}
           </div>
-        </form>
-      ) : null}
-      {error ? <p role="alert" data-testid="claim-error" className="mt-3 rounded-2xl bg-[#F8E8EE] px-3 py-2 text-sm font-medium text-[#6E123F]">{error}</p> : null}
-      {status && !error ? <p role="status" data-testid="claim-status" className="mt-3 text-sm">{status}</p> : null}
+        ) : null}
+        {listing && reportMode && !reported ? (
+          <form data-testid="report-form" className="lg-claim__card lg-claim__form" onSubmit={(event) => void sendReport(event)}>
+            <h2>Report a wrong claim</h2>
+            <p>If someone else claimed this profile, tell us. We hide their edits while we check the official bar record.</p>
+            <label className="lg-field"><span>Your email (optional)</span>
+              <input data-testid="report-email" type="email" value={reportEmail} onChange={(event) => setReportEmail(event.target.value)} className="lg-input" />
+            </label>
+            <label className="lg-field"><span>What is wrong</span>
+              <textarea data-testid="report-note" rows={3} value={reportNote} onChange={(event) => setReportNote(event.target.value)} className="lg-input" />
+            </label>
+            <button data-testid="report-submit" type="submit" disabled={busy} className="lg-btn lg-btn--primary lg-btn--full">Report this claim</button>
+          </form>
+        ) : null}
+        {listing && !codeStep && (!reportMode || reported) ? (
+          <form className="lg-claim__card lg-claim__form" onSubmit={(event) => void sendCode(event)}>
+            <h2>Confirm this is your profile</h2>
+            <label className="lg-check">
+              <input data-testid="claim-attest" type="checkbox" required checked={attest} onChange={(event) => setAttest(event.target.checked)} />
+              <span>{attestationFor(listing.name)}</span>
+            </label>
+            {useBar ? (
+              <>
+                <p data-testid="claim-bar-email">We will send a confirmation code to the email address in your official licensing record: <b>{options?.barEmailMasked}</b>.</p>
+                <button type="submit" disabled={busy} className="lg-btn lg-btn--primary lg-btn--full">{busy ? 'Sending…' : 'Email my confirmation code'}</button>
+                <button type="button" data-testid="claim-other-email" className="lg-claim__link" onClick={() => setOtherEmail(true)}>I no longer use that address</button>
+              </>
+            ) : (
+              <>
+                <label className="lg-field"><span>Your email</span>
+                  <input data-testid="claim-email" type="email" inputMode="email" autoComplete="email" required value={email} onChange={(event) => setEmail(event.target.value)} className="lg-input" />
+                </label>
+                <p data-testid="claim-how">We will email a confirmation code to this address.</p>
+                {options?.firmDomain ? <p data-testid="claim-firm-hint">A work email at <b>{options.firmDomain}</b> is matched to your official record without manual review.</p> : null}
+                {options?.lawSchoolDomain ? <p data-testid="claim-school-hint">New lawyer? A law school email at <b>{options.lawSchoolDomain}</b> is also matched without manual review.</p> : null}
+                <p>If your email does not match the official bar record, your claim goes to manual review and your edits stay hidden from the public until we confirm it.</p>
+                <button type="submit" disabled={busy} className="lg-btn lg-btn--primary lg-btn--full">{busy ? 'Sending…' : 'Email my confirmation code'}</button>
+              </>
+            )}
+            <p data-testid="claim-identity" className="lg-claim__fine">{IDENTITY_NOTE} Misuse rules are in the <a href="/attorney-terms/">Attorney Terms</a>.</p>
+          </form>
+        ) : null}
+        {shownCode ? <p data-testid="claim-code" className="lg-notice">Test code: {shownCode}</p> : null}
+        {listing && codeStep ? (
+          <form className="lg-claim__card lg-claim__form" onSubmit={(event) => void verify(event)}>
+            <h2>Enter your code</h2>
+            <label className="lg-field"><span>Confirmation code</span>
+              <input data-testid="claim-code-input" autoFocus inputMode="numeric" pattern="[0-9]*" maxLength={6} autoComplete="one-time-code" value={code} onChange={(event) => setCode(event.target.value.replace(/\D/g, ''))} className="lg-input lg-claim__code" />
+            </label>
+            <button type="submit" disabled={busy || code.length !== 6} className="lg-btn lg-btn--primary lg-btn--full">Confirm and sign in</button>
+            <div className="lg-claim__row">
+              <button type="button" data-testid="claim-resend" disabled={busy || wait > 0} onClick={() => void sendCode()} className="lg-claim__link">{wait > 0 ? `Send a new code in ${wait}s` : 'Send a new code'}</button>
+              <button type="button" data-testid="claim-change-email" onClick={changeEmail} className="lg-claim__link">Use a different email</button>
+            </div>
+          </form>
+        ) : null}
+        {error ? <p role="alert" data-testid="claim-error" className="lg-notice lg-notice--error">{error}</p> : null}
+        {status && !error ? <p role="status" data-testid="claim-status" className="lg-notice">{status}</p> : null}
+        {listing && !reportMode ? <p className="lg-claim__next">Next: add your details and review your profile.</p> : null}
+      </div>
     </div>
+  );
+}
+
+/** Generic /claim/ entry: find the existing record by state and license number (same lookup /join/ uses). */
+function ClaimLookup() {
+  const [state, setState] = useState('CA');
+  const [bar, setBar] = useState('');
+  const [busy, setBusy] = useState(false);
+  const [result, setResult] = useState<'' | 'none' | 'error'>('');
+  async function find(event: FormEvent) {
+    event.preventDefault();
+    if (!bar.trim()) return;
+    setBusy(true);
+    setResult('');
+    try {
+      const hit = await lookupRoster(state, bar);
+      if (hit?.path) {
+        window.location.assign(claimHref(hit.path));
+        return;
+      }
+      setResult('none');
+    } catch {
+      setResult('error');
+    }
+    setBusy(false);
+  }
+  return (
+    <form data-testid="claim-lookup" className="lg-claim__card lg-claim__form" onSubmit={(event) => void find(event)}>
+      <h2>Find your profile</h2>
+      <p>Choose the state that licensed you and enter your license or bar number. We open the claim for that exact profile.</p>
+      <label className="lg-field"><span>Licensing state</span>
+        <select data-testid="claim-lookup-state" className="lg-input" value={state} onChange={(event) => setState(event.target.value)}>
+          {US_STATES.map((item) => <option key={item.code} value={item.code}>{item.name}</option>)}
+        </select>
+      </label>
+      <label className="lg-field"><span>License or bar number</span>
+        <input data-testid="claim-lookup-bar" className="lg-input" inputMode="text" autoComplete="off" required value={bar} onChange={(event) => setBar(event.target.value)} />
+      </label>
+      <button type="submit" disabled={busy} className="lg-btn lg-btn--primary lg-btn--full">{busy ? 'Looking up…' : 'Find my profile'}</button>
+      {result === 'none' ? <p role="alert" data-testid="claim-lookup-none" className="lg-notice">We could not find a public profile with that number in {stateName(state) || state}. Check the number, <a href="/find-lawyer/">search the directory by name</a>, or <a href="/join/">apply for a new listing</a>.</p> : null}
+      {result === 'error' ? <p role="alert" className="lg-notice lg-notice--error">The lookup did not load. Check your connection and try again.</p> : null}
+      <p className="lg-claim__fine">Not listed yet? <a href="/join/">Apply for a free listing</a>.</p>
+    </form>
   );
 }
 

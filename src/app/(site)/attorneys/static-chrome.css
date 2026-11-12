@@ -1,38 +1,12 @@
-/* Header and footer for the static attorney pages (scripts/emit_profile_pages.py).
-   Mirrors src/components/Chrome.tsx. Not imported by Next; the generator prepends it. */
+/* Static attorney pages only (scripts/emit_profile_pages.py). The shared header, footer and
+   tokens live in src/styles/lg-system.css; this adds the page base and the logo wordmark,
+   which Next renders with src/components/Logo.tsx. */
 *{box-sizing:border-box}
-body{margin:0;background:#FFF8F1;color:#0B0B3B;font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
-.lg-skip{position:absolute;left:-9999px;top:0;background:#0B0B3B;color:#fff;padding:10px 14px;border-radius:12px;z-index:50}
-.lg-skip:focus{left:12px;top:12px}
-.lg-head{background:#FFF8F1;position:relative;z-index:20}
-.lg-head-in{max-width:1152px;margin:0 auto;display:flex;align-items:center;gap:28px;padding:14px 16px}
-.lg-home{text-decoration:none;flex:none}
+body{margin:0;background:var(--lg-cream);color:var(--lg-text);font-family:var(--lg-font);font-size:16px;line-height:1.6}
 .lg-logo{display:inline-flex;align-items:center;gap:8px}
-.lg-word{font-family:"Plus Jakarta Sans",Inter,system-ui,sans-serif;font-weight:800;font-size:26px;letter-spacing:-1.2px;line-height:1;color:#0B0B3B}
+.lg-word{font-family:var(--lg-display);font-weight:800;font-size:27px;letter-spacing:-1.2px;line-height:1;color:#0B0B3B}
 .lg-grad{background:linear-gradient(90deg,#7A00FF 0%,#C2006A 70%);-webkit-background-clip:text;background-clip:text;color:transparent}
-.lg-logo.sm .lg-word{font-size:20px}
-.lg-nav{display:flex;gap:26px}
-.lg-nav a,.lg-signin{font-family:"Plus Jakarta Sans",Inter,system-ui,sans-serif;font-weight:700;font-size:15px;color:#0B0B3B;text-decoration:none}
-.lg-nav a:hover,.lg-signin:hover{color:#7A00FF}
-.lg-right{margin-left:auto;display:flex;align-items:center;gap:18px}
-.lg-cta{display:inline-flex;align-items:center;min-height:44px;padding:0 18px;border-radius:12px;background:#C2006A;color:#fff!important;font-family:"Plus Jakarta Sans",Inter,system-ui,sans-serif;font-weight:700;font-size:15px;text-decoration:none}
-.lg-menu{display:none;margin-left:auto}
-.lg-menu summary{list-style:none;cursor:pointer;min-width:44px;min-height:44px;display:flex;align-items:center;justify-content:center;border-radius:12px}
-.lg-menu summary::-webkit-details-marker{display:none}
-.lg-menu nav{position:absolute;left:16px;right:16px;top:64px;background:#fff;border-radius:22px;padding:12px;box-shadow:0 12px 30px rgba(11,11,59,.15);display:grid;gap:4px}
-.lg-menu nav a{display:block;padding:12px;border-radius:14px;font-family:"Plus Jakarta Sans",Inter,system-ui,sans-serif;font-weight:700;color:#0B0B3B;text-decoration:none}
-.lg-menu nav a.lg-cta{justify-content:center;margin-top:6px}
-.lg-foot{border-top:1px solid #EADFCE;background:#FFF8F1;margin-top:8px}
-.lg-foot-in{max-width:1152px;margin:0 auto;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:14px;padding:18px 16px 8px}
-.lg-foot-in>a{text-decoration:none}
-.lg-foot nav{display:flex;flex-wrap:wrap;gap:6px 20px}
-.lg-foot nav a{color:#5A00BD;font-size:14px;font-weight:600;text-decoration:none}
-.lg-foot nav a:hover{text-decoration:underline}
-.lg-copy{max-width:1152px;margin:0 auto;padding:4px 16px 22px;font-size:12px;color:#55557a}
-@media(max-width:960px){
-.lg-nav,.lg-right{display:none}
-.lg-menu{display:block}
-.lg-head-in{padding:10px 16px}
-.lg-word{font-size:23px}
-}
-@media(max-width:800px){.lg-copy{padding-bottom:96px}}
+.lg-logo.sm .lg-word{font-size:22px}
+.lg-footer .lg-word,.lg-footer .lg-grad{color:#fff;background:none;-webkit-text-fill-color:#fff}
+.lg-footer .lg-logo img{display:none}
+@media(max-width:767px){.lg-word{font-size:24px}.lg-logo img{width:34px;height:34px}}

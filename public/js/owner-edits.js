@@ -102,12 +102,21 @@
     setClaimState(verified ? 'Yes' : 'Pending review', verified
       ? 'The attorney has claimed this profile on LegalGrads.'
       : 'A claim for this profile is pending review.');
-    if (verified) {
-      ['.lgp .card.claim', '#example-slot', '#claim-benefits'].forEach(function (selector) {
-        var node = document.querySelector(selector);
-        if (node) node.hidden = true;
-      });
+    // Claimed or pending, the record already has a claim, so the claim card and its steps go away.
+    ['.lgp .card.claim', '#example-slot', '#claim-benefits'].forEach(function (selector) {
+      var node = document.querySelector(selector);
+      if (node) node.hidden = true;
+    });
+    var aside = document.querySelector('.lgp aside');
+    if (!verified && aside && !document.getElementById('claim-pending')) {
+      var pending = el('div', { class: 'card', id: 'claim-pending', 'data-testid': 'claim-pending' });
+      pending.appendChild(el('h2', {}, 'Claim pending review'));
+      pending.appendChild(el('p', {}, 'A claim for this profile was submitted and is being checked against the official licensing record. Details on this page stay as published until the check is done.'));
+      aside.insertBefore(pending, aside.firstChild);
     }
+    // Someone already claimed this record, so the header action goes to the generic lookup instead.
+    var headerClaim = document.querySelector('.lg-header a.lg-btn');
+    if (headerClaim) headerClaim.setAttribute('href', '/claim/');
     var host = document.querySelector('.lgp aside');
     if (!host || document.getElementById('report-claim')) return;
     var p = el('p', { class: 'small', id: 'report-claim' });
@@ -260,7 +269,8 @@
       fixed.forEach(function (fee) { fees.appendChild(el('li', {}, fee.service + ': ' + fee.price)); });
       card.appendChild(fees);
     }
-    host.insertBefore(card, host.firstChild);
+    // Pending or empty claims have nothing approved to show, so no empty "From this attorney" card.
+    if (card.childNodes.length > 1) host.insertBefore(card, host.firstChild);
     var billing = (claim.billing || []).map(function (value) { return BILLING[value]; }).filter(Boolean);
     // Fees show only when the attorney supplied them.
     if (billing.length) setFact('fees-state', 'Fees', billing.join(', '));
