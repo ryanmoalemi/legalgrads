@@ -71,7 +71,7 @@ test('home email pill fits and focus ring follows the pill on small phones', asy
 test('directory lists unclaimed State Bar profiles and keeps the waitlist', async ({ page }) => {
   await boot(page, '/find-lawyer/?specialty=contracts');
   await expect(page.getByTestId('filter-state')).toBeVisible();
-  await expect(page.getByText('No Claimed listings match those filters.')).toBeVisible();
+  await expect(page.getByText('No profiles match those filters.')).toBeVisible();
   await expect(page.getByTestId('public-record-index').locator('a[href="/attorneys/ca/los-angeles/"]')).toHaveCount(1);
   await expect(page.getByLabel('Practice area')).toHaveValue('contracts');
   await page.getByTestId('directory-email').fill('casey@example.com');

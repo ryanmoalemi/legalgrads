@@ -1,4 +1,6 @@
 import rules from '@/data/place-rules.json';
+import { US_STATES } from '@/lib/states';
+const STATE_NAMES: Record<string, string> = Object.fromEntries(US_STATES.map((s) => [s.code, s.name]));
 
 const TOKEN = rules.token as Record<string, string>;
 const ZIP3 = rules.zip3 as [number, number, string][];
@@ -56,4 +58,12 @@ export function expandSchool(name: string): string {
     .replace(/\bCtr\b/g, 'Center')
     .replace(/\s+/g, ' ')
     .trim();
+}
+
+/** False when a directory city is blank, "Office unlisted", or just the state name (except New York, NY). */
+export function knownCity(city: string | null | undefined, stateCode: string): boolean {
+  const value = (city || '').trim().toLowerCase();
+  if (!value || /unlisted|not listed|unconfirmed|international/.test(value)) return false;
+  const state = (STATE_NAMES[stateCode.toUpperCase()] || '').toLowerCase();
+  return !(value === state && stateCode.toUpperCase() !== 'NY');
 }

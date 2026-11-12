@@ -29,7 +29,7 @@ export function HomeView() {
     const result = await submitWaitlist(email, 'homepage');
     setMailto(result.channel === 'mailto' ? result.mailto : '');
     setDone(result.channel === 'supabase'
-      ? 'You’re on the list. We’ll email you when listings are published.'
+      ? 'You’re on the list. We’ll email you occasional directory updates.'
       : 'We did not store this on a server. Send the email so your address is not lost.');
   }
 
@@ -68,7 +68,7 @@ export function HomeView() {
             Attorneys: join free
           </Link>
           <p className="mt-3 text-sm text-ink sm:text-base">
-            Be the first to know when attorneys are published. No <span className="hand-underline font-semibold text-navy">spam.
+            Attorney profiles are live now. <Link href="/find-lawyer/" className="font-semibold text-purple underline">Browse attorneys</Link>, or join the list for occasional directory updates. No <span className="hand-underline font-semibold text-navy">spam.
               <svg viewBox="0 0 80 10" aria-hidden="true"><path d="M2 7 C 20 2, 50 2, 78 6" stroke="#7A00FF" strokeWidth="3" fill="none" strokeLinecap="round" /></svg>
             </span>
           </p>
@@ -221,7 +221,7 @@ function SampleCard({ className, photo, alt, title, place, tags }: { className: 
           alt={alt}
           className="h-44 w-full object-cover object-[center_30%] sm:h-52"
         />
-        <span className="absolute left-3 top-3 inline-flex items-center rounded-full bg-white/95 px-2 py-1 text-[11px] font-bold uppercase tracking-wide text-purple shadow">Sample listing</span>
+        <span className="absolute left-3 top-3 inline-flex items-center rounded-full bg-white/95 px-2 py-1 text-xs font-bold uppercase tracking-wide text-purple shadow">Sample listing</span>
         <span className="absolute bottom-3 left-3 inline-flex items-center rounded-full bg-white/95 px-2 py-1 text-xs font-semibold text-navy shadow">{joinedLabel()}</span>
       </div>
       <div className="px-1 pt-3">

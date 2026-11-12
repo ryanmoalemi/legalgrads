@@ -18,6 +18,7 @@ jobs:
       - run: python3 scripts/test_import_idempotent.py
       - run: python3 scripts/test_suppression_published.py --data
       - run: python3 scripts/test_profile_favicon.py
+      - run: python3 scripts/test_profile_place.py
       - run: npm run build
       - run: python3 scripts/test_suppression_published.py --output out
       - run: npx playwright test

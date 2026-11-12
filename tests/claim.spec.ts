@@ -72,9 +72,12 @@ test('both claim buttons and removal links resolve for every sample state', asyn
     expect(html, path).toContain('/js/owner-edits.js');
     expect(html, path).toContain('is this your profile?');
     expect(html, path).toContain('Free for life. Never pay for your standard listing.');
-    expect(html, path).toContain('href="/free-listing-promise/"');
+    expect(html, path).toContain(`href="/free-listing-promise/?profile=${encodeURIComponent(path)}"`);
     expect(html, path).toContain('About this profile');
-    expect(html, path).toContain('Profile claimed');
+    expect(html, path).toContain('License details');
+    expect(html, path).toContain('Make this profile');
+    expect(html, path).not.toContain('Ask about fees');
+    expect(html, path).not.toMatch(/>Profile claimed</);
     expect(html, path).toContain('License status checked');
     expect(html, path).toContain('Suggest a correction');
     expect(html, path).not.toMatch(/Founding Member|verified bar badge|physical letter|separate from claiming|\u{1F393}|\u{1F389}/u);
@@ -109,9 +112,10 @@ test('test inbox can claim, edit, and see the edit on the public page', async ({
   await boot(page, CALLIE);
   await page.setViewportSize({ width: 390, height: 844 });
   await expect(page.getByRole('link', { name: 'Claim this free profile' })).toHaveAttribute('href', '/join/?state=CA&bar=369241');
-  await expect(page.getByRole('heading', { name: 'Callie, is this your profile?' })).toBeVisible();
-  await expect(page.getByRole('heading', { name: 'Need a lawyer for your business?' })).toBeVisible();
-  await expect(page.locator('#claim-state')).toHaveText('Not yet');
+  await expect(page.getByText('Callie, is this your profile?')).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Make this profile yours.' })).toBeVisible();
+  await expect(page.locator('.chip.solid')).toHaveText('Profile not yet claimed');
+  await expect(page.getByText('Looking for legal help?')).toBeVisible();
   await page.getByRole('link', { name: 'Claim my free profile' }).click();
   await expect(page).toHaveURL(/\/claim\/\?profile=/);
   await expect(page.getByTestId('claim-listing')).toContainText('Callie Yahyavi');
@@ -152,8 +156,7 @@ test('test inbox can claim, edit, and see the edit on the public page', async ({
   await expect(page.locator('#owner-edit')).toContainText('Contract review');
   await expect(page.locator('#owner-edit')).toContainText('Contracts');
   await expect(page.locator('.chip.solid')).toHaveText('Claimed on this device');
-  await expect(page.locator('#claim-state')).toHaveText('On this device');
-  await page.getByRole('link', { name: 'Request removal' }).click();
+  await page.locator('#main').getByRole('link', { name: 'Request removal' }).click();
   await expect(page).toHaveURL(/\/data-deletion\/\?profile=/);
   await expect(page.getByTestId('removal-profile')).toContainText(CALLIE);
   await expect(page.locator('textarea[name="details"]')).toHaveValue(new RegExp(CALLIE.replace(/\//g, '\\/')));
@@ -169,4 +172,33 @@ test('editor without a verified claim asks for the code', async ({ page }) => {
   await expect(page.getByRole('heading', { level: 1 })).toHaveText('Not public yet');
   await page.goto(`/attorney/profile/?profile=${encodeURIComponent(CALLIE)}`);
   await expect(page.getByRole('heading', { level: 1 })).toHaveText('Verify this profile first');
+});
+
+test('unknown city reads Licensed in California on the profile and claim screen', async ({ page }) => {
+  const nadine = '/attorneys/ca/california/nadine-barbara-kramer-354279/';
+  await page.setViewportSize({ width: 390, height: 844 });
+  await boot(page, nadine);
+  await expect(page).toHaveTitle('Nadine Barbara Kramer, Attorney in California | LegalGrads');
+  await expect(page.locator('.where')).toHaveText('Licensed in California');
+  await expect(page.locator('body')).not.toContainText('California, CA');
+  await expect(page.locator('body')).not.toContainText('Foreign Law School');
+  await expect(page.locator('header[data-lg-header]')).toBeVisible();
+  await expect(page.locator('link[rel="icon"][href="/favicon.svg"]')).toHaveCount(1);
+  await expect(page.locator('#example-profile')).toContainText('Example profile');
+  const claimTop = await page.locator('.card.claim').boundingBox();
+  const aboutTop = await page.locator('.card.about').boundingBox();
+  expect(claimTop!.y).toBeLessThan(aboutTop!.y);
+  const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
+  expect(overflow).toBeLessThanOrEqual(1);
+  await boot(page, `/claim/?profile=${encodeURIComponent(nadine)}`);
+  await expect(page.getByTestId('claim-place')).toHaveText('Licensed in California');
+  await expect(page.getByTestId('claim-attest').locator('xpath=..')).toContainText('I confirm that I am Nadine Barbara Kramer.');
+  await expect(page.getByTestId('claim-identity')).toBeVisible();
+  await expect(page.locator('main')).not.toContainText('false claim');
+});
+
+test('a real city stays on the profile', async ({ page }) => {
+  await boot(page, CALLIE);
+  await expect(page.locator('.where')).toHaveText('Licensed in California · Escondido, CA');
+  await expect(page).toHaveTitle('Callie Yahyavi, Attorney in Escondido, CA | LegalGrads');
 });

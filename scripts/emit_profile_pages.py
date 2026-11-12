@@ -12,12 +12,19 @@ import re
 from pathlib import Path
 from urllib.parse import quote
 
-from places import present_profile
+from places import city_unknown, display_city, present_profile
+from profile_chrome import FOOTER_MARKER, HEADER_MARKER, footer_html, header_html, icon
 from suppression import is_suppressed
 
 ROOT = Path(__file__).resolve().parent.parent
 OUT = ROOT / "out"
 CSS_SRC = ROOT / "src/app/(site)/attorneys/profile-template.css"
+CHROME_CSS_SRC = ROOT / "src/app/(site)/attorneys/static-chrome.css"
+FONT_DIR = ROOT / "node_modules/@fontsource"
+FONTS = (
+    ("plus-jakarta-sans", "Plus Jakarta Sans", (700, 800)),
+    ("inter", "Inter", (400, 600)),
+)
 CSS_OUT = OUT / "css/attorney-profile.css"
 SITE = "https://legalgrads.com"
 GA = "G-CHX0PZJH8W"
@@ -57,15 +64,42 @@ def removal_href(path):
     return "/data-deletion/?profile=" + quote(path, safe="")
 
 
+def promise_href(path):
+    return "/free-listing-promise/?profile=" + quote(path, safe="")
+
+
 def assert_favicon(html_text, path):
     for marker in FAVICON_MARKERS:
         if marker not in html_text:
             raise SystemExit(f"Favicon tag missing on {path}: {marker}")
 
 
+def assert_chrome(html_text, path):
+    if HEADER_MARKER not in html_text or 'aria-label="LegalGrads home"' not in html_text:
+        raise SystemExit(f"Site header missing on {path}")
+    if FOOTER_MARKER not in html_text:
+        raise SystemExit(f"Site footer missing on {path}")
+
+
+def assert_place(html_text, path, profile):
+    """Fail when a city that equals the state name ("California, CA") reaches the page."""
+    state = profile["stateName"]
+    code = profile["stateCode"]
+    if city_unknown(profile):
+        for bad in (f"{state}, {code}", f"in {state}, {code}", f"&gt; {state} &gt;"):
+            if bad in html_text:
+                raise SystemExit(f"Unknown city shown as a place on {path}: {bad}")
+        if f"Licensed in {esc(state)}" not in html_text:
+            raise SystemExit(f"Licensed in {state} missing on {path}")
+    if "Foreign Law School</" in html_text:
+        raise SystemExit(f"Raw Foreign Law School field on {path}")
+
+
 def assert_claim_links(html_text, path, profile):
     href = claim_href(path)
     assert_favicon(html_text, path)
+    assert_chrome(html_text, path)
+    assert_place(html_text, path, profile)
     joined = join_href(profile)
     removal = removal_href(path)
     if f'href="{href}"' not in html_text or f'href="{joined}"' not in html_text:
@@ -76,10 +110,14 @@ def assert_claim_links(html_text, path, profile):
         raise SystemExit(f"Bad copy on {path}")
     if "/js/owner-edits.js" not in html_text:
         raise SystemExit(f"Owner script missing on {path}")
-    for needed in ("is this your profile?", "Free for life. Never pay for your standard listing.", 'href="/free-listing-promise/"', "About this profile", "Ask about fees"):
+    for needed in (
+        "is this your profile?", "Make this profile", "Free for life. Never pay for your standard listing.",
+        f'href="{promise_href(path)}"', "About this profile", "License details", 'id="example-slot"',
+        "See your profile views and contact activity.",
+    ):
         if needed not in html_text:
             raise SystemExit(f"Claim copy missing on {path}: {needed}")
-    for banned in ("What we know", "Founding Member", "separate from claiming", "physical letter", "🎉", "🎓"):
+    for banned in ("What we know", "Founding Member", "separate from claiming", "physical letter", "Ask about fees", ">Profile claimed<", "\U0001f389", "\U0001f393"):
         if banned in html_text:
             raise SystemExit(f"Old copy left on {path}: {banned}")
 
@@ -89,11 +127,30 @@ def calbar(bar):
 
 
 def place_label(p):
+    """Visible office place. Unknown cities never print as "California, CA"."""
+    if city_unknown(p):
+        return ""
+    city = display_city(p["cityName"])
+    if p.get("locationLabel"):
+        label = p["locationLabel"]
+        return label.replace(p["cityName"] + ",", city + ",", 1) if city != p["cityName"] else label
+    return f"{city}, {p['stateCode']}"
+
+
+def where_line(p):
+    place = place_label(p)
+    licensed = f"Licensed in {p['stateName']}"
+    return f"{licensed} · {place}" if place else licensed
+
+
+def crumb_label(p):
     if p["city"] == "office-unlisted":
         return "Office unlisted"
-    if p.get("locationLabel"):
-        return p["locationLabel"]
-    return f"{p['cityName']}, {p['stateCode']}"
+    if city_unknown(p):
+        return "Office city not listed"
+    if p.get("officeState") and p.get("officeState") != p["stateCode"] and p.get("locationLabel"):
+        return place_label(p)
+    return display_city(p["cityName"])
 
 
 def profile_path(p):
@@ -125,7 +182,7 @@ def link_label(p):
 
 
 def seo_title(p):
-    where = p["stateName"] if p["city"] == "office-unlisted" else place_label(p)
+    where = place_label(p) or p["stateName"]
     return f"{p['name']}, Attorney in {where} | LegalGrads"
 
 
@@ -136,26 +193,42 @@ def seo_description(p):
         and p.get("recordLinkType") == "individual_official_profile"
         and (not p.get("officeState") or p.get("officeState") == "CA")
     )
-    if (not p.get("recordLinkType") or ca_in) and p.get("officeState") and p.get("officeState") != p.get("stateCode"):
+    if (not p.get("recordLinkType") or ca_in) and p.get("officeState") and p.get("officeState") != p.get("stateCode") and not city_unknown(p):
         return f"{p['name']} is licensed in {p['stateName']} and was admitted in {p['admitted']}{school}. Office: {place_label(p)}. License #{p['barNumber']} from State Bar records."
+    if (not p.get("recordLinkType") or ca_in) and city_unknown(p):
+        return f"{p['name']} is an attorney licensed in {p['stateName']}, admitted in {p['admitted']}{school}. License #{p['barNumber']} from State Bar records."
     if not p.get("recordLinkType") or ca_in:
-        return f"{p['name']} is a {p['cityName']}, {p['stateCode']} attorney admitted in {p['admitted']}{school}. License #{p['barNumber']} from State Bar records."
+        return f"{p['name']} is a {display_city(p['cityName'])}, {p['stateCode']} attorney admitted in {p['admitted']}{school}. License #{p['barNumber']} from State Bar records."
     authority = p.get("sourceAuthority") or f"{p['stateName']} licensing authority"
-    if p["city"] == "office-unlisted":
+    if city_unknown(p):
         return f"{p['name']} is licensed in {p['stateName']} and was admitted in {p['admitted']}{school}. No office city was published. License #{p['barNumber']} from {authority} records."
     return f"{p['name']} is licensed in {p['stateName']} and was admitted in {p['admitted']}{school}. Office: {place_label(p)}. License #{p['barNumber']} from {authority} records."
+
+
+def real_school(p):
+    return bool(p.get("lawSchool")) and p["lawSchool"] not in ("Not listed", "Foreign Law School")
+
+
+def school_label(p):
+    school = p.get("lawSchool") or ""
+    if school == "Foreign Law School":
+        return "Outside the U.S. (per State Bar record)"
+    if not school or school == "Not listed":
+        return "Not listed on the record"
+    return school
 
 
 def json_ld(p):
     url = SITE + profile_path(p)
     if not p.get("recordLinkType"):
-        address = {"@type": "PostalAddress", "addressLocality": p["cityName"], "addressRegion": p.get("officeState") or p["stateCode"], "addressCountry": "US"}
+        address = {"@type": "PostalAddress", "addressRegion": p.get("officeState") or p["stateCode"], "addressCountry": "US"}
+        if not city_unknown(p):
+            address["addressLocality"] = p["cityName"]
         if p.get("officeZip"):
             address["postalCode"] = p["officeZip"]
         person = {
             "@type": "Person", "@id": f"{url}#p", "name": p["name"], "jobTitle": "Attorney", "url": url,
             "address": address,
-            "alumniOf": {"@type": "CollegeOrUniversity", "name": p["lawSchool"]},
             "hasCredential": {
                 "@type": "EducationalOccupationalCredential", "credentialCategory": "license",
                 "name": f"State Bar of {p['stateName']} license #{p['barNumber']}",
@@ -163,9 +236,11 @@ def json_ld(p):
                 "url": calbar(p["barNumber"]),
             },
         }
+        if real_school(p):
+            person["alumniOf"] = {"@type": "CollegeOrUniversity", "name": p["lawSchool"]}
     else:
         address = {"@type": "PostalAddress", "addressCountry": "US"}
-        if p["city"] != "office-unlisted":
+        if not city_unknown(p):
             address["addressLocality"] = p["cityName"]
         if p.get("officeState"):
             address["addressRegion"] = p["officeState"]
@@ -187,7 +262,7 @@ def json_ld(p):
             "@type": "Person", "@id": f"{url}#p", "name": p["name"], "jobTitle": "Attorney", "url": url,
             "address": address,
         }
-        if p.get("lawSchool") and p["lawSchool"] != "Not listed":
+        if real_school(p):
             person["alumniOf"] = {"@type": "CollegeOrUniversity", "name": p["lawSchool"]}
         person["hasCredential"] = credential
     graph = [
@@ -197,7 +272,7 @@ def json_ld(p):
             "itemListElement": [
                 {"@type": "ListItem", "position": 1, "name": "Home", "item": f"{SITE}/"},
                 {"@type": "ListItem", "position": 2, "name": p["stateName"], "item": f"{SITE}/attorneys/{p['state']}/"},
-                {"@type": "ListItem", "position": 3, "name": p["cityName"], "item": f"{SITE}/attorneys/{p['state']}/{p['city']}/"},
+                {"@type": "ListItem", "position": 3, "name": crumb_label(p), "item": f"{SITE}/attorneys/{p['state']}/{p['city']}/"},
                 {"@type": "ListItem", "position": 4, "name": p["name"], "item": url},
             ],
         },
@@ -214,62 +289,80 @@ def legacy_copy(p):
     return (not p.get("recordLinkType")) or (p.get("stateCode") == "CA" and p.get("recordLinkType") == "individual_official_profile")
 
 
-def license_html(p):
+def license_parts(p):
+    """Heading-free license facts: who issued it, the check line, and the official link."""
     href = official_href(p)
-    status_cls = ' class="ok"' if p.get("status") == "Active" else ""
-    bar = ext(href, f"#{p['barNumber']} ↗") if href else esc(f"#{p['barNumber']}")
     if not p.get("recordLinkType"):
-        head = "License (from the State Bar)"
-        who_label, who = "State bar", p["stateName"]
         verified_from = f"State Bar of {p['stateName']}"
-        check = "Check the official profile"
+        check = "View official State Bar record"
+        who_label, who = "State bar", f"State Bar of {p['stateName']}"
+        bar_label = f"{p['stateName']} Bar Number"
+        bar_value = f"{p['stateCode']} Bar #{p['barNumber']}"
     else:
         authority = p.get("sourceAuthority") or p["stateName"]
         ca = p.get("stateCode") == "CA" and p.get("recordLinkType") == "individual_official_profile"
-        head = "License (from the regulator)"
         who_label, who = "Regulator", authority
         verified_from = f"State Bar of {p['stateName']}" if ca else authority
+        bar_label = f"{p['stateName']} Bar Number" if ca else "License number"
+        bar_value = f"{p['stateCode']} Bar #{p['barNumber']}" if ca else f"#{p['barNumber']}"
         if not p.get("registryRecordUrl"):
             check = SEARCH_LABEL
+        elif ca:
+            check = "View official State Bar record"
         else:
             label = link_label(p)
-            check = "Check the official profile" if ca or label == "official profile" else "Check the official record"
-    check_html = (" " + ext(href, check)) if href else ""
+            check = {"official profile": "View the official profile", "official record": "View the official record"}.get(label, "View the official roster")
+    return href, verified_from, check, who_label, who, bar_label, bar_value
+
+
+def row(name, label, value, value_attrs=""):
+    return f'<li>{icon(name)}<span class="k">{label}</span><span class="v"{value_attrs}>{value}</span></li>'
+
+
+def license_html(p):
+    href, verified_from, check, who_label, who, bar_label, bar_value = license_parts(p)
+    status_cls = "v ok" if p.get("status") == "Active" else "v"
+    status_value = f"{esc(p['status'])} as of {esc(p['lastVerified'])}"
+    rows = [
+        f'<li>{icon("shield")}<span class="k">License status</span><span class="{status_cls}">{status_value}</span></li>',
+        row("calendar", f"Admitted in {esc(p['stateName'])}", esc(p["admitted"])),
+        row("card", esc(bar_label), esc(bar_value)),
+    ]
+    if p.get("recordLinkType"):
+        rows.append(row("building", who_label, esc(who)))
+    rows.append(row("scale", "Public discipline", esc(p["discipline"])))
+    school = school_label(p)
+    note = ' <small>The attorney can add the school name after claiming.</small>' if p.get("lawSchool") == "Foreign Law School" else ""
+    rows.append(row("cap", "Law school", esc(school) + note))
+    source, link, shared = record_source(p)
+    if href:
+        rows.append(row("link", "Official record", ext(href, check + " \u2197") + esc(shared)))
     return (
-        f'<div class="card"><h2>{head}</h2><div class="lic">'
-        f"<div><small>{who_label}</small><b>{esc(who)}</b></div>"
-        f"<div><small>Bar number</small><b>{bar}</b></div>"
-        f"<div><small>Admitted in {esc(p['stateName'])}</small><b>{esc(p['admitted'])}</b></div>"
-        f"<div><small>License status</small><b{status_cls}>{esc(p['status'])}</b></div>"
-        f"<div><small>Public discipline</small><b>{esc(p['discipline'])}</b></div>"
-        f"<div><small>Law school</small><b>{esc(p['lawSchool'])}</b></div></div>"
-        f'<p class="verified">License status checked {esc(p["lastVerified"])} from {esc(verified_from)} records.{check_html}</p></div>'
+        f'<h3 class="lic-h">License details</h3><ul class="lic">{"".join(rows)}</ul>'
+        f'<p class="verified">License status checked {esc(p["lastVerified"])} from {esc(verified_from)} records.</p>'
     )
 
 
 def record_source(p):
-    """Where the public record came from, and the link to it."""
+    """Where the public record came from (plain text), the link, and a shared-roster note."""
     href = official_href(p)
     if legacy_copy(p):
         link_href = calbar(p["barNumber"]) if not p.get("recordLinkType") else href
-        return f"public State Bar of {esc(p['stateName'])} records", ext(link_href, "View official State Bar record"), ""
-    authority = esc(p.get("sourceAuthority") or p["stateName"])
+        return "public State Bar records", link_href, ""
+    authority = p.get("sourceAuthority") or p["stateName"]
     if not p.get("registryRecordUrl"):
-        lookup = p.get("officialLookupUrl") or ""
-        return f"public {authority} records", (ext(lookup, "Search the official lookup") if lookup else ""), ""
+        return f"public {authority} records", p.get("officialLookupUrl") or "", ""
     if p.get("recordLinkType") == "shared_official_roster_page":
-        return f"a public roster published by {authority}", (ext(href, "View the official roster") if href else ""), " It is a shared roster, not an individual record."
-    return f"public {authority} records", (ext(href, "View official record") if href else ""), ""
+        return f"a public roster published by {authority}", href, " (shared roster, not an individual record)"
+    return f"public {authority} records", href, ""
 
 
 def about_html(p, fn):
-    source, link, note = record_source(p)
-    link_line = f'<p class="small" style="margin-top:12px">{link}{note}</p>' if link or note else ""
+    source, _link, _note = record_source(p)
     return (
-        f'<div class="card"><h2>About this profile</h2><p>This profile was created from {source}. '
-        f'<span id="about-claim">{esc(fn)} has not yet claimed it or confirmed services, fees, or availability on LegalGrads.</span></p>'
-        f'<ul class="facts"><li><span>Profile claimed</span><span id="claim-state">Not yet</span></li>'
-        f"<li><span>Fees</span><span id=\"fees-state\">Ask about fees</span></li></ul>{link_line}</div>"
+        f'<div class="card about"><h2>About this profile</h2>'
+        f'<p class="info">{icon("info")}<span id="about-claim">Created from {esc(source)}. Services, fees and availability have not been confirmed by the attorney.</span></p>'
+        f'<ul class="facts"></ul>{license_html(p)}</div>'
     )
 
 
@@ -293,6 +386,26 @@ NEUTRAL_DISC = (
 )
 
 
+def benefits_html():
+    items = (
+        ("person", "Tell your story", "Add your photo and background."),
+        ("layers", "Show your services", "Describe what you do and your fees."),
+        ("mail", "Make contact easy", "Choose how clients can get in touch."),
+        ("check", "Identity verification", "Claims are checked against the official bar record."),
+    )
+    lis = "".join(f"<li>{icon(i)}<div><b>{t}</b><span>{d}</span></div></li>" for i, t, d in items)
+    return (
+        '<section class="benefits" id="claim-benefits" aria-label="What claiming gives you">'
+        '<h2>A professional profile. <span class="u">Yours to shape.</span></h2>'
+        f"<ul>{lis}</ul></section>"
+    )
+
+
+# The example profile is the same on every page, so public/js/owner-edits.js draws it into
+# this slot. That keeps 55k pages small and keeps the sample out of each page's indexed text.
+EXAMPLE_SLOT = '<div id="example-slot" data-example="1"></div>'
+
+
 def page_html(p):
     path = profile_path(p)
     url = SITE + path
@@ -300,33 +413,43 @@ def page_html(p):
     desc = seo_description(p)
     fn = p["name"].split(" ")[0]
     initials = "".join(w[0] for w in p["name"].split(" ") if w)[:2].upper()
-    place = place_label(p)
-    crumb = p["locationLabel"] if p.get("officeState") and p.get("officeState") != p["stateCode"] and p.get("locationLabel") else p["cityName"]
+    crumb = crumb_label(p)
     disc = LEGACY_DISC if legacy_copy(p) else NEUTRAL_DISC
     city_href = f"/attorneys/{p['state']}/{p['city']}/"
     state_href = f"/attorneys/{p['state']}/"
-    where = esc(p["stateName"]) if p["city"] == "office-unlisted" else esc(crumb)
+    bar_value = license_parts(p)[-1]
+    more_label = f"More attorneys licensed in {esc(p['stateName'])}" if city_unknown(p) else f"More attorneys in {esc(crumb)}"
+    claim_items = (
+        ("person", "Add your photo and background"),
+        ("layers", "Describe your services and fees"),
+        ("mail", "Choose how clients contact you"),
+        ("chart", "See your profile views and contact activity."),
+    )
+    ticks = "".join(f"<li>{icon(i)}<span>{t}</span></li>" for i, t in claim_items)
     body = (
-        f'<div class="lgp"><main class="wrap">'
-        f'<nav class="crumbs" aria-label="Breadcrumb"><a href="/">Home</a> › <a href="{state_href}">{esc(p["stateName"])}</a> › <a href="{city_href}">{esc(crumb)}</a> › {esc(p["name"])}</nav>'
-        f'<section class="hero"><div class="avatar" aria-label="No photo">{esc(initials)}</div><div>'
-        f"<h1>{esc(p['name'])}</h1><div class=\"head\">Attorney · {esc(place)}</div>"
-        f'<div class="chips"><span class="chip solid">Unclaimed profile</span><span class="chip">{esc(place)}</span>'
-        f"<span class=\"chip\">Admitted in {esc(p['stateName'])} {esc(p['admittedYear'])}</span><span class=\"chip\">{esc(p['status'])} license</span></div>"
-        f"</div></section><div class=\"grid\"><div>{about_html(p, fn)}{license_html(p)}{disc}"
-        f'<p class="small" style="margin-top:12px">Are you {esc(fn)} and want this listing taken down? <a href="{removal_href(path)}">Request removal</a></p></div>'
-        f'<aside><div class="card claim"><h2>{esc(fn)}, is this your profile?</h2><p class="lead">Help local business owners find you.</p>'
-        f"<p class=\"small\">Claim your free profile to show small business owners in {where} what legal services you offer, how you work, and how to contact you.</p><ul>"
-        f"<li>Describe the services you offer.</li><li>Add your photo, background, and consultation options.</li><li>Share your fees, availability, and preferred way to connect.</li></ul>"
+        f'{header_html()}<div class="lgp">'
+        f'<section class="band"><div class="band-in">'
+        f'<nav class="crumbs" aria-label="Breadcrumb"><a href="/">Home</a> › <a href="{state_href}">{esc(p["stateName"])}</a> › <a href="{city_href}">{esc(crumb)}</a> › <span>{esc(p["name"])}</span></nav>'
+        f'<div class="band-row"><div class="avatar" aria-label="No photo">{esc(initials)}</div>'
+        f'<div class="who"><h1>{esc(p["name"])}</h1><p class="where"><span>{esc(where_line(p))}</span></p></div>'
+        f'<div class="meta"><span class="chip solid">Profile not yet claimed</span>'
+        f'<p class="barline">{esc(bar_value)} <span aria-hidden="true">|</span> Admitted {esc(p["admitted"])}</p></div></div>'
+        f"</div></section>"
+        f'<main class="wrap" id="main"><div class="grid"><div>{about_html(p, fn)}</div>'
+        f'<aside><div class="card claim" id="claim"><div class="claim-top"><span class="pill">{esc(fn)}, is this your profile?</span><span class="free-tag">Always free</span></div>'
+        f'<h2>Make this profile <span class="u">yours.</span></h2>'
+        f'<p class="lead">Show small business owners what you do and how to contact you.</p>'
+        f'<ul class="ticks">{ticks}</ul>'
         f'<a class="btn pink" href="{claim_href(path)}">Claim my free profile</a>'
-        f'<p class="small promise">Free for life. Never pay for your standard listing.</p>'
-        f'<p class="small">Optional sponsored placements may be offered in the future.</p>'
-        f'<p class="small"><a href="/free-listing-promise/">Our free listing promise</a></p></div>'
-        f'<div class="card"><h2>Need a lawyer for your business?</h2><p class="small">Browse attorney profiles, review the services they offer, and choose whom to contact.</p>'
-        f'<a class="btn out" href="/find-lawyer/">Explore attorney profiles</a>'
-        f'<p class="small" style="margin-top:10px"><a href="{city_href}">More attorneys in {esc(crumb)}</a></p>'
-        f'<p class="small" style="margin-top:6px"><a href="{correction_href(path)}">Suggest a correction</a></p></div></aside></div>'
+        f'<p class="promise">Free for life. Never pay for your standard listing.</p>'
+        f'<p class="small"><a href="{promise_href(path)}">Our free listing promise</a></p>'
+        f'<p class="small muted">Optional paid promotion may be offered later.</p></div></aside></div>'
+        f"{benefits_html()}{EXAMPLE_SLOT}"
+        f'<p class="browse">Looking for legal help? <a href="/find-lawyer/">Browse attorneys</a> <span aria-hidden="true">·</span> <a href="{city_href}">{more_label}</a></p>'
+        f"{disc}"
+        f'<p class="small fixes">Something wrong? <a href="{correction_href(path)}">Suggest a correction</a>. Are you {esc(fn)} and want this listing taken down? <a href="{removal_href(path)}">Request removal</a></p>'
         f'<div class="sticky"><a class="btn pink" href="{join_href(p)}">Claim this free profile</a></div></main></div>'
+        f"{footer_html(removal_href(path), correction_href(path))}"
     )
     return (
         "<!DOCTYPE html><html lang=\"en\"><head><meta charset=\"utf-8\">"
@@ -342,7 +465,7 @@ def page_html(p):
         f"<script async src=\"https://www.googletagmanager.com/gtag/js?id={GA}\"></script>"
         "<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}var lgc={};try{lgc=JSON.parse(localStorage.getItem('legalgrads-consent')||'{}')||{}}catch(e){}gtag('consent','default',{analytics_storage:lgc.analytics?'granted':'denied',ad_storage:lgc.marketing?'granted':'denied',ad_user_data:lgc.marketing?'granted':'denied',ad_personalization:lgc.marketing?'granted':'denied'});gtag('js',new Date());"
         f"gtag('config','{GA}');</script>"
-        f'<script type="application/ld+json">{json_ld(p)}</script></head><body>{body}'
+        f'<script type="application/ld+json">{json_ld(p)}</script></head><body><a class="lg-skip" href="#main">Skip to content</a>{body}'
         '<script src="/js/owner-edits.js" defer></script></body></html>'
     )
 
@@ -408,10 +531,67 @@ def assert_attorney_favicons(root):
     print(f"favicon scan ok ({checked} pages)")
 
 
+def font_css():
+    """Self-host the site fonts for the static pages (copied from @fontsource at build time)."""
+    rules = []
+    for package, family, weights in FONTS:
+        for weight in weights:
+            name = f"{package}-latin-{weight}-normal.woff2"
+            src = FONT_DIR / package / "files" / name
+            if not src.is_file():
+                continue
+            dest = OUT / "fonts" / name
+            dest.parent.mkdir(parents=True, exist_ok=True)
+            dest.write_bytes(src.read_bytes())
+            rules.append(f"@font-face{{font-family:'{family}';font-style:normal;font-weight:{weight};font-display:swap;src:url(/fonts/{name}) format('woff2')}}")
+    return "".join(rules)
+
+
+def state_city_strings():
+    """"California, CA" style strings. New York, NY is a real city, so it is allowed."""
+    names = {}
+    for path in (ROOT / "src/data/unclaimed-ca.json", ROOT / "src/data/unclaimed-added.json"):
+        for raw in json.loads(path.read_text(encoding="utf-8")):
+            if raw.get("stateName") and raw.get("stateCode"):
+                names[raw["stateCode"]] = raw["stateName"]
+    return [f"{name}, {code}" for code, name in names.items() if code != "NY"]
+
+
+def scan_attorney_pages(root):
+    """Every page under /attorneys/ (profiles and the Next city and state hubs) needs the
+    favicon tags and the site header, and never shows a state name as the city."""
+    if not root.is_dir():
+        raise SystemExit(f"{root} is missing")
+    banned = state_city_strings()
+    problems = []
+    checked = 0
+    for page in root.rglob("index.html"):
+        text = page.read_text(encoding="utf-8", errors="replace")
+        if 'http-equiv="refresh"' in text:
+            continue
+        checked += 1
+        for marker in FAVICON_MARKERS:
+            if marker not in text:
+                problems.append(f"{page}: favicon {marker}")
+                break
+        if 'aria-label="LegalGrads home"' not in text:
+            problems.append(f"{page}: site header missing")
+        for bad in banned:
+            if bad in text:
+                problems.append(f"{page}: shows {bad}")
+                break
+    if checked == 0:
+        raise SystemExit(f"No HTML pages found under {root}")
+    if problems:
+        preview = "\n".join(problems[:10])
+        raise SystemExit(f"{len(problems)} attorney page problems.\n{preview}")
+    print(f"attorney page scan ok ({checked} pages: favicon, header, no state-as-city)")
+
+
 def main():
     if not OUT.is_dir():
         raise SystemExit("out/ is missing. Run next build first.")
-    css = CSS_SRC.read_text(encoding="utf-8")
+    css = font_css() + CHROME_CSS_SRC.read_text(encoding="utf-8") + CSS_SRC.read_text(encoding="utf-8")
     css = re.sub(r"/\*.*?\*/", "", css, flags=re.S)
     css = re.sub(r"\s+", " ", css).strip()
     CSS_OUT.parent.mkdir(parents=True, exist_ok=True)
@@ -437,13 +617,14 @@ def main():
         total += len(data)
         if p.get("barNumber") == "354200" and p.get("stateCode") == "CA":
             sample = html_text
-    if sample is None or "Oct 27, 2026" not in sample or "License (from the State Bar)" not in sample:
+    if sample is None or "Oct 27, 2026" not in sample or "License details" not in sample or "State Bar of California records" not in sample:
         raise SystemExit("Existing California page text did not match")
-    if "License (from the regulator)" in sample or "Search the state bar." in sample:
+    if '<span class="k">Regulator</span>' in sample or "Search the state bar." in sample:
         raise SystemExit("Existing California page picked up new-state license wording")
     for old, new in {**redirects, **hubs}.items():
         write_redirect(old, new)
     assert_attorney_favicons(OUT / "attorneys")
+    scan_attorney_pages(OUT / "attorneys")
     parts = sorted(OUT.joinpath("sitemap").glob("*.xml"))
     if parts and not (OUT / "sitemap.xml").exists():
         body = ["<?xml version=\"1.0\" encoding=\"UTF-8\"?>",

@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { type CityGroup, cityGroups, cityListLabel, cityPath, hasLegacyProfiles, profilePath } from '@/lib/profiles';
+import { type CityGroup, cityGroups, cityListLabel, cityUnknown, cityPath, hasLegacyProfiles, profilePath } from '@/lib/profiles';
 import '@/app/(site)/attorneys/profile-template.css';
 
 type Params = { state: string; city: string };
@@ -13,7 +13,10 @@ function countLead(n: number): string {
   return n === 1 ? '1 attorney was admitted' : `These ${n} attorneys were admitted`;
 }
 
+const unknownGroup = (g: CityGroup) => g.city !== 'office-unlisted' && g.profiles.length > 0 && g.profiles.every((p) => cityUnknown(p));
+
 function cityHeading(g: CityGroup): string {
+  if (unknownGroup(g)) return `${g.stateName} attorneys with no office city listed`;
   const place = cityListLabel(g);
   if (place !== g.cityName) return `${place} offices of ${g.stateName} attorneys`;
   if (!hasLegacyProfiles(g.profiles) && g.city === 'office-unlisted') return `${g.stateName} attorneys with no office city listed`;
@@ -27,6 +30,9 @@ function cityIntro(g: CityGroup): string {
   const list = n === 1 ? 'lists' : 'list';
   const authority = g.profiles.find((p) => p.sourceAuthority)?.sourceAuthority || `${g.stateName} licensing authority`;
   const place = cityListLabel(g);
+  if (unknownGroup(g)) {
+    return `${lead} in ${g.stateName} in 2024 or later. No office city was published on the licensing record, so these profiles say Licensed in ${g.stateName}. Each profile shows license details from ${hasLegacyProfiles(g.profiles) ? 'public State Bar' : authority} records. LegalGrads doesn't rank or recommend attorneys.`;
+  }
   if (place !== g.cityName) {
     return `${lead} in ${g.stateName} in 2024 or later and ${list} an office in ${place}. Each profile shows license details from ${authority} records. LegalGrads doesn't rank or recommend attorneys.`;
   }
@@ -49,7 +55,9 @@ export async function generateMetadata({ params }: { params: Promise<Params> }):
   const legacy = hasLegacyProfiles(g.profiles);
   const place = cityListLabel(g);
   const title = `${cityHeading(g)} | LegalGrads`;
-  const description = place !== g.cityName
+  const description = unknownGroup(g)
+    ? `Browse ${n} attorney${n === 1 ? '' : 's'} licensed in ${g.stateName} and admitted in 2024 or later whose record lists no office city. Contact attorneys directly; no referral fees.`
+    : place !== g.cityName
     ? `Browse ${n} attorney${n === 1 ? '' : 's'} admitted in ${g.stateName} in 2024 or later with an office in ${place}. Contact attorneys directly; no referral fees.`
     : legacy
     ? `Browse ${n} newly licensed ${g.cityName}, ${g.stateCode} attorney${n === 1 ? '' : 's'} with license details from ${g.stateName} State Bar records. Contact attorneys directly; no referral fees.`
