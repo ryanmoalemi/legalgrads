@@ -6,12 +6,13 @@ import { SPECIALTIES, specialtyName } from '@/lib/catalog';
 import { submitWaitlist } from '@/lib/applications';
 import { publicContactHref } from '@/lib/applications';
 import { MessageAttorneyForm } from '@/components/MessageAttorneyForm';
-import { money, validEmail } from '@/lib/format';
+import { validEmail } from '@/lib/format';
 import { getSupabase } from '@/lib/supabase';
 import { joinedLabel } from '@/lib/joined';
 import { PHASE2, supabaseConfigured } from '@/lib/site';
 import { PillList } from '@/components/PillList';
-import { Empty, PageIntro } from '@/components/ui';
+import { Empty } from '@/components/ui';
+import { knownCity } from '@/lib/places';
 import Link from 'next/link';
 import { US_STATES } from '@/lib/states';
 import { type LatLng, browserLocation, loadZips, miles, resolveQuery, stateFor } from '@/lib/geo';
@@ -63,7 +64,7 @@ async function loadUnclaimed(): Promise<PublicProfile[]> {
 export function DirectoryView() {
   const params = useSearchParams();
   const [specialty, setSpecialty] = useState(params.get('specialty') ?? '');
-  const [city, setCity] = useState('');
+  const [city, setCity] = useState(params.get('city') ?? '');
   const [state, setState] = useState(params.get('state') ?? '');
   const [rows, setRows] = useState<PublicProfile[] | null>(null);
   const [notice, setNotice] = useState('');
@@ -76,6 +77,12 @@ export function DirectoryView() {
   const [inPersonOnly, setInPersonOnly] = useState(false);
   const [zipTable, setZipTable] = useState<Record<string, LatLng> | null>(null);
   const demo = params.get('demo') === '1';
+  const [railOpen, setRailOpen] = useState(false);
+  // Desktop shows the filter rail open; phones get a labeled disclosure above the results.
+  useEffect(() => {
+    const wide = window.matchMedia('(min-width: 1024px)');
+    if (wide.matches) setRailOpen(true);
+  }, []);
 
   useEffect(() => {
     setSpecialty(params.get('specialty') ?? '');
@@ -131,6 +138,34 @@ export function DirectoryView() {
     // Every matching attorney stays listed; only the order changes (unknown ZIPs go last).
     filtered.sort((a, b) => (dist(a) ?? Infinity) - (dist(b) ?? Infinity));
   }
+  const pages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+  const page = Math.min(pages, Math.max(1, Number(params.get('page')) || 1));
+  const shown = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+  const active = [state ? stateLabel(state) : '', specialty ? specialtyName(specialty) : '', city.trim() ? `City: ${city.trim()}` : '', inPersonOnly ? 'In-person' : ''].filter(Boolean);
+
+  /** Filters and page live in the URL, so a bookmark or the Back button returns the same results. */
+  function syncUrl(next: { state?: string; specialty?: string; city?: string; page?: number }, push = false) {
+    const q = new URLSearchParams();
+    const values = { state, specialty, city, ...next };
+    if (values.state) q.set('state', values.state);
+    if (values.specialty) q.set('specialty', values.specialty);
+    if (values.city?.trim()) q.set('city', values.city.trim());
+    if (next.page && next.page > 1) q.set('page', String(next.page));
+    if (params.get('demo') === '1') q.set('demo', '1');
+    const url = `${window.location.pathname}${q.toString() ? `?${q}` : ''}`;
+    if (push) window.history.pushState(null, '', url); else window.history.replaceState(null, '', url);
+  }
+  function changeState(value: string) { setState(value); syncUrl({ state: value }); }
+  function changeSpecialty(value: string) { setSpecialty(value); syncUrl({ specialty: value }); }
+  function changeCity(value: string) { setCity(value); syncUrl({ city: value }); }
+  function clearFilters() {
+    setState(''); setSpecialty(''); setCity(''); setInPersonOnly(false); setOrigin(null); setGeoMsg('');
+    syncUrl({ state: '', specialty: '', city: '' });
+  }
+  function goTo(next: number) {
+    syncUrl({ page: next }, true);
+    document.getElementById('results')?.scrollIntoView({ block: 'start' });
+  }
 
   async function onWaitlist(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -147,98 +182,146 @@ export function DirectoryView() {
       : 'We did not store this on a server. Send the email so your address is not lost.');
   }
 
+  const filters = (
+    <form className="lg-dir__filters" aria-label="Filters" onSubmit={(event) => event.preventDefault()}>
+      <label className="lg-field"><span>Licensing state</span>
+        <select aria-label="State" data-testid="filter-state" className="lg-input" value={state} onChange={(event) => changeState(event.target.value)}>
+          <option value="">Any state</option>
+          {US_STATES.map((item) => <option key={item.code} value={item.code}>{item.name}</option>)}
+        </select>
+      </label>
+      <label className="lg-field"><span>Practice area</span>
+        <select aria-label="Practice area" aria-describedby="practice-help" className="lg-input" value={specialty} onChange={(event) => changeSpecialty(event.target.value)}>
+          <option value="">Any</option>
+          {SPECIALTIES.map((item) => <option key={item.slug} value={item.slug}>{item.name}</option>)}
+        </select>
+        <small id="practice-help">Only claimed profiles list practice areas.</small>
+      </label>
+      <label className="lg-field"><span>Office city</span>
+        <input aria-label="City" className="lg-input" value={city} onChange={(event) => changeCity(event.target.value)} placeholder="Los Angeles" />
+      </label>
+      <button type="button" data-testid="chip-in-person" aria-pressed={inPersonOnly} onClick={() => setInPersonOnly((v) => !v)} className={`lg-dir__chip${inPersonOnly ? ' is-on' : ''}`}>In-person or visits your business</button>
+      <div className="lg-dir__near" data-testid="near-me">
+        <span className="lg-label">Sort by distance</span>
+        <button type="button" data-testid="near-me-button" onClick={() => void nearMe()} className="lg-btn lg-btn--secondary lg-btn--full">Near me</button>
+        <div className="lg-dir__where">
+          <input aria-label="ZIP or city" data-testid="near-where" className="lg-input" value={where} onChange={(e) => setWhere(e.target.value)} placeholder="ZIP or city" autoComplete="off" inputMode="text" onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); void nearWhere(e as unknown as FormEvent<HTMLFormElement>); } }} />
+          <button type="button" className="lg-btn lg-btn--secondary" onClick={(e) => void nearWhere(e as unknown as FormEvent<HTMLFormElement>)}>Sort</button>
+        </div>
+        {origin ? <button type="button" className="lg-dir__link" onClick={() => { setOrigin(null); setGeoMsg(''); }}>Clear distance sort</button> : null}
+        {geoMsg ? <p role="status" className="lg-dir__fine">{geoMsg}</p> : null}
+        <p className="lg-dir__fine">Distances are approximate (office ZIP). You choose who to contact; we don&apos;t assign, forward or rank by payment.</p>
+      </div>
+      {active.length ? <button type="button" data-testid="clear-filters" className="lg-dir__link" onClick={clearFilters}>Clear filters</button> : null}
+    </form>
+  );
+
   return (
-    <div className="mx-auto max-w-6xl px-4 py-8">
-      <PageIntro
-        kicker="Find an attorney"
-        title="Search claimed and unclaimed profiles"
-        body="This search covers every listed attorney. Claimed profiles, where the attorney confirmed their details with an email code and a bar record check, come first. Unclaimed profiles come from official licensing records and are marked Unclaimed. They do not list practice areas yet, so the practice area filter shows claimed profiles only. A waitlist note is optional."
-      />
-      <form className="mt-6 grid gap-3 rounded-3xl bg-white p-4 sm:grid-cols-3" aria-label="Filters" onSubmit={(event) => event.preventDefault()}>
-        <label className="text-sm font-medium">State
-          <select aria-label="State" data-testid="filter-state" className="mt-1 w-full rounded-2xl border border-navy/10 px-3 py-3" value={state} onChange={(event) => setState(event.target.value)}>
-            <option value="">Any state</option>
-            {US_STATES.map((item) => <option key={item.code} value={item.code}>{item.name}</option>)}
-          </select>
-        </label>
-        <label className="text-sm font-medium">Practice area
-          <select aria-label="Practice area" className="mt-1 w-full rounded-2xl border border-navy/10 px-3 py-3" value={specialty} onChange={(event) => setSpecialty(event.target.value)}>
-            <option value="">Any</option>
-            {SPECIALTIES.map((item) => <option key={item.slug} value={item.slug}>{item.name}</option>)}
-          </select>
-        </label>
-        <label className="text-sm font-medium">City
-          <input aria-label="City" className="mt-1 w-full rounded-2xl border border-navy/10 px-3 py-3" value={city} onChange={(event) => setCity(event.target.value)} placeholder="Los Angeles" />
-        </label>
-      </form>
-
-      <section className="mt-3 rounded-3xl bg-white p-4" aria-label="Sort by distance" data-testid="near-me">
-        <div className="flex flex-wrap items-center gap-2">
-          <button type="button" data-testid="near-me-button" onClick={() => void nearMe()} className="min-h-11 rounded-full bg-pink px-5 font-display font-semibold text-white">📍 Near me</button>
-          <form className="flex min-w-0 flex-1 gap-2" onSubmit={(e) => void nearWhere(e)}>
-            <input aria-label="ZIP or city" data-testid="near-where" className="min-w-0 flex-1 rounded-2xl border border-navy/10 px-3 py-2" value={where} onChange={(e) => setWhere(e.target.value)} placeholder="ZIP or city" autoComplete="off" inputMode="text" />
-            <button type="submit" className="min-h-11 rounded-full border-2 border-purple px-4 font-semibold text-purple">Sort</button>
-          </form>
-          {origin ? <button type="button" className="text-sm font-semibold text-purple underline" onClick={() => { setOrigin(null); setGeoMsg(''); }}>Clear</button> : null}
+    <div className="lg-dir">
+      <section className="lg-band">
+        <div className="lg-container">
+          <h1 className="lg-dir__title">Find an attorney</h1>
+          <p className="lg-sub lg-dir__lead">Search every listed attorney. Claimed profiles, where the attorney confirmed their details with an email code and a bar record check, come first. Unclaimed profiles come from official licensing records and do not list practice areas yet.</p>
+          <span className="lg-accent" aria-hidden="true" />
         </div>
-        <div className="mt-3 flex flex-wrap gap-2">
-          <button type="button" data-testid="chip-in-person" aria-pressed={inPersonOnly} onClick={() => setInPersonOnly((v) => !v)} className={`rounded-full px-3 py-2 text-sm font-bold ${inPersonOnly ? 'bg-purple text-white' : 'bg-[#F3E9FF] text-purple'}`}>🤝 In-person / visits your business</button>
-        </div>
-        {geoMsg ? <p role="status" className="mt-2 text-sm text-ink">{geoMsg}</p> : null}
-        <p className="mt-2 text-xs text-ink">Distances are approximate (office ZIP). You choose who to contact; we don&apos;t assign, forward or rank by payment.</p>
       </section>
+      <div className="lg-container lg-dir__grid">
+        <aside className="lg-dir__rail" aria-label="Search filters">
+          <details className="lg-dir__disclosure" open={railOpen} onToggle={(e) => setRailOpen((e.currentTarget as HTMLDetailsElement).open)}>
+            <summary>Filters{active.length ? `: ${active.join(', ')}` : ''}</summary>
+            {filters}
+          </details>
+        </aside>
+        <section id="results" className="lg-dir__results" aria-labelledby="results-h">
+          <div className="lg-dir__head">
+            <h2 id="results-h">Attorney profiles</h2>
+            {rows ? <p role="status" data-testid="result-count">{filtered.length === 0 ? 'No profiles match' : `${filtered.length.toLocaleString('en-US')} ${filtered.length === 1 ? 'profile matches' : 'profiles match'}`}{active.length ? ` ${active.join(', ')}` : ''}{pages > 1 ? `. Page ${page} of ${pages.toLocaleString('en-US')}` : ''}</p> : <p role="status">Loading profiles…</p>}
+          </div>
+          {rows && rows.length === 0 ? (
+            <div data-testid="directory-empty">
+              <Empty title="The search did not load" body="Browse public-record profiles by state below, or try again in a minute." />
+            </div>
+          ) : null}
+          {rows && rows.length > 0 && filtered.length === 0 ? (
+            <div className="lg-dir__empty">
+              <p className="lg-dir__empty-title">No profiles match those filters.</p>
+              <p>{specialty ? `No claimed profile lists ${specialtyName(specialty)} yet, and unclaimed profiles do not list practice areas. ` : ''}Try a broader location or remove a filter.</p>
+              <button type="button" className="lg-btn lg-btn--secondary" onClick={clearFilters}>Clear filters</button>
+            </div>
+          ) : null}
+          {shown.length > 0 ? (
+            <ul className="lg-dir__list">
+              {shown.map((row) => (
+                <li key={row.id} data-testid="attorney-card" className="lg-dir__row">
+                  <span className="lg-avatar lg-dir__avatar" aria-hidden="true">{initialsOf(row.full_name)}</span>
+                  <div className="lg-dir__body">
+                    <h3>{row.full_name}</h3>
+                    <p>{row.licensed_state ? `Licensed in ${stateLabel(row.licensed_state)}` : ''}{officeLine(row)}{admittedLabel(row.admission_date)}{dist(row) !== null ? <span data-testid="distance"> · ~{Math.round(dist(row) as number)} mi</span> : null}</p>
+                    {row.unclaimed_url ? (
+                      <p className="lg-dir__badge">Profile not yet claimed</p>
+                    ) : (<>
+                      <div className="lg-dir__tags">
+                        <span className="lg-dir__badge is-claimed">Profile claimed · {joinedLabel(row.published_at || row.created_at)}</span>
+                        {row.in_person ? <span className="lg-dir__badge">In-person</span> : null}
+                        {row.insured ? <span className="lg-dir__badge">Insured</span> : null}
+                      </div>
+                      {row.bio ? <p className="lg-dir__bio">{row.bio}</p> : null}
+                      <PillList items={row.practice_areas.map((slug) => specialtyName(slug))} className="mt-2" />
+                      {row.languages ? <p>Languages: {row.languages}</p> : null}
+                      {publicContactHref(row.contact_link) ? <p><a href={publicContactHref(row.contact_link) ?? undefined}>Website</a></p> : null}
+                      <MessageAttorneyForm profileId={row.id} />
+                    </>)}
+                  </div>
+                  {row.unclaimed_url ? <a className="lg-btn lg-btn--secondary lg-dir__view" href={row.unclaimed_url} aria-label={`View ${row.full_name}'s profile`}>View profile</a> : PHASE2 ? <Link className="lg-btn lg-btn--secondary lg-dir__view" href={`/attorneys/profile/?id=${row.id}`}>View profile</Link> : null}
+                </li>
+              ))}
+            </ul>
+          ) : null}
+          {pages > 1 ? (
+            <nav className="lg-dir__pager" aria-label="Result pages">
+              <button type="button" className="lg-btn lg-btn--secondary" disabled={page <= 1} onClick={() => goTo(page - 1)}>Previous</button>
+              <span>Page {page} of {pages.toLocaleString('en-US')}</span>
+              <button type="button" data-testid="next-page" className="lg-btn lg-btn--secondary" disabled={page >= pages} onClick={() => goTo(page + 1)}>Next</button>
+            </nav>
+          ) : null}
 
-      {rows && rows.length === 0 ? (
-        <div className="mt-6" data-testid="directory-empty">
-          <Empty
-            title="Public-record pages are below"
-            body="This search did not load a short list. Unclaimed profiles from official rosters are on the state and city pages in Public-record listings."
-          />
-        </div>
-      ) : null}
-      {rows && rows.length > 0 && filtered.length === 0 ? (
-        <p className="mt-6 text-sm text-ink">No profiles match those filters. Unclaimed profiles do not list a practice area yet, so try Any practice area, or open a state or city page in Public-record listings.</p>
-      ) : null}
-      {filtered.length > 0 ? (
-        <ul className="mt-6 space-y-4">
-          {filtered.map((row) => (
-            <li key={row.id} data-testid="attorney-card" className="rounded-3xl bg-white p-5">
-              <div className="flex flex-wrap items-start justify-between gap-2">
-                <div>
-                  <h2 className="font-display text-2xl font-extrabold">{row.full_name}</h2>
-                  <p className="text-sm text-ink">{row.cities_served}{row.licensed_state ? `, ${row.licensed_state}` : ''}{row.admission_date ? ` · Admitted ${row.admission_date.slice(0, 7)}` : ''}{dist(row) !== null ? <span data-testid="distance"> · ~{Math.round(dist(row) as number)} mi</span> : null}</p>
-                </div>
-              </div>
-              {row.unclaimed_url ? (<>
-                <p className="mt-2 inline-flex rounded-full bg-[#F3E9FF] px-3 py-1 text-xs font-bold text-purple">Unclaimed profile · from {row.licensed_state === 'CA' ? 'State Bar' : 'public licensing'} records</p>
-                <p className="mt-3"><a className="font-semibold text-purple" href={row.unclaimed_url}>View {row.full_name}&apos;s profile</a></p>
-              </>) : (<>
-              <div className="mt-2 flex flex-wrap gap-2">
-                <p className="inline-flex rounded-full bg-[#F3E9FF] px-3 py-1 text-xs font-bold text-purple">{joinedLabel(row.published_at || row.created_at)}</p>
-                {row.in_person ? <p className="inline-flex rounded-full bg-[#FFF1F8] px-3 py-1 text-xs font-bold text-[#C2006A]">🤝 In-person</p> : null}
-                {row.insured ? <p className="inline-flex rounded-full bg-mint/20 px-3 py-1 text-xs font-bold text-navy">Insured</p> : null}
-              </div>
-              <p className="mt-3 text-sm text-ink">{row.bio}</p>
-              <PillList items={row.practice_areas.map((slug) => specialtyName(slug))} className="mt-3" />
-              <p className="mt-2 text-sm">Languages: {row.languages}</p>
-              {PHASE2 ? <Link className="mt-3 inline-flex font-semibold text-purple" href={`/attorneys/profile/?id=${row.id}`}>View profile</Link> : null}
-              {publicContactHref(row.contact_link) ? <p className="mt-2 text-sm"><a className="font-semibold text-purple" href={publicContactHref(row.contact_link) ?? undefined}>Website</a></p> : null}
-              <MessageAttorneyForm profileId={row.id} />
-              </>)}
-            </li>
-          ))}
-        </ul>
-      ) : null}
-
-      <form onSubmit={onWaitlist} className="mt-8 max-w-xl rounded-3xl bg-white p-5">
-        <h2 className="font-display text-2xl font-extrabold">Optional directory note</h2>
-        <label className="mt-3 block text-sm font-medium" htmlFor="directory-email">Email</label>
-        <input id="directory-email" name="email" type="email" required data-testid="directory-email" className="mt-1 w-full rounded-2xl border border-navy/10 px-3 py-3" placeholder="you@example.com" />
-        <button type="submit" data-testid="directory-waitlist" className="mt-3 min-h-11 rounded-full bg-pink px-5 font-display font-semibold text-white">Join the waitlist</button>
-        {error ? <p role="alert" className="mt-2 text-sm text-pink">{error}</p> : null}
-        {notice ? <p role="status" data-testid="directory-status" className="mt-2 text-sm">{notice}</p> : null}
-        {mailto ? <p className="mt-2 text-sm"><a data-testid="directory-mailto" className="font-semibold text-purple" href={mailto}>Email this signup to ryan@legalgrads.com</a></p> : null}
-      </form>
+          <form onSubmit={onWaitlist} className="lg-dir__note">
+            <h2>Optional directory note</h2>
+            <p>Get an occasional email when new attorneys or features are added. You do not need it to browse.</p>
+            <label className="lg-field" htmlFor="directory-email"><span>Email</span></label>
+            <input id="directory-email" name="email" type="email" required data-testid="directory-email" className="lg-input" placeholder="you@example.com" />
+            <button type="submit" data-testid="directory-waitlist" className="lg-btn lg-btn--secondary">Join the list</button>
+            {error ? <p role="alert" className="lg-notice lg-notice--error">{error}</p> : null}
+            {notice ? <p role="status" data-testid="directory-status">{notice}</p> : null}
+            {mailto ? <p><a data-testid="directory-mailto" href={mailto}>Email this signup to ryan@legalgrads.com</a></p> : null}
+          </form>
+        </section>
+      </div>
     </div>
   );
+}
+
+const PAGE_SIZE = 20;
+const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+function stateLabel(code: string): string {
+  return US_STATES.find((item) => item.code === code)?.name || code;
+}
+
+function initialsOf(name: string): string {
+  return name.replace(/\(demo\)/, '').split(' ').filter(Boolean).map((w) => w[0]).join('').slice(0, 2).toUpperCase();
+}
+
+/** Office line. A missing or state-named city never prints as a place ("California, CA"). */
+function officeLine(row: PublicProfile): string {
+  const value = row.cities_served || '';
+  return knownCity(value, row.licensed_state || '') ? ` · Office: ${value}` : ' · Office location not listed';
+}
+
+/** Keeps the record's precision: a year stays a year, a date shows month and year. */
+function admittedLabel(value: string): string {
+  if (!value) return '';
+  const m = value.match(/^(\d{4})(?:-(\d{2}))?/);
+  if (!m) return '';
+  return m[2] ? ` · Admitted ${MONTHS[Number(m[2]) - 1]} ${m[1]}` : ` · Admitted ${m[1]}`;
 }
