@@ -46,9 +46,10 @@ interface PublicProfile {
   office_zip?: string | null;
   in_person?: boolean | null;
   unclaimed_url?: string; // static unclaimed profile (public State Bar record)
+  office_region?: string | null; // office state when outside the licensing state, or INTL
 }
 
-type UnclaimedRow = { id: string; n: string; c: string; z: string; a: string; u: string; s?: string };
+type UnclaimedRow = { id: string; n: string; c: string; z: string; a: string; u: string; s?: string; r?: string };
 async function loadUnclaimed(): Promise<PublicProfile[]> {
   try {
     const res = await fetch('/data/unclaimed-directory.json');
@@ -56,7 +57,7 @@ async function loadUnclaimed(): Promise<PublicProfile[]> {
     const data = (await res.json()) as UnclaimedRow[];
     return data.map((r) => ({
       id: `${r.s || 'CA'}-${r.id}`, full_name: r.n, practice_areas: [], cities_served: r.c, bio: '', languages: '', contact_link: '',
-      admission_date: r.a || '', licensed_state: r.s || 'CA', office_zip: r.z || null, in_person: null, unclaimed_url: r.u,
+      admission_date: r.a || '', licensed_state: r.s || 'CA', office_zip: r.z || null, in_person: null, unclaimed_url: r.u, office_region: r.r || null,
     }));
   } catch { return []; }
 }
@@ -66,6 +67,7 @@ export function DirectoryView() {
   const [specialty, setSpecialty] = useState(params.get('specialty') ?? '');
   const [city, setCity] = useState(params.get('city') ?? '');
   const [state, setState] = useState(params.get('state') ?? '');
+  const [nameQ, setNameQ] = useState(params.get('q') ?? '');
   const [rows, setRows] = useState<PublicProfile[] | null>(null);
   const [notice, setNotice] = useState('');
   const [mailto, setMailto] = useState('');
@@ -131,6 +133,7 @@ export function DirectoryView() {
     if (state && row.licensed_state !== state) return false;
     if (specialty && !row.practice_areas.includes(specialty)) return false;
     if (city && !row.cities_served.toLowerCase().includes(city.trim().toLowerCase())) return false;
+    if (nameQ.trim() && !row.full_name.toLowerCase().includes(nameQ.trim().toLowerCase())) return false;
     if (inPersonOnly && !row.in_person) return false;
     return true;
   });
@@ -141,15 +144,16 @@ export function DirectoryView() {
   const pages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
   const page = Math.min(pages, Math.max(1, Number(params.get('page')) || 1));
   const shown = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
-  const active = [state ? stateLabel(state) : '', specialty ? specialtyName(specialty) : '', city.trim() ? `City: ${city.trim()}` : '', inPersonOnly ? 'In-person' : ''].filter(Boolean);
+  const active = [state ? stateLabel(state) : '', specialty ? specialtyName(specialty) : '', city.trim() ? `City: ${city.trim()}` : '', nameQ.trim() ? `Name: ${nameQ.trim()}` : '', inPersonOnly ? 'In-person' : ''].filter(Boolean);
 
   /** Filters and page live in the URL, so a bookmark or the Back button returns the same results. */
-  function syncUrl(next: { state?: string; specialty?: string; city?: string; page?: number }, push = false) {
+  function syncUrl(next: { state?: string; specialty?: string; city?: string; q?: string; page?: number }, push = false) {
     const q = new URLSearchParams();
-    const values = { state, specialty, city, ...next };
+    const values = { state, specialty, city, q: nameQ, ...next };
     if (values.state) q.set('state', values.state);
     if (values.specialty) q.set('specialty', values.specialty);
     if (values.city?.trim()) q.set('city', values.city.trim());
+    if (values.q?.trim()) q.set('q', values.q.trim());
     if (next.page && next.page > 1) q.set('page', String(next.page));
     if (params.get('demo') === '1') q.set('demo', '1');
     const url = `${window.location.pathname}${q.toString() ? `?${q}` : ''}`;
@@ -158,9 +162,10 @@ export function DirectoryView() {
   function changeState(value: string) { setState(value); syncUrl({ state: value }); }
   function changeSpecialty(value: string) { setSpecialty(value); syncUrl({ specialty: value }); }
   function changeCity(value: string) { setCity(value); syncUrl({ city: value }); }
+  function changeName(value: string) { setNameQ(value); syncUrl({ q: value }); }
   function clearFilters() {
-    setState(''); setSpecialty(''); setCity(''); setInPersonOnly(false); setOrigin(null); setGeoMsg('');
-    syncUrl({ state: '', specialty: '', city: '' });
+    setState(''); setSpecialty(''); setCity(''); setNameQ(''); setInPersonOnly(false); setOrigin(null); setGeoMsg('');
+    syncUrl({ state: '', specialty: '', city: '', q: '' });
   }
   function goTo(next: number) {
     syncUrl({ page: next }, true);
@@ -199,6 +204,9 @@ export function DirectoryView() {
       </label>
       <label className="lg-field"><span>Office city</span>
         <input aria-label="City" className="lg-input" value={city} onChange={(event) => changeCity(event.target.value)} placeholder="Los Angeles" />
+      </label>
+      <label className="lg-field"><span>Attorney name</span>
+        <input aria-label="Attorney name" data-testid="filter-name" className="lg-input" type="search" value={nameQ} onChange={(event) => changeName(event.target.value)} placeholder="First or last name" autoComplete="off" />
       </label>
       <button type="button" data-testid="chip-in-person" aria-pressed={inPersonOnly} onClick={() => setInPersonOnly((v) => !v)} className={`lg-dir__chip${inPersonOnly ? ' is-on' : ''}`}>In-person or visits your business</button>
       <div className="lg-dir__near" data-testid="near-me">
@@ -315,7 +323,9 @@ function initialsOf(name: string): string {
 /** Office line. A missing or state-named city never prints as a place ("California, CA"). */
 function officeLine(row: PublicProfile): string {
   const value = row.cities_served || '';
-  return knownCity(value, row.licensed_state || '') ? ` · Office: ${value}` : ' · Office location not listed';
+  if (!knownCity(value, row.licensed_state || '')) return ' · Office location not listed';
+  if (row.office_region === 'INTL') return ` · Office: ${value} (outside the U.S.)`;
+  return row.office_region ? ` · Office: ${value}, ${row.office_region}` : ` · Office: ${value}`;
 }
 
 /** Keeps the record's precision: a year stays a year, a date shows month and year. */

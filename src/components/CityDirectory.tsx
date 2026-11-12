@@ -13,14 +13,12 @@ function countLead(n: number): string {
   return n === 1 ? '1 attorney was admitted' : `These ${n.toLocaleString('en-US')} attorneys were admitted`;
 }
 
-export const unknownGroup = (g: CityGroup) => g.city !== 'office-unlisted' && g.profiles.length > 0 && g.profiles.every((p) => cityUnknown(p));
+export const unknownGroup = (g: CityGroup) => g.kind === 'U';
 
 export function cityHeading(g: CityGroup): string {
-  if (unknownGroup(g)) return `${g.stateName} attorneys with no office city listed`;
-  const place = cityListLabel(g);
-  if (place !== g.cityName) return `${place} offices of ${g.stateName} attorneys`;
-  if (!hasLegacyProfiles(g.profiles) && g.city === 'office-unlisted') return `${g.stateName} attorneys with no office city listed`;
-  if (!hasLegacyProfiles(g.profiles) && (g.city === 'location-not-listed' || g.city === 'international-offices')) return `${g.stateName} attorneys, ${g.cityName}`;
+  if (g.kind === 'U') return `${g.stateName} attorneys with no office city listed`;
+  if (g.kind === 'I') return `${g.stateName} attorneys with offices outside the U.S.`;
+  if (g.kind === 'O') return `${cityListLabel(g)} offices of ${g.stateName} attorneys`;
   return `${g.cityName}, ${g.stateCode} attorneys admitted 2024 or later`;
 }
 
@@ -28,30 +26,25 @@ export function cityIntro(g: CityGroup): string {
   const n = g.profiles.length;
   const lead = countLead(n);
   const list = n === 1 ? 'lists' : 'list';
+  const legacy = hasLegacyProfiles(g.profiles);
   const authority = g.profiles.find((p) => p.sourceAuthority)?.sourceAuthority || `${g.stateName} licensing authority`;
-  const place = cityListLabel(g);
-  if (unknownGroup(g)) {
-    return `${lead} in ${g.stateName} in 2024 or later. No office city was published on the licensing record, so these profiles say Licensed in ${g.stateName}. Each profile shows license details from ${hasLegacyProfiles(g.profiles) ? 'public State Bar' : authority} records. LegalGrads doesn't rank or recommend attorneys.`;
+  if (g.kind === 'U') {
+    return `${lead} in ${g.stateName} in 2024 or later. No office city was published on the licensing record, or the published location could not be confirmed, so these profiles say Licensed in ${g.stateName}. Each profile shows license details from ${legacy ? 'public State Bar' : authority} records. LegalGrads doesn't rank or recommend attorneys.`;
   }
-  if (place !== g.cityName) {
-    return `${lead} in ${g.stateName} in 2024 or later and ${list} an office in ${place}. Each profile shows license details from ${authority} records. LegalGrads doesn't rank or recommend attorneys.`;
-  }
-  if (hasLegacyProfiles(g.profiles)) {
-    return `${lead} to the State Bar of ${g.stateName} in 2024 or later and ${list} a ${g.cityName} address. Each profile shows license details from public State Bar records. LegalGrads doesn't rank or recommend attorneys.`;
-  }
-  if (g.city === 'office-unlisted' || g.city === 'location-not-listed') {
-    return `${lead} in ${g.stateName} in 2024 or later. No office city was published on the licensing record. Each profile shows the license status from ${authority} records. LegalGrads doesn't rank or recommend attorneys.`;
-  }
-  if (g.city === 'international-offices') {
+  if (g.kind === 'I') {
     return `${lead} in ${g.stateName} in 2024 or later. The licensing record does not confirm a U.S. office city. Each profile shows the license status from ${authority} records. LegalGrads doesn't rank or recommend attorneys.`;
+  }
+  if (g.kind === 'O') {
+    return `${lead} in ${g.stateName} in 2024 or later and ${list} an office in ${cityListLabel(g)}. Each profile shows license details from ${legacy ? 'public State Bar' : authority} records. LegalGrads doesn't rank or recommend attorneys.`;
+  }
+  if (legacy) {
+    return `${lead} to the State Bar of ${g.stateName} in 2024 or later and ${list} a ${g.cityName} address. Each profile shows license details from public State Bar records. LegalGrads doesn't rank or recommend attorneys.`;
   }
   return `${lead} in ${g.stateName} in 2024 or later and ${list} a ${g.cityName} address. Each profile shows license details from ${authority} records. LegalGrads doesn't rank or recommend attorneys.`;
 }
 
 function visibleHeading(g: CityGroup): string {
-  const legacy = hasLegacyProfiles(g.profiles);
-  const cross = cityListLabel(g) !== g.cityName;
-  return cross || !legacy ? cityHeading(g) : `Newly licensed attorneys in ${g.cityName}, ${g.stateCode}`;
+  return g.kind !== 'L' || !hasLegacyProfiles(g.profiles) ? cityHeading(g) : `Newly licensed attorneys in ${g.cityName}, ${g.stateCode}`;
 }
 
 export function cityMetadata(g: CityGroup, page: number): Metadata {
@@ -60,9 +53,9 @@ export function cityMetadata(g: CityGroup, page: number): Metadata {
   const place = cityListLabel(g);
   const suffix = page > 1 ? ` (page ${page})` : '';
   const title = `${cityHeading(g)}${suffix} | LegalGrads`;
-  const description = unknownGroup(g)
+  const description = g.kind === 'U' || g.kind === 'I'
     ? `Browse ${n} attorney${n === 1 ? '' : 's'} licensed in ${g.stateName} and admitted in 2024 or later whose record lists no office city. Contact attorneys directly; no referral fees.`
-    : place !== g.cityName
+    : g.kind === 'O'
     ? `Browse ${n} attorney${n === 1 ? '' : 's'} admitted in ${g.stateName} in 2024 or later with an office in ${place}. Contact attorneys directly; no referral fees.`
     : legacy
     ? `Browse ${n} newly licensed ${g.cityName}, ${g.stateCode} attorney${n === 1 ? '' : 's'} with license details from ${g.stateName} State Bar records. Contact attorneys directly; no referral fees.`
@@ -77,12 +70,12 @@ function pagerPages(page: number, total: number): number[] {
   return [...set].sort((a, b) => a - b);
 }
 
-function Pager({ g, page }: { g: CityGroup; page: number }) {
+function Pager({ g, page, where }: { g: CityGroup; page: number; where: 'top' | 'bottom' }) {
   const total = cityPageCount(g);
   if (total <= 1) return null;
   const list = pagerPages(page, total);
   return (
-    <nav className="lg-hub__pager" aria-label="Result pages">
+    <nav className="lg-hub__pager" aria-label={`Result pages, ${where}`}>
       {page > 1 ? <Link href={cityPageHref(g, page - 1)} rel="prev">Previous</Link> : null}
       {list.map((n, i) => (
         <span key={n} style={{ display: 'contents' }}>
@@ -99,13 +92,19 @@ function admitted(p: AttorneyProfile): string {
   return p.admitted ? `Admitted ${p.admitted}` : '';
 }
 
+function rowPlace(g: CityGroup, p: AttorneyProfile): string {
+  if (g.kind !== 'I') return '';
+  const label = (p.locationLabel || '').trim();
+  return label && !/unconfirmed|not listed/i.test(label) ? label : 'Office city not confirmed';
+}
+
 export function CityDirectory({ g, page }: { g: CityGroup; page: number }) {
   const total = cityPageCount(g);
   const start = (page - 1) * CITY_PAGE_SIZE;
   const rows = g.profiles.slice(start, start + CITY_PAGE_SIZE);
   const url = `https://legalgrads.com${cityPageHref(g, page)}`;
   const heading = visibleHeading(g);
-  const ldName = cityListLabel(g) !== g.cityName || !hasLegacyProfiles(g.profiles) ? cityHeading(g) : `${g.cityName}, ${g.stateCode} attorneys`;
+  const ldName = g.kind !== 'L' || !hasLegacyProfiles(g.profiles) ? cityHeading(g) : `${g.cityName}, ${g.stateCode} attorneys`;
   const ld = { '@context': 'https://schema.org', '@graph': [
     { '@type': 'CollectionPage', '@id': url, name: page > 1 ? `${ldName}, page ${page}` : ldName, url,
       mainEntity: { '@type': 'ItemList', numberOfItems: g.profiles.length, itemListElement: rows.map((p, i) => ({ '@type': 'ListItem', position: start + i + 1, url: `https://legalgrads.com${profilePath(p)}`, name: p.name })) } },
@@ -126,7 +125,13 @@ export function CityDirectory({ g, page }: { g: CityGroup; page: number }) {
         </div>
       </section>
       <div className="lg-container lg-hub__body">
-        <p className="lg-hub__note"><Link href="/find-lawyer/">Search the full directory</Link> to filter by state or office city.</p>
+        <form className="lg-hub__namesearch" action="/find-lawyer/" method="get" role="search">
+          <input type="hidden" name="state" value={g.stateCode} />
+          {g.kind === 'L' || g.kind === 'O' ? <input type="hidden" name="city" value={g.cityName} /> : null}
+          <label className="lg-label" htmlFor="name-q">Search {g.kind === 'L' || g.kind === 'O' ? cityListLabel(g) : 'these'} profiles by name</label>
+          <div className="lg-hub__namerow"><input id="name-q" className="lg-input" type="search" name="q" autoComplete="off" data-testid="city-name-search" /><button type="submit" className="lg-btn lg-btn--secondary">Search</button></div>
+          <p className="lg-dir__fine">Leave the name blank to open these results in the directory search.</p>
+        </form>
         {g.profiles.length < 3 && g.nearby?.length ? (
           <nav aria-label={g.nearbyByDistance ? 'Nearby cities' : `Other cities in ${g.stateName}`} className="lg-hub__group">
             <h2>{g.nearbyByDistance ? 'Nearby cities' : `Other cities in ${g.stateName}`}</h2>
@@ -137,11 +142,15 @@ export function CityDirectory({ g, page }: { g: CityGroup; page: number }) {
         ) : null}
         <section className="lg-hub__group" aria-labelledby="profiles-h">
           <h2 id="profiles-h">Attorney profiles</h2>
-          <p className="lg-hub__note" data-testid="city-count">{g.profiles.length === 1 ? '1 profile' : `${g.profiles.length.toLocaleString('en-US')} profiles`}{total > 1 ? `. Showing ${(start + 1).toLocaleString('en-US')} to ${(start + rows.length).toLocaleString('en-US')}, page ${page} of ${total}` : ''}.</p>
+          <Pager g={g} page={page} where="top" />
+          <p className="lg-hub__note" data-testid="city-count">{g.profiles.length === 1 ? '1 profile' : `${g.profiles.length.toLocaleString('en-US')} profiles`}{total > 1 ? `. Showing ${(start + 1).toLocaleString('en-US')} to ${(start + rows.length).toLocaleString('en-US')}, page ${page} of ${total}` : ''}. Sorted A to Z by first name, not ranked.</p>
           <ul className="lg-hub__rows" data-testid="city-rows">
-            {rows.map((p) => <li key={p.slug}><a href={profilePath(p)}><b>{p.name}</b><span>{admitted(p)}{admitted(p) ? ' · ' : ''}View profile</span></a></li>)}
+            {rows.map((p) => {
+              const where = rowPlace(g, p);
+              return <li key={p.slug}><a href={profilePath(p)}><b>{p.name}</b><span>{[where, admitted(p)].filter(Boolean).join(' · ')}</span></a></li>;
+            })}
           </ul>
-          <Pager g={g} page={page} />
+          <Pager g={g} page={page} where="bottom" />
         </section>
       </div>
     </div>

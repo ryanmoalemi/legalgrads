@@ -141,3 +141,31 @@ def city_unknown(profile):
         if code and city == STATE_NAMES.get(code, "").lower() and f"{code}:{city}" not in REAL_STATE_NAMED_CITIES:
             return True
     return city == (profile.get("stateName") or "").lower() and f"{profile.get('stateCode')}:{city}" not in REAL_STATE_NAMED_CITIES
+
+
+PLACE_INDEX_PATH = Path(__file__).resolve().parent.parent / "src/data/place-index.json"
+_PLACE_INDEX = None
+
+
+def place_of(profile):
+    """Directory placement, same rule as placeOf() in src/lib/profiles.ts.
+    Returns hub slug, place name, office region ("" for the licensing state) and kind:
+    L in state, O outside the licensing state, U unknown location, I outside the U.S."""
+    global _PLACE_INDEX
+    if _PLACE_INDEX is None:
+        _PLACE_INDEX = json.loads(PLACE_INDEX_PATH.read_text(encoding="utf-8")) if PLACE_INDEX_PATH.exists() else {}
+    hit = _PLACE_INDEX.get(f"{profile['state']}|{profile['barNumber']}")
+    if hit:
+        return {"hub": hit[0], "name": hit[1], "region": hit[2], "kind": hit[3]}
+    if profile.get("city") == "international-offices":
+        return {"hub": profile["city"], "name": "Offices outside the U.S.", "region": "", "kind": "I"}
+    if city_unknown(profile):
+        return {"hub": profile["city"], "name": "Office location not listed", "region": "", "kind": "U"}
+    state = profile.get("officeState") or ""
+    region = state if state and state != profile.get("stateCode") else ""
+    return {"hub": profile["city"], "name": display_city(profile.get("cityName") or ""), "region": region, "kind": "O" if region else "L"}
+
+
+def place_unknown(profile):
+    """No confirmed U.S. office place: show "Licensed in State" only."""
+    return place_of(profile)["kind"] in ("U", "I")
