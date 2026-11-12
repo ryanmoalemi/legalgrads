@@ -305,6 +305,103 @@ const VA_EMAIL: Src = {
   url: '',
 };
 
+const VA_EMAIL_2: Src = {
+  label: 'Virginia State Bar, Regulatory Compliance Specialist, email reply, Nov 12, 2026',
+  url: '',
+};
+const ND_EMAIL: Src = {
+  label: 'North Dakota State Board of Law Examiners, email reply from the Director of Admissions, Nov 12, 2026',
+  url: '',
+};
+const NE_EMAIL: Src = {
+  label: 'Nebraska Supreme Court, Attorney Services Division, email reply, Nov 12, 2026',
+  url: '',
+};
+const NE_ADMISSION: Src = {
+  label: 'Nebraska Judicial Branch, admission to the practice of law',
+  url: 'https://nebraskajudicial.gov/administration/attorneys/admission-practice-law',
+};
+const NE_RULE: Src = {
+  label: 'Nebraska Supreme Court Rule 3-803, membership',
+  url: 'https://nebraskajudicial.gov/supreme-court-rules/chapter-3-attorneys-and-practice-law/article-8-state-bar-association-creation-control-and-regulation/%C2%A7-3-803-membership',
+};
+const AZ_EMAIL: Src = {
+  label: 'Arizona Supreme Court, Clerk\'s Office, email reply, Nov 12, 2026',
+  url: '',
+};
+
+/** Official replies to LegalGrads' questions. Each fact is limited to what the office wrote. */
+function applyOfficialReplies(rows: NationalState[]) {
+  const first = (s: NationalState, src: Src) => {
+    s.sources = [src, ...s.sources.filter((x) => sourceKey(x) !== sourceKey(src))];
+  };
+
+  patch(rows, 'ND', (s) => {
+    s.lastVerified = '2026-11-12';
+    s.upfront = { low: 200, high: 325, label: 'License fee for a newly admitted attorney' };
+    s.upfrontNote = 'The State Board of Law Examiners says the license fee is $325 if one year or less from the date of admission, or $200 if admitted after September 1 of the current year. Later years are $350 (more than one and less than five years) and $380 (five or more years). There is no proration by admission month.';
+    s.feeRelief = true;
+    s.feeReliefShort = '$200 if admitted after September 1. No proration by month.';
+    s.costs = [
+      { label: 'License fee, one year or less from admission', amount: 325, note: 'Not prorated by admission month.', source: ND_EMAIL },
+      { label: 'License fee, admitted after September 1 of the current year', amount: 200, note: 'Not prorated by admission month.', source: ND_EMAIL },
+      { label: 'License fee, more than one and less than five years from admission', amount: 350, note: 'Not the first-year rate. Shown for the full schedule.', source: ND_EMAIL },
+      { label: 'License fee, five or more years from admission', amount: 380, note: 'Not the first-year rate. Shown for the full schedule.', source: ND_EMAIL },
+    ];
+    s.ceremonies = [
+      { name: 'Admission ceremony for July 2026 examinees', when: 'September 2026 (already held)', fee: '$0', href: null },
+    ];
+    s.faqs = [
+      { q: 'What license fee does a newly admitted North Dakota lawyer pay?', a: 'The State Board of Law Examiners says the fee is $325 if one year or less from the date of admission, or $200 if admitted after September 1 of the current year. There is no proration by admission month.' },
+      { q: 'When was the North Dakota admission ceremony for July 2026 examinees, and is there a fee?', a: 'The Board says the admission ceremony for July 2026 examinees took place in September 2026, and there is no fee to take part.' },
+    ];
+    first(s, ND_EMAIL);
+  });
+
+  patch(rows, 'NE', (s) => {
+    s.lastVerified = '2026-11-12';
+    s.upfront = { low: 0, high: 0, label: 'Licensure fee due at admission' };
+    s.upfrontNote = 'The Attorney Services Division says no licensure fee is due at the time of admission: the admission fees cover the licensure fees for the year of admission. Licensure fees start the year after admission.';
+    s.feeRelief = true;
+    s.feeReliefShort = 'No licensure fee in the year of admission';
+    s.costs = [
+      { label: 'Licensure fee in the year of admission', amount: 0, note: 'Covered by the admission fees. Licensure fees start the year after admission.', source: NE_EMAIL },
+    ];
+    s.ceremonies = [
+      { name: 'Swearing-in ceremony for July 2026 examinees', when: 'Oct 1, 2026 (already held)', fee: '$0 to the Supreme Court', href: null },
+    ];
+    s.faqs = [
+      { q: 'Does a newly admitted Nebraska lawyer pay a licensure fee?', a: 'Not in the year of admission. The Attorney Services Division says the admission fees cover the licensure fees for that year, and licensure fees start the year after admission.' },
+      { q: 'When was the Nebraska swearing-in for July 2026 examinees, and is there a fee?', a: 'The Attorney Services Division says the ceremony took place on October 1, 2026, and there is no fee paid to the Supreme Court to take part.' },
+    ];
+    first(s, NE_EMAIL);
+    addSource(s, NE_ADMISSION);
+    addSource(s, NE_RULE);
+  });
+
+  patch(rows, 'AZ', (s) => {
+    s.lastVerified = '2026-11-12';
+    s.ceremonies = [
+      { name: 'Arizona Supreme Court swearing-in ceremony', when: 'Most recent Nov 3, 2026. Two a year, usually near the start and end of the year.', fee: NOT_PUBLISHED, href: null },
+    ];
+    s.faqs = [
+      ...s.faqs,
+      { q: 'When is the Arizona swearing-in ceremony?', a: 'The Clerk\'s Office says ceremony details are not posted on its website. Admittees are notified directly by email once chambers sets the date and time. There are two ceremonies a year, usually around the beginning and end of the year, and the most recent was on November 3, 2026. The reply did not mention a ceremony fee.' },
+    ];
+    s.gaps = [...(s.gaps ?? []), { field: 'Ceremony fee', detail: 'The Arizona Supreme Court Clerk\'s Office reply of Nov 12, 2026 did not address a ceremony fee.' }];
+    addSource(s, AZ_EMAIL);
+  });
+
+  patch(rows, 'VA', (s) => {
+    s.lastVerified = '2026-11-12';
+    s.upfrontNote += ' A Nov 12, 2026 reply adds that newly licensed attorneys pay half the membership dues for the first year, citing the Rules and Regulations, section IV, part 6, paragraph 11.';
+    s.faqs = s.faqs.map((f) => f.q === 'What does a newly admitted Virginia lawyer pay in dues?'
+      ? { ...f, a: `${f.a} In a Nov 12, 2026 reply, the Bar added that newly licensed attorneys pay half the membership dues for the first year (Rules and Regulations, section IV, part 6, paragraph 11) and that there is no fee for the newly licensed to attend the ceremony.` }
+      : f);
+    addSource(s, VA_EMAIL_2);
+  });
+}
+
 const TX_MONTHS: { id: string; label: string; dues: number; note?: string }[] = [
   ['2026-06', 'Jun 2026', 74],
   ['2026-07', 'Jul 2026', 74],
@@ -555,6 +652,7 @@ function build(): NationalState[] {
   });
 
   applyDeep(rows);
+  applyOfficialReplies(rows);
   return rows;
 }
 
