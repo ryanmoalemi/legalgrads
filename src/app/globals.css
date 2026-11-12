@@ -300,3 +300,4 @@ body[data-cookie-open] [aria-invalid='true'] {
 .lg-hub__namerow .lg-input { flex: 1; min-width: 0; }
 .lg-hub__namesearch { display: grid; gap: 8px; max-width: 560px; }
 .lg-hub__rows { grid-template-columns: repeat(auto-fill, minmax(min(100%, 440px), 1fr)); }
+.lg-dir__recover { display: flex; flex-wrap: wrap; gap: 8px; }
