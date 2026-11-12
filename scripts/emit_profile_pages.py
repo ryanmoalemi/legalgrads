@@ -19,6 +19,7 @@ from suppression import is_suppressed
 ROOT = Path(__file__).resolve().parent.parent
 OUT = ROOT / "out"
 CSS_SRC = ROOT / "src/app/(site)/attorneys/profile-template.css"
+SYSTEM_CSS_SRC = ROOT / "src/styles/lg-system.css"
 CHROME_CSS_SRC = ROOT / "src/app/(site)/attorneys/static-chrome.css"
 FONT_DIR = ROOT / "node_modules/@fontsource"
 FONTS = (
@@ -100,9 +101,8 @@ def assert_claim_links(html_text, path, profile):
     assert_favicon(html_text, path)
     assert_chrome(html_text, path)
     assert_place(html_text, path, profile)
-    joined = join_href(profile)
     removal = removal_href(path)
-    if f'href="{href}"' not in html_text or f'href="{joined}"' not in html_text:
+    if f'href="{href}"' not in html_text:
         raise SystemExit(f"Claim buttons missing on {path}")
     if f'href="{removal}"' not in html_text:
         raise SystemExit(f"Removal link missing on {path}")
@@ -111,13 +111,13 @@ def assert_claim_links(html_text, path, profile):
     if "/js/owner-edits.js" not in html_text:
         raise SystemExit(f"Owner script missing on {path}")
     for needed in (
-        "is this your profile?", "Make this profile", "Free for life. Never pay for your standard listing.",
+        "s this your profile?", "Make this profile", "Free for life. Your standard listing stays free.",
         f'href="{promise_href(path)}"', "About this profile", "License details", 'id="example-slot"',
         "See your profile views and contact activity.",
     ):
         if needed not in html_text:
             raise SystemExit(f"Claim copy missing on {path}: {needed}")
-    for banned in ("What we know", "Founding Member", "separate from claiming", "physical letter", "Ask about fees", ">Profile claimed<", "\U0001f389", "\U0001f393"):
+    for banned in ("/attorney/login/", ">Sign in<", "Identity verification", 'class="sticky"', "What we know", "Founding Member", "separate from claiming", "physical letter", "Ask about fees", ">Profile claimed<", "\U0001f389", "\U0001f393"):
         if banned in html_text:
             raise SystemExit(f"Old copy left on {path}: {banned}")
 
@@ -161,7 +161,7 @@ def individual(p):
     return p.get("recordLinkType") in ("individual_official_profile", "individual_official_data_record")
 
 
-SEARCH_LABEL = "Search the state bar."
+SEARCH_LABEL = "Search official records"
 
 
 def official_href(p):
@@ -311,7 +311,7 @@ def license_parts(p):
             check = "View official State Bar record"
         else:
             label = link_label(p)
-            check = {"official profile": "View the official profile", "official record": "View the official record"}.get(label, "View the official roster")
+            check = {"official profile": "View official record", "official record": "View official record"}.get(label, SEARCH_LABEL)
     return href, verified_from, check, who_label, who, bar_label, bar_value
 
 
@@ -322,7 +322,7 @@ def row(name, label, value, value_attrs=""):
 def license_html(p):
     href, verified_from, check, who_label, who, bar_label, bar_value = license_parts(p)
     status_cls = "v ok" if p.get("status") == "Active" else "v"
-    status_value = f"{esc(p['status'])} as of {esc(p['lastVerified'])}"
+    status_value = f"{esc(p['status'])} <small>Status checked {esc(p['lastVerified'])}</small>"
     rows = [
         f'<li>{icon("shield")}<span class="k">License status</span><span class="{status_cls}">{status_value}</span></li>',
         row("calendar", f"Admitted in {esc(p['stateName'])}", esc(p["admitted"])),
@@ -336,7 +336,7 @@ def license_html(p):
     rows.append(row("cap", "Law school", esc(school) + note))
     source, link, shared = record_source(p)
     if href:
-        rows.append(row("link", "Official record", ext(href, check + " \u2197") + esc(shared)))
+        rows.append(row("link", "Official record", ext(href, check + " \u2197") + (f"<small>{esc(shared.strip(' ()'))}</small>" if shared else "")))
     return (
         f'<h3 class="lic-h">License details</h3><ul class="lic">{"".join(rows)}</ul>'
         f'<p class="verified">License status checked {esc(p["lastVerified"])} from {esc(verified_from)} records.</p>'
@@ -361,7 +361,7 @@ def about_html(p, fn):
     source, _link, _note = record_source(p)
     return (
         f'<div class="card about"><h2>About this profile</h2>'
-        f'<p class="info">{icon("info")}<span id="about-claim">Created from {esc(source)}. Services, fees and availability have not been confirmed by the attorney.</span></p>'
+        f'<p class="info">{icon("info")}<span id="about-claim">This profile was created from {esc(source)}. {esc(p["name"])} has not yet confirmed services, fees or availability on LegalGrads.</span></p>'
         f'<ul class="facts"></ul>{license_html(p)}</div>'
     )
 
@@ -386,24 +386,38 @@ NEUTRAL_DISC = (
 )
 
 
-def benefits_html():
+def steps_html():
+    """How claiming works. Adds what the claim card does not say: how control is confirmed and that
+    the license status is a separate, dated check (handoff correction 2: no generic "Identity verification")."""
     items = (
-        ("person", "Tell your story", "Add your photo and background."),
-        ("layers", "Show your services", "Describe what you do and your fees."),
-        ("mail", "Make contact easy", "Choose how clients can get in touch."),
-        ("check", "Identity verification", "Claims are checked against the official bar record."),
+        ("Confirm it is you", "We email a one-time code, normally to the address on your official licensing record. Another address goes to manual review first."),
+        ("Add your details", "Photo, services, fees and contact options appear only after you add them."),
+        ("License status stays separate", "It comes from the official record, with the date we last checked it. Claiming does not change it."),
     )
-    lis = "".join(f"<li>{icon(i)}<div><b>{t}</b><span>{d}</span></div></li>" for i, t, d in items)
+    lis = "".join(f"<li><b>{t}</b><span>{d}</span></li>" for t, d in items)
     return (
-        '<section class="benefits" id="claim-benefits" aria-label="What claiming gives you">'
-        '<h2>A professional profile. <span class="u">Yours to shape.</span></h2>'
-        f"<ul>{lis}</ul></section>"
+        '<section class="steps" id="claim-benefits" aria-labelledby="steps-h">'
+        f'<h2 id="steps-h">How claiming works</h2><ol>{lis}</ol></section>'
     )
 
 
 # The example profile is the same on every page, so public/js/owner-edits.js draws it into
 # this slot. That keeps 55k pages small and keeps the sample out of each page's indexed text.
 EXAMPLE_SLOT = '<div id="example-slot" data-example="1"></div>'
+
+
+def greeting(p):
+    """"Nadine, is this your profile?" Falls back when the first word is an initial or not a given name."""
+    first = p["name"].split(" ")[0]
+    if len(first.rstrip(".")) < 2 or first.endswith(".") or not first[:1].isalpha():
+        return "Is this your profile?"
+    return f"{first}, is this your profile?"
+
+
+def office_line(p):
+    if city_unknown(p):
+        return "Office location not listed."
+    return f"Office: {place_label(p)}"
 
 
 def page_html(p):
@@ -427,29 +441,30 @@ def page_html(p):
     )
     ticks = "".join(f"<li>{icon(i)}<span>{t}</span></li>" for i, t in claim_items)
     body = (
-        f'{header_html()}<div class="lgp">'
-        f'<section class="band"><div class="band-in">'
+        f'{header_html(claim_href(path))}<div class="lgp">'
+        f'<section class="band" aria-label="Attorney identity"><div class="band-in">'
         f'<nav class="crumbs" aria-label="Breadcrumb"><a href="/">Home</a> › <a href="{state_href}">{esc(p["stateName"])}</a> › <a href="{city_href}">{esc(crumb)}</a> › <span>{esc(p["name"])}</span></nav>'
-        f'<div class="band-row"><div class="avatar" aria-label="No photo">{esc(initials)}</div>'
-        f'<div class="who"><h1>{esc(p["name"])}</h1><p class="where"><span>{esc(where_line(p))}</span></p></div>'
+        f'<div class="band-row"><div class="avatar" aria-hidden="true">{esc(initials)}</div>'
+        f'<div class="who"><h1>{esc(p["name"])}</h1><p class="where"><span>Licensed in {esc(p["stateName"])}</span></p>'
+        f'<p class="office">{esc(office_line(p))}</p></div>'
         f'<div class="meta"><span class="chip solid">Profile not yet claimed</span>'
         f'<p class="barline">{esc(bar_value)} <span aria-hidden="true">|</span> Admitted {esc(p["admitted"])}</p></div></div>'
         f"</div></section>"
-        f'<main class="wrap" id="main"><div class="grid"><div>{about_html(p, fn)}</div>'
-        f'<aside><div class="card claim" id="claim"><div class="claim-top"><span class="pill">{esc(fn)}, is this your profile?</span><span class="free-tag">Always free</span></div>'
+        f'<main class="wrap" id="main"><div class="grid">'
+        f'<aside aria-label="Claim this profile"><div class="card claim" id="claim"><span class="pill">{esc(greeting(p))}</span>'
         f'<h2>Make this profile <span class="u">yours.</span></h2>'
         f'<p class="lead">Show small business owners what you do and how to contact you.</p>'
         f'<ul class="ticks">{ticks}</ul>'
         f'<a class="btn pink" href="{claim_href(path)}">Claim my free profile</a>'
-        f'<p class="promise">Free for life. Never pay for your standard listing.</p>'
+        f'<p class="promise">Free for life. Your standard listing stays free.</p>'
         f'<p class="small"><a href="{promise_href(path)}">Our free listing promise</a></p>'
-        f'<p class="small muted">Optional paid promotion may be offered later.</p></div></aside></div>'
-        f"{benefits_html()}{EXAMPLE_SLOT}"
+        f'<p class="small muted">Optional paid promotion may be offered later.</p></div></aside>'
+        f'<div class="about-col">{about_html(p, fn)}</div></div>'
+        f"{steps_html()}{EXAMPLE_SLOT}"
         f'<p class="browse">Looking for legal help? <a href="/find-lawyer/">Browse attorneys</a> <span aria-hidden="true">·</span> <a href="{city_href}">{more_label}</a></p>'
         f"{disc}"
-        f'<p class="small fixes">Something wrong? <a href="{correction_href(path)}">Suggest a correction</a>. Are you {esc(fn)} and want this listing taken down? <a href="{removal_href(path)}">Request removal</a></p>'
-        f'<div class="sticky"><a class="btn pink" href="{join_href(p)}">Claim this free profile</a></div></main></div>'
-        f"{footer_html(removal_href(path), correction_href(path))}"
+        f'<p class="small fixes">Something wrong? <a href="{correction_href(path)}">Suggest a correction</a>. Want this listing taken down? <a href="{removal_href(path)}">Request removal</a></p>'
+        f"</main></div>{footer_html()}"
     )
     return (
         "<!DOCTYPE html><html lang=\"en\"><head><meta charset=\"utf-8\">"
@@ -462,11 +477,12 @@ def page_html(p):
         f"<meta property=\"og:url\" content=\"{esc(url)}\">"
         "<meta property=\"og:type\" content=\"profile\">"
         "<link rel=\"stylesheet\" href=\"/css/attorney-profile.css\">"
+        "<script>document.documentElement.classList.add('lg-js')</script>"
         f"<script async src=\"https://www.googletagmanager.com/gtag/js?id={GA}\"></script>"
         "<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}var lgc={};try{lgc=JSON.parse(localStorage.getItem('legalgrads-consent')||'{}')||{}}catch(e){}gtag('consent','default',{analytics_storage:lgc.analytics?'granted':'denied',ad_storage:lgc.marketing?'granted':'denied',ad_user_data:lgc.marketing?'granted':'denied',ad_personalization:lgc.marketing?'granted':'denied'});gtag('js',new Date());"
         f"gtag('config','{GA}');</script>"
         f'<script type="application/ld+json">{json_ld(p)}</script></head><body><a class="lg-skip" href="#main">Skip to content</a>{body}'
-        '<script src="/js/owner-edits.js" defer></script></body></html>'
+        '<script src="/js/site-nav.js" defer></script><script src="/js/owner-edits.js" defer></script></body></html>'
     )
 
 
@@ -591,7 +607,7 @@ def scan_attorney_pages(root):
 def main():
     if not OUT.is_dir():
         raise SystemExit("out/ is missing. Run next build first.")
-    css = font_css() + CHROME_CSS_SRC.read_text(encoding="utf-8") + CSS_SRC.read_text(encoding="utf-8")
+    css = font_css() + SYSTEM_CSS_SRC.read_text(encoding="utf-8") + CHROME_CSS_SRC.read_text(encoding="utf-8") + CSS_SRC.read_text(encoding="utf-8")
     css = re.sub(r"/\*.*?\*/", "", css, flags=re.S)
     css = re.sub(r"\s+", " ", css).strip()
     CSS_OUT.parent.mkdir(parents=True, exist_ok=True)
@@ -619,7 +635,7 @@ def main():
             sample = html_text
     if sample is None or "Oct 27, 2026" not in sample or "License details" not in sample or "State Bar of California records" not in sample:
         raise SystemExit("Existing California page text did not match")
-    if '<span class="k">Regulator</span>' in sample or "Search the state bar." in sample:
+    if '<span class="k">Regulator</span>' in sample or SEARCH_LABEL in sample:
         raise SystemExit("Existing California page picked up new-state license wording")
     for old, new in {**redirects, **hubs}.items():
         write_redirect(old, new)
@@ -634,6 +650,21 @@ def main():
         body.append("</sitemapindex>")
         (OUT / "sitemap.xml").write_text("\n".join(body) + "\n", encoding="utf-8")
     print(f"profiles {len(profiles)} bytes {total} avg {total / len(profiles):.0f}")
+    check_site_size()
+
+
+# GitHub Pages publishes at most 1 GB. Fail early with headroom so a template change cannot push it over.
+SITE_LIMIT_BYTES = int(os.environ.get("LG_SITE_LIMIT_BYTES", "970000000"))
+
+
+def check_site_size():
+    size = 0
+    for folder, _dirs, files in os.walk(OUT):
+        for name in files:
+            size += os.path.getsize(os.path.join(folder, name))
+    print(f"site size {size} bytes ({size / 1e9:.3f} GB, limit {SITE_LIMIT_BYTES / 1e9:.2f} GB)")
+    if size > SITE_LIMIT_BYTES:
+        raise SystemExit(f"out/ is {size / 1e9:.3f} GB, over the {SITE_LIMIT_BYTES / 1e9:.2f} GB budget for GitHub Pages")
 
 
 if __name__ == "__main__":

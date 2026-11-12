@@ -12,8 +12,8 @@ html {
 
 body {
   min-height: 100vh;
-  background: #fff8f1;
-  color: #0b0b3b;
+  background: #fff8f0;
+  color: #161a3d;
 }
 
 img,
@@ -30,7 +30,7 @@ textarea {
 }
 
 :focus-visible {
-  outline: 3px solid #7a00ff;
+  outline: 3px solid #7100c8;
   outline-offset: 3px;
 }
 
@@ -194,3 +194,26 @@ body[data-cookie-open] [aria-invalid='true'] {
   body[data-cookie-open] .join-footer-pad { height: calc(8rem + env(safe-area-inset-bottom)); }
   body[data-cookie-open] [aria-invalid='true'] { scroll-margin-bottom: calc(8rem + env(safe-area-inset-bottom)); }
 }
+
+/* Claim entry (src/views/ClaimFlow.tsx) on the shared lg- tokens. */
+.lg-claim .lg-band { padding-block: 32px; }
+.lg-claim__band h1 { font-family: var(--lg-display); font-size: clamp(2rem, 1.25rem + 2.5vw, 3rem); font-weight: 800; line-height: 1.12; letter-spacing: -0.03em; }
+.lg-claim__band .lg-sub { margin-top: 8px; font-size: 18px; }
+.lg-claim__body { width: min(calc(100% - 32px), 640px); margin: 24px auto 0; display: grid; gap: 16px; }
+.lg-claim__card { border: 1px solid var(--lg-border); border-radius: 20px; background: var(--lg-white); padding: 24px; box-shadow: var(--lg-shadow-card); }
+.lg-claim__form { display: grid; gap: 16px; }
+.lg-claim__form h2 { font-family: var(--lg-display); font-size: 24px; font-weight: 750; color: var(--lg-navy); line-height: 1.2; }
+.lg-claim__who { display: grid; gap: 16px; }
+.lg-claim__id { display: flex; gap: 16px; align-items: center; }
+.lg-claim__id .lg-avatar { width: 72px; height: 72px; font-size: 26px; }
+.lg-claim__name { font-family: var(--lg-display); font-size: 24px; font-weight: 800; color: var(--lg-navy); line-height: 1.2; overflow-wrap: anywhere; }
+.lg-claim a, .lg-claim__link { color: var(--lg-purple); font-weight: 650; text-decoration: underline; text-underline-offset: .18em; }
+.lg-claim__link { background: none; border: 0; min-height: 44px; cursor: pointer; justify-self: center; font-size: 16px; }
+.lg-claim__link:disabled { color: var(--lg-muted); text-decoration: none; cursor: default; }
+.lg-claim__row { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px; }
+.lg-claim__fine { font-size: 14px; color: var(--lg-muted); }
+.lg-claim__next { text-align: center; color: var(--lg-muted); }
+.lg-claim__code { font-size: 24px; letter-spacing: .4em; }
+.lg-claim__steps { display: flex; flex-wrap: wrap; gap: 8px; list-style: none; padding: 0; margin: 0; font-size: 14px; font-weight: 650; }
+.lg-claim__steps li { border-radius: 999px; padding: 4px 12px; background: var(--lg-white); color: var(--lg-text); border: 1px solid var(--lg-border); }
+.lg-claim__steps li.is-current { background: var(--lg-navy); color: var(--lg-white); border-color: var(--lg-navy); }

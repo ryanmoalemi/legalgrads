@@ -48,13 +48,13 @@ function LicenseDetails({ p }: { p: AttorneyProfile }) {
   const href = p.recordLinkType ? officialHref(p) : calbarUrl(p.barNumber);
   const caProfile = legacy(p);
   const label = officialLinkLabel(p);
-  const check = caProfile ? 'View official State Bar record' : label === 'official profile' ? 'View the official profile' : label === 'official record' ? 'View the official record' : 'View the official roster';
+  const check = caProfile ? 'View official State Bar record' : label === 'official profile' || label === 'official record' ? 'View official record' : 'Search official records';
   const verifiedFrom = caProfile ? `State Bar of ${p.stateName}` : p.sourceAuthority || p.stateName;
   return (
     <>
       <h3 className="lic-h">License details</h3>
       <ul className="lic">
-        <li><Icon name="shield" /><span className="k">License status</span><span className={p.status === 'Active' ? 'v ok' : 'v'}>{p.status} as of {p.lastVerified}</span></li>
+        <li><Icon name="shield" /><span className="k">License status</span><span className={p.status === 'Active' ? 'v ok' : 'v'}>{p.status} <small>Status checked {p.lastVerified}</small></span></li>
         <li><Icon name="calendar" /><span className="k">Admitted in {p.stateName}</span><span className="v">{p.admitted}</span></li>
         <li><Icon name="card" /><span className="k">{caProfile ? `${p.stateName} Bar Number` : 'License number'}</span><span className="v">{barValue(p)}</span></li>
         {p.recordLinkType && !caProfile ? <li><Icon name="building" /><span className="k">Regulator</span><span className="v">{p.sourceAuthority || p.stateName}</span></li> : null}
@@ -74,7 +74,6 @@ export function AttorneyProfilePage({ p }: { p: AttorneyProfile }) {
   const c = p.claimed;
   const fn = firstName(p);
   const place = cityUnknown(p) ? '' : placeLabel(p);
-  const where = place ? `Licensed in ${p.stateName} · ${place}` : `Licensed in ${p.stateName}`;
   const crumbCity = cityUnknown(p) ? 'Office city not listed' : p.officeState && p.officeState !== p.stateCode && p.locationLabel ? p.locationLabel : p.cityName;
   const path = profilePath(p);
   return (
@@ -83,15 +82,15 @@ export function AttorneyProfilePage({ p }: { p: AttorneyProfile }) {
       <section className="band"><div className="band-in">
         <nav className="crumbs" aria-label="Breadcrumb"><Link href="/">Home</Link> › <Link href={`/attorneys/${p.state}/`}>{p.stateName}</Link> › <Link href={cityPath(p.state, p.city)}>{crumbCity}</Link> › {c ? <><Link href="/specialties/">Business &amp; contracts</Link> › </> : null}<span>{p.name}</span></nav>
         <div className="band-row">
-          {c ? <img className="avatar" src={c.photo} alt={p.name} /> : <div className="avatar" aria-label="No photo">{initials(p)}</div>}
-          <div className="who"><h1>{p.name}</h1><p className="where"><span>{c ? `${c.headline} · ${place || p.stateName}` : where}</span></p></div>
+          {c ? <img className="avatar" src={c.photo} alt={p.name} /> : <div className="avatar" aria-hidden="true">{initials(p)}</div>}
+          <div className="who"><h1>{p.name}</h1><p className="where"><span>Licensed in {p.stateName}</span></p><p className="office">{c ? `${c.headline} · ` : ''}{place ? `Office: ${place}` : 'Office location not listed.'}</p></div>
           <div className="meta">
             <span className="chip solid">{c ? 'Claimed profile' : 'Profile not yet claimed'}</span>
             <p className="barline">{barValue(p)} <span aria-hidden="true">|</span> Admitted {p.admitted}</p>
           </div>
         </div>
       </div></section>
-      <main className="wrap">
+      <div className="wrap">
         {c ? (
           <div className="grid"><div>
             <div className="card"><h2>About {fn}</h2><p>{c.bio}</p></div>
@@ -112,16 +111,10 @@ export function AttorneyProfilePage({ p }: { p: AttorneyProfile }) {
           </aside></div>
         ) : (
           <>
-            <div className="grid"><div>
-              <div className="card about"><h2>About this profile</h2>
-                <p className="info"><Icon name="info" /><span id="about-claim">Created from {legacy(p) ? 'public State Bar records' : `public ${p.sourceAuthority || p.stateName} records`}. Services, fees and availability have not been confirmed by the attorney.</span></p>
-                <ul className="facts" />
-                <LicenseDetails p={p} />
-              </div>
-            </div>
-            <aside>
+            <div className="grid">
+            <aside aria-label="Claim this profile">
               <div className="card claim" id="claim">
-                <div className="claim-top"><span className="pill">{fn}, is this your profile?</span><span className="free-tag">Always free</span></div>
+                <span className="pill">{fn}, is this your profile?</span>
                 <h2>Make this profile <span className="u">yours.</span></h2>
                 <p className="lead">Show small business owners what you do and how to contact you.</p>
                 <ul className="ticks">
@@ -131,32 +124,35 @@ export function AttorneyProfilePage({ p }: { p: AttorneyProfile }) {
                   <li><Icon name="chart" /><span>See your profile views and contact activity.</span></li>
                 </ul>
                 <Link className="btn pink" href={claimHref(path)}>Claim my free profile</Link>
-                <p className="promise">Free for life. Never pay for your standard listing.</p>
+                <p className="promise">Free for life. Your standard listing stays free.</p>
                 <p className="small"><Link href={promiseHref(path)}>Our free listing promise</Link></p>
                 <p className="small muted">Optional paid promotion may be offered later.</p>
               </div>
-            </aside></div>
-            <section className="benefits" id="claim-benefits" aria-label="What claiming gives you">
-              <h2>A professional profile. <span className="u">Yours to shape.</span></h2>
-              <ul>
-                <li><Icon name="person" /><div><b>Tell your story</b><span>Add your photo and background.</span></div></li>
-                <li><Icon name="layers" /><div><b>Show your services</b><span>Describe what you do and your fees.</span></div></li>
-                <li><Icon name="mail" /><div><b>Make contact easy</b><span>Choose how clients can get in touch.</span></div></li>
-                <li><Icon name="shield" /><div><b>Identity verification</b><span>Claims are checked against the official bar record.</span></div></li>
-              </ul>
+            </aside>
+            <div className="about-col">
+              <div className="card about"><h2>About this profile</h2>
+                <p className="info"><Icon name="info" /><span id="about-claim">This profile was created from {legacy(p) ? 'public State Bar records' : `public ${p.sourceAuthority || p.stateName} records`}. {p.name} has not yet confirmed services, fees or availability on LegalGrads.</span></p>
+                <ul className="facts" />
+                <LicenseDetails p={p} />
+              </div>
+            </div>
+            </div>
+            <section className="steps" id="claim-benefits" aria-labelledby="steps-h">
+              <h2 id="steps-h">How claiming works</h2>
+              <ol>
+                <li><b>Confirm it is you</b><span>We email a one-time code, normally to the address on your official licensing record. Another address goes to manual review first.</span></li>
+                <li><b>Add your details</b><span>Photo, services, fees and contact options appear only after you add them.</span></li>
+                <li><b>License status stays separate</b><span>It comes from the official record, with the date we last checked it. Claiming does not change it.</span></li>
+              </ol>
             </section>
             <div id="example-slot" data-example="1" />
             <p className="browse">Looking for legal help? <Link href="/find-lawyer/">Browse attorneys</Link></p>
             {legacy(p) ? <LegacyDisclaimer /> : <NeutralDisclaimer />}
-            <p className="small fixes">Something wrong? <a href={correctionHref(path)}>Suggest a correction</a>. Are you {fn} and want this listing taken down? <Link href={removalHref(path)}>Request removal</Link></p>
+            <p className="small fixes">Something wrong? <a href={correctionHref(path)}>Suggest a correction</a>. Want this listing taken down? <Link href={removalHref(path)}>Request removal</Link></p>
           </>
         )}
         <script src="/js/owner-edits.js" defer />
-        <div className="sticky">
-          {c ? (<><a className="btn pink" href={`mailto:${c.email}`}>Email</a>{c.website && <a className="btn out" href={c.website} target="_blank" rel="nofollow noopener">Website</a>}</>)
-            : <Link className="btn pink" href={`/join/?state=${encodeURIComponent(p.stateCode)}&bar=${encodeURIComponent(p.barNumber)}`}>Claim this free profile</Link>}
-        </div>
-      </main>
+      </div>
     </div>
   );
 }

@@ -4,14 +4,19 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        navy: '#0B0B3B',
-        purple: '#7A00FF',
-        pink: '#FF008A',
-        pinkdark: '#C2006A',
+        navy: '#10133F',
+        purple: '#7100C8',
+        pink: '#BF006D',
+        pinkdark: '#BF006D',
         orange: '#FF6B22',
-        cream: '#FFF8F1',
-        mint: '#00C5A2',
-        ink: '#4A4E72',
+        cream: '#FFF8F0',
+        mint: '#087F78',
+        ink: '#58596E',
+        copy: '#161A3D',
+        lavender: '#F1E7FF',
+        lavenderstrong: '#DDC2FF',
+        teal: '#087F78',
+        line: '#DDD6E7',
       },
       fontFamily: {
         display: ['var(--font-jakarta)', 'sans-serif'],

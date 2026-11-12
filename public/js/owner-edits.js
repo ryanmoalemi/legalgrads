@@ -108,6 +108,9 @@
         if (node) node.hidden = true;
       });
     }
+    // Someone already claimed this record, so the header action goes to the generic lookup instead.
+    var headerClaim = document.querySelector('.lg-header a.lg-btn');
+    if (headerClaim) headerClaim.setAttribute('href', '/claim/');
     var host = document.querySelector('.lgp aside');
     if (!host || document.getElementById('report-claim')) return;
     var p = el('p', { class: 'small', id: 'report-claim' });
@@ -260,7 +263,8 @@
       fixed.forEach(function (fee) { fees.appendChild(el('li', {}, fee.service + ': ' + fee.price)); });
       card.appendChild(fees);
     }
-    host.insertBefore(card, host.firstChild);
+    // Pending or empty claims have nothing approved to show, so no empty "From this attorney" card.
+    if (card.childNodes.length > 1) host.insertBefore(card, host.firstChild);
     var billing = (claim.billing || []).map(function (value) { return BILLING[value]; }).filter(Boolean);
     // Fees show only when the attorney supplied them.
     if (billing.length) setFact('fees-state', 'Fees', billing.join(', '));

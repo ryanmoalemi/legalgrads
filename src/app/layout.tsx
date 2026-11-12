@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import localFont from 'next/font/local';
 import './globals.css';
+import '@/styles/lg-system.css';
 
 const jakarta = localFont({
   src: [
@@ -64,8 +65,9 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${jakarta.variable} ${inter.variable} ${caveat.variable}`}>
+    <html lang="en" suppressHydrationWarning className={`${jakarta.variable} ${inter.variable} ${caveat.variable}`}>
       <head>
+        <script dangerouslySetInnerHTML={{ __html: "document.documentElement.classList.add('lg-js')" }} />
         <script async src="https://www.googletagmanager.com/gtag/js?id=G-CHX0PZJH8W" />
         <script
           dangerouslySetInnerHTML={{

@@ -66,12 +66,13 @@ test('both claim buttons and removal links resolve for every sample state', asyn
     const removalHits = [`/data-deletion/?profile=${encodeURIComponent(path)}`, `/data-deletion/?profile=${path}`]
       .some((href) => html.includes(href));
     expect(Math.max(...claimHits), path).toBeGreaterThanOrEqual(1);
-    expect(html, path).toContain('/join/?state=');
-    expect(html, path).toContain('Claim this free profile');
+    expect(html, path).not.toContain('class="sticky"');
+    expect(html, path).not.toContain('/attorney/login/');
+    expect(html, path).toContain('Claim your free profile');
     expect(removalHits, path).toBe(true);
     expect(html, path).toContain('/js/owner-edits.js');
     expect(html, path).toContain('is this your profile?');
-    expect(html, path).toContain('Free for life. Never pay for your standard listing.');
+    expect(html, path).toContain('Free for life. Your standard listing stays free.');
     expect(html, path).toContain(`href="/free-listing-promise/?profile=${encodeURIComponent(path)}"`);
     expect(html, path).toContain('About this profile');
     expect(html, path).toContain('License details');
@@ -111,7 +112,8 @@ test('wyoming claim page keeps the official hyphenated bar number', async ({ pag
 test('test inbox can claim, edit, and see the edit on the public page', async ({ page }) => {
   await boot(page, CALLIE);
   await page.setViewportSize({ width: 390, height: 844 });
-  await expect(page.getByRole('link', { name: 'Claim this free profile' })).toHaveAttribute('href', '/join/?state=CA&bar=369241');
+  await expect(page.locator('.lg-header a.lg-btn')).toHaveAttribute('href', `/claim/?profile=${encodeURIComponent(CALLIE)}`);
+  await expect(page.locator('.sticky')).toHaveCount(0);
   await expect(page.getByText('Callie, is this your profile?')).toBeVisible();
   await expect(page.getByRole('heading', { name: 'Make this profile yours.' })).toBeVisible();
   await expect(page.locator('.chip.solid')).toHaveText('Profile not yet claimed');
@@ -199,6 +201,40 @@ test('unknown city reads Licensed in California on the profile and claim screen'
 
 test('a real city stays on the profile', async ({ page }) => {
   await boot(page, CALLIE);
-  await expect(page.locator('.where')).toHaveText('Licensed in California · Escondido, CA');
+  await expect(page.locator('.where')).toHaveText('Licensed in California');
+  await expect(page.locator('.office')).toHaveText('Office: Escondido, CA');
   await expect(page).toHaveTitle('Callie Yahyavi, Attorney in Escondido, CA | LegalGrads');
+});
+
+test('generic claim entry looks up the exact profile instead of an error', async ({ page }) => {
+  await boot(page, '/claim/');
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText('Find your profile to claim it.');
+  await expect(page.getByText('That profile link is not valid.')).toHaveCount(0);
+  await page.getByTestId('claim-lookup-bar').fill('369241');
+  await page.getByRole('button', { name: 'Find my profile' }).click();
+  await expect(page).toHaveURL(`/claim/?profile=${encodeURIComponent(CALLIE)}`);
+  await expect(page.getByTestId('claim-listing')).toContainText('Callie Yahyavi');
+  await boot(page, '/claim/');
+  await page.getByTestId('claim-lookup-state').selectOption('TX');
+  await page.getByTestId('claim-lookup-bar').fill('000000001');
+  await page.getByRole('button', { name: 'Find my profile' }).click();
+  await expect(page.getByTestId('claim-lookup-none')).toContainText('apply for a new listing');
+});
+
+test('profile header has the claim action, a real menu button, and no password sign in', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await boot(page, CALLIE);
+  const toggle = page.locator('.lg-menu-toggle');
+  await expect(toggle).toHaveAttribute('aria-controls', 'lg-menu');
+  await expect(toggle).toHaveAttribute('aria-expanded', 'false');
+  await expect(page.locator('#lg-menu')).toBeHidden();
+  await toggle.click();
+  await expect(toggle).toHaveAttribute('aria-expanded', 'true');
+  await expect(page.locator('#lg-menu').getByRole('link', { name: 'Claim your free profile' })).toBeVisible();
+  await page.keyboard.press('Escape');
+  await expect(page.locator('#lg-menu')).toBeHidden();
+  await expect(toggle).toBeFocused();
+  await expect(page.locator('header')).not.toContainText('Sign in');
+  await expect(page.locator('footer a[href="/free-listing-promise/"]')).toHaveCount(1);
+  await expect(page.locator('main')).toHaveCount(1);
 });

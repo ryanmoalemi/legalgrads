@@ -1,0 +1,49 @@
+{
+  "primary": [
+    ["/find-lawyer/", "Find an attorney"],
+    ["/how-it-works/", "How it works"],
+    ["/for-attorneys/", "For attorneys"]
+  ],
+  "claimLabel": "Claim your free profile",
+  "footer": [
+    ["Product", [
+      ["/find-lawyer/", "Find an attorney"],
+      ["/specialties/", "Practice areas"],
+      ["/how-it-works/", "How it works"],
+      ["/about/", "About"],
+      ["/faq/", "FAQ"],
+      ["/how-we-build-legalgrads/", "How we build LegalGrads"],
+      ["/contact/", "Contact"],
+      ["/sitemap/", "Site map"]
+    ]],
+    ["Attorneys", [
+      ["/for-attorneys/", "For attorneys"],
+      ["/claim/", "Claim your profile"],
+      ["/join/", "Join free"],
+      ["/pricing/", "Pricing"],
+      ["/free-listing-promise/", "Free listing promise"],
+      ["/resources/post-bar-licensing-tracker/", "Post-bar licensing tracker"],
+      ["/attorney-terms/", "Attorney Terms"],
+      ["/attorney-advertising/", "Attorney advertising"],
+      ["/directory-disclosure/", "Directory disclosure"]
+    ]],
+    ["Legal", [
+      ["/legal/", "Legal"],
+      ["/terms/", "Terms"],
+      ["/privacy/", "Privacy"],
+      ["/cookies/", "Cookies"],
+      ["/cookie-settings/", "Cookie settings"],
+      ["/disclaimers/", "Disclaimers"],
+      ["/accessibility/", "Accessibility"]
+    ]],
+    ["Privacy", [
+      ["/do-not-sell-or-share/", "Do not sell or share"],
+      ["/privacy-request/", "Privacy request"],
+      ["/data-deletion/", "Data deletion"],
+      ["/security/", "Security"],
+      ["/report-abuse/", "Report abuse"]
+    ]]
+  ],
+  "footerNote": "A directory of licensed U.S. attorneys. LegalGrads is not a law firm and not a lawyer referral service. Standard listings are free, with no per-lead fees.",
+  "copyright": "\u00a9 2026 LegalGrads. Informational resource only; not legal advice."
+}

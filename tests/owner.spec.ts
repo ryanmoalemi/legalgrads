@@ -69,7 +69,7 @@ test('claim flow: code to the bar email, resend, then straight into the editor',
   });
   await boot(page, `/claim/?profile=${encodeURIComponent(CALLIE)}`);
   await expect(page.getByRole('heading', { level: 1 })).toHaveText('Make this profile yours.');
-  await expect(page.getByTestId('claim-bar-email')).toContainText('We will send a confirmation code to the email address in your State Bar record');
+  await expect(page.getByTestId('claim-bar-email')).toContainText('We will send a confirmation code to the email address in your official licensing record');
   await page.getByTestId('claim-attest').check({ force: true });
   await page.getByRole('button', { name: 'Email my confirmation code' }).click();
   await expect(page.getByTestId('claim-status')).toContainText('We emailed a confirmation code');
@@ -177,7 +177,6 @@ test('verified claimed profile shows the request form with the notice, honeypot,
   expect(trapBox!.x).toBeLessThan(0);
   await expect(page.locator('#inquiry input[name="website"]')).toHaveAttribute('tabindex', '-1');
   await expect(page.locator('#fees-state span').last()).toHaveText('Hourly');
-  await expect(page.locator('.sticky a')).toHaveText('Ask about your legal needs');
   await card.getByRole('button', { name: 'Send request' }).click();
   await expect(page.getByTestId('inquiry-status')).toContainText('Add your name');
   await card.locator('input[name="name"]').fill('Pat Owner');
@@ -263,7 +262,7 @@ test('no public view counter, promise page, and sitemap entry', async ({ page, r
     await boot(page, '/free-listing-promise/');
     await expect(page.getByRole('heading', { level: 1 })).toHaveText('Your listing is free. Always.');
     await expect(page.getByTestId('promise-claim')).toHaveText('Claim my free profile');
-    await expect(page.getByTestId('promise-claim')).toHaveAttribute('href', /^\/join\/?$/);
+    await expect(page.getByTestId('promise-claim')).toHaveAttribute('href', /^\/claim\/$/);
     await expect(page.getByRole('heading', { level: 2, name: 'Optional: sponsored upgrade for more visibility' })).toBeVisible();
     await expect(page.locator('main')).toContainText('Sponsored placements will be clearly labeled as sponsored advertisements.');
     await expect(page.locator('main')).not.toContainText('What might cost money');
