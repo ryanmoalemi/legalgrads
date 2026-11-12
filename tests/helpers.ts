@@ -1,6 +1,8 @@
 import { expect, type Page } from '@playwright/test';
 
 export async function boot(page: Page, path = '/') {
+  // Forms are tested locally only: never let a test reach the live database.
+  await page.route(/supabase\.co/, (route) => route.abort());
   await page.addInitScript(() => {
     localStorage.setItem(
       'legalgrads-consent',

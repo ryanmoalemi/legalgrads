@@ -129,14 +129,33 @@ export function DirectoryView() {
     return c && origin ? miles(origin, c) : null;
   };
 
-  const filtered = (rows ?? []).filter((row) => {
-    if (state && row.licensed_state !== state) return false;
-    if (specialty && !row.practice_areas.includes(specialty)) return false;
-    if (city && !row.cities_served.toLowerCase().includes(city.trim().toLowerCase())) return false;
-    if (nameQ.trim() && !row.full_name.toLowerCase().includes(nameQ.trim().toLowerCase())) return false;
-    if (inPersonOnly && !row.in_person) return false;
+  type Filters = { state: string; specialty: string; city: string; q: string; inPerson: boolean };
+  const current: Filters = { state, specialty, city, q: nameQ, inPerson: inPersonOnly };
+  const matches = (row: PublicProfile, f: Filters) => {
+    if (f.state && row.licensed_state !== f.state) return false;
+    if (f.specialty && !row.practice_areas.includes(f.specialty)) return false;
+    if (f.city && !row.cities_served.toLowerCase().includes(f.city.trim().toLowerCase())) return false;
+    if (f.q.trim() && !row.full_name.toLowerCase().includes(f.q.trim().toLowerCase())) return false;
+    if (f.inPerson && !row.in_person) return false;
     return true;
-  });
+  };
+  const filtered = (rows ?? []).filter((row) => matches(row, current));
+  // Empty results offer the smallest change that finds profiles, keeping the visitor's location.
+  const placeName = city.trim() ? city.trim() : state ? stateLabel(state) : '';
+  const recoveries = rows && rows.length > 0 && filtered.length === 0 ? ([
+    specialty ? { label: placeName ? `View all ${placeName} profiles` : `Remove the ${specialtyName(specialty)} filter`, next: { ...current, specialty: '' }, testid: 'recover-specialty' } : null,
+    inPersonOnly ? { label: 'Remove the in-person filter', next: { ...current, inPerson: false }, testid: 'recover-in-person' } : null,
+    nameQ.trim() ? { label: `Remove the name "${nameQ.trim()}"`, next: { ...current, q: '' }, testid: 'recover-name' } : null,
+    city.trim() && state ? { label: `View all ${stateLabel(state)} profiles`, next: { ...current, city: '', specialty: '', q: '', inPerson: false }, testid: 'recover-city' } : null,
+  ].filter(Boolean) as { label: string; next: Filters; testid: string }[])
+    .map((r) => ({ ...r, count: (rows ?? []).filter((row) => matches(row, r.next)).length }))
+    .filter((r) => r.count > 0)
+    .filter((r, i, list) => list.findIndex((o) => o.label === r.label) === i)
+    .slice(0, 2) : [];
+  function applyFilters(f: Filters) {
+    setState(f.state); setSpecialty(f.specialty); setCity(f.city); setNameQ(f.q); setInPersonOnly(f.inPerson);
+    syncUrl({ state: f.state, specialty: f.specialty, city: f.city, q: f.q });
+  }
   if (origin) {
     // Every matching attorney stays listed; only the order changes (unknown ZIPs go last).
     filtered.sort((a, b) => (dist(a) ?? Infinity) - (dist(b) ?? Infinity));
@@ -251,10 +270,21 @@ export function DirectoryView() {
             </div>
           ) : null}
           {rows && rows.length > 0 && filtered.length === 0 ? (
-            <div className="lg-dir__empty">
+            <div className="lg-dir__empty" data-testid="empty-recovery">
               <p className="lg-dir__empty-title">No profiles match those filters.</p>
-              <p>{specialty ? `No claimed profile lists ${specialtyName(specialty)} yet, and unclaimed profiles do not list practice areas. ` : ''}Try a broader location or remove a filter.</p>
-              <button type="button" className="lg-btn lg-btn--secondary" onClick={clearFilters}>Clear filters</button>
+              {specialty ? (
+                <p>We do not yet have a claimed profile listing {specialtyName(specialty)}{placeName ? ` in ${placeName}` : ''}. You can browse public attorney records here, but their services have not been confirmed.</p>
+              ) : <p>Try one of these, or change the filters.</p>}
+              {recoveries.length ? (
+                <div className="lg-dir__recover">
+                  {recoveries.map((r, i) => (
+                    <button key={r.testid} type="button" data-testid={r.testid} className={`lg-btn ${i === 0 ? 'lg-btn--primary' : 'lg-btn--secondary'}`} onClick={() => applyFilters(r.next)}>
+                      {r.label} ({r.count.toLocaleString('en-US')})
+                    </button>
+                  ))}
+                </div>
+              ) : null}
+              <button type="button" className="lg-dir__link" data-testid="clear-all" onClick={clearFilters}>Clear all filters</button>
             </div>
           ) : null}
           {shown.length > 0 ? (
@@ -294,11 +324,11 @@ export function DirectoryView() {
           ) : null}
 
           <form onSubmit={onWaitlist} className="lg-dir__note">
-            <h2>Optional directory note</h2>
-            <p>Get an occasional email when new attorneys or features are added. You do not need it to browse.</p>
+            <h2>Get directory updates</h2>
+            <p>Optional: an occasional email when new attorneys or features are added.</p>
             <label className="lg-field" htmlFor="directory-email"><span>Email</span></label>
             <input id="directory-email" name="email" type="email" required data-testid="directory-email" className="lg-input" placeholder="you@example.com" />
-            <button type="submit" data-testid="directory-waitlist" className="lg-btn lg-btn--secondary">Join the list</button>
+            <button type="submit" data-testid="directory-waitlist" className="lg-btn lg-btn--secondary">Get updates</button>
             {error ? <p role="alert" className="lg-notice lg-notice--error">{error}</p> : null}
             {notice ? <p role="status" data-testid="directory-status">{notice}</p> : null}
             {mailto ? <p><a data-testid="directory-mailto" href={mailto}>Email this signup to ryan@legalgrads.com</a></p> : null}

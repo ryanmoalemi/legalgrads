@@ -11,7 +11,11 @@ import { joinedLabel } from '@/lib/joined';
 
 const SHORTCUTS = ['contracts', 'start-a-business', 'real-estate', 'employment'];
 
-export function HomeView() {
+export type HomeState = { code: string; name: string; cities: string[] };
+
+export function HomeView({ states }: { states: HomeState[] }) {
+  const [heroState, setHeroState] = useState('');
+  const cities = states.find((s) => s.code === heroState)?.cities ?? [];
   const [done, setDone] = useState('');
   const [mailto, setMailto] = useState('');
   const [error, setError] = useState('');
@@ -37,47 +41,35 @@ export function HomeView() {
     <div>
       <section className="mx-auto grid max-w-6xl items-center gap-8 px-4 pb-4 pt-2 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] lg:pt-4">
         <div className="min-w-0">
-          <h1 className="font-display text-[clamp(1.6rem,7.06vw,2.6rem)] font-black leading-[1.03] tracking-[-0.03em] text-navy sm:text-[2.75rem] lg:whitespace-nowrap lg:text-[clamp(2.5rem,4.3vw,3.1rem)] lg:leading-[1.03]">
-            <span className="hand-underline">
-              Fresh
-              <svg viewBox="0 0 120 12" aria-hidden="true">
-                <path d="M2 8 C 30 2, 70 2, 118 7" stroke="#7A00FF" strokeWidth="5" fill="none" strokeLinecap="round" />
-              </svg>
-            </span>{' '}
-            out of law school.
-            <span className="gradient-text mt-1 block">Licensed near you.</span>
-          </h1>
+          <p className="font-display text-base font-bold text-purple">Fresh out of law school. Licensed near you.</p>
+          <h1 className="mt-2 font-display text-[clamp(2rem,8vw,3.25rem)] font-black leading-[1.05] tracking-[-0.03em] text-navy">Find a lawyer for your business.</h1>
           <p className="mt-4 max-w-xl text-lg text-ink sm:text-xl">
-            Browse newly licensed attorneys near you, free. Every listing goes live only after a manual check with the attorney’s state bar.
+            Browse newly licensed attorneys. Explore the services and fees they choose to share, and contact them directly.
           </p>
-          <form onSubmit={onWaitlist} className="waitlist-pill relative mt-6 flex max-w-xl items-center rounded-full bg-white p-1.5 shadow-pill focus-within:ring-[3px] focus-within:ring-purple">
-            <span className="pl-3 text-navy" aria-hidden="true">
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#0B0B3B" strokeWidth="1.7">
-                <rect x="3" y="5" width="18" height="14" rx="2" />
-                <path d="m3.5 6.5 8.5 6.5L20.5 6.5" />
-              </svg>
-            </span>
-            <label className="sr-only" htmlFor="waitlist-email">Email address</label>
-            <input id="waitlist-email" data-testid="waitlist-email" name="email" type="email" required placeholder="Your email" className="waitlist-input min-w-0 flex-1 bg-transparent px-2 py-3 text-base outline-none focus:outline-none focus-visible:outline-none sm:px-3" />
-            <button type="submit" data-testid="waitlist-submit" className="shrink-0 rounded-full bg-pink px-4 py-3 font-display text-sm font-semibold text-white sm:px-5 sm:text-base">Join the list ✨</button>
+          <form action="/find-lawyer/" method="get" role="search" aria-label="Find an attorney" data-testid="home-search" className="mt-6 grid max-w-xl gap-3 rounded-3xl bg-white p-4 shadow-card sm:grid-cols-2">
+            <label className="lg-field"><span>Licensing state</span>
+              <select name="state" className="lg-input" data-testid="home-state" value={heroState} onChange={(event) => setHeroState(event.target.value)}>
+                <option value="">Any state</option>
+                {states.map((s) => <option key={s.code} value={s.code}>{s.name}</option>)}
+              </select>
+            </label>
+            <label className="lg-field"><span>Office city (optional)</span>
+              <input name="city" className="lg-input" data-testid="home-city" list="home-city-options" autoComplete="off" placeholder={cities[0] || 'Any city'} />
+              <datalist id="home-city-options">{cities.map((c) => <option key={c} value={c} />)}</datalist>
+            </label>
+            <button type="submit" data-testid="home-find" className="lg-btn lg-btn--primary sm:col-span-2">Find an attorney</button>
+            <p className="text-sm text-ink sm:col-span-2">Search by where the attorney is licensed and where their office is. Practice areas can be filtered only on profiles the attorney has claimed and confirmed.</p>
           </form>
-          {error ? <p role="alert" className="mt-2 text-sm text-pink">{error}</p> : null}
-          {done ? <p role="status" data-testid="waitlist-status" className="mt-2 text-sm font-medium">{done}</p> : null}
-          {mailto ? <p className="mt-2 text-sm"><a data-testid="waitlist-mailto" className="font-semibold text-purple" href={mailto}>Email this signup to ryan@legalgrads.com</a></p> : null}
-          <Link href="/join/" data-testid="home-attorney-cta" className="mt-3 inline-flex min-h-11 items-center justify-center rounded-full bg-white px-5 py-3 font-display text-sm font-semibold text-navy shadow-pill ring-1 ring-navy/10">
-            Attorneys: join free
-          </Link>
-          <p className="mt-3 text-sm text-ink sm:text-base">
-            Attorney profiles are live now. <Link href="/find-lawyer/" className="font-semibold text-purple underline">Browse attorneys</Link>, or join the list for occasional directory updates. No <span className="hand-underline font-semibold text-navy">spam.
-              <svg viewBox="0 0 80 10" aria-hidden="true"><path d="M2 7 C 20 2, 50 2, 78 6" stroke="#7A00FF" strokeWidth="3" fill="none" strokeLinecap="round" /></svg>
-            </span>
+          <p className="mt-4">
+            <Link href="/claim/" data-testid="home-attorney-cta" className="font-display font-semibold text-purple underline">Attorneys: claim your free profile</Link>
           </p>
-          <ul className="mt-5 grid list-none grid-cols-2 gap-2 p-0 sm:grid-cols-4">
+          <h2 className="mt-6 font-display text-base font-bold text-navy">Browse by practice area</h2>
+          <ul className="mt-2 grid list-none grid-cols-2 gap-2 p-0 sm:grid-cols-4">
             {SHORTCUTS.map((slug) => {
               const spec = SPECIALTIES.find((s) => s.slug === slug)!;
               return (
                 <li key={slug}>
-                  <Link href={`/find-lawyer/?specialty=${slug}`} data-testid={`specialty-${slug}`} className="flex min-h-11 items-center gap-2 rounded-2xl bg-white px-2 py-2 text-sm font-display font-semibold shadow-sm">
+                  <Link href={`/specialties/${slug}/`} data-testid={`specialty-${slug}`} className="flex min-h-11 items-center gap-2 rounded-2xl bg-white px-2 py-2 text-sm font-display font-semibold shadow-sm">
                     <img src={spec.icon} alt="" width={36} height={36} />
                     <span>{spec.name}</span>
                   </Link>
@@ -120,6 +112,21 @@ export function HomeView() {
           <p className="mt-2 text-sm text-ink">Swearing-in costs and CLE for the states checked against official bar sources.</p>
           <Link href="/resources/post-bar-licensing-tracker/" className="mt-3 inline-flex min-h-11 items-center font-display text-sm font-semibold text-purple">Open the tracker</Link>
         </article>
+      </section>
+
+      <section className="mx-auto max-w-6xl px-4 pb-8" aria-labelledby="updates-heading" data-testid="home-updates">
+        <form onSubmit={onWaitlist} className="grid max-w-xl gap-2 rounded-3xl bg-white p-5 shadow-card">
+          <h2 id="updates-heading" className="font-display text-lg font-extrabold text-navy">Get directory updates</h2>
+          <p className="text-sm text-ink">An occasional email when new attorneys or features are added. Optional; you do not need it to browse.</p>
+          <label className="sr-only" htmlFor="waitlist-email">Email address</label>
+          <div className="flex gap-2">
+            <input id="waitlist-email" data-testid="waitlist-email" name="email" type="email" required placeholder="you@example.com" className="lg-input min-w-0 flex-1" />
+            <button type="submit" data-testid="waitlist-submit" className="lg-btn lg-btn--secondary shrink-0">Get updates</button>
+          </div>
+          {error ? <p role="alert" className="lg-notice lg-notice--error">{error}</p> : null}
+          {done ? <p role="status" data-testid="waitlist-status" className="text-sm font-medium">{done}</p> : null}
+          {mailto ? <p className="text-sm"><a data-testid="waitlist-mailto" className="font-semibold text-purple" href={mailto}>Email this signup to ryan@legalgrads.com</a></p> : null}
+        </form>
       </section>
 
       <section className="mx-auto max-w-6xl px-4 pb-8" aria-labelledby="how-heading" data-testid="home-how">
@@ -191,19 +198,19 @@ function HeroArt() {
         className="absolute left-0 top-14 z-10 w-[60%] -rotate-6"
         photo="sample-attorney-1"
         alt="Sample listing photo: smiling attorney in a dark blazer"
-        title="Your listing"
-        place="California · Oakland"
+        title="Sample profile layout"
+        place="Example location"
         tags={['Contracts', 'Business', 'Real Estate']}
       />
       <SampleCard
         className="absolute bottom-10 right-0 z-20 w-[58%] rotate-3"
         photo="sample-attorney-2"
         alt="Sample listing photo: smiling attorney in a gray suit and tie"
-        title="Verified with the state bar"
-        place="New York · Brooklyn"
+        title="Sample profile layout"
+        place="Example location"
         tags={['Start a Business', 'Employment']}
       />
-      <p className="absolute bottom-0 right-6 z-30 -rotate-2 rounded-2xl bg-[#FFE14A] px-3 py-2 font-display text-sm font-extrabold shadow">Real lawyers.</p>
+      <p className="absolute bottom-0 right-6 z-30 -rotate-2 rounded-2xl bg-[#FFE14A] px-3 py-2 font-display text-sm font-extrabold text-navy shadow" data-testid="hero-sample-note">Sample previews, not real attorneys</p>
     </div>
   );
 }
@@ -222,7 +229,6 @@ function SampleCard({ className, photo, alt, title, place, tags }: { className: 
           className="h-44 w-full object-cover object-[center_30%] sm:h-52"
         />
         <span className="absolute left-3 top-3 inline-flex items-center rounded-full bg-white/95 px-2 py-1 text-xs font-bold uppercase tracking-wide text-purple shadow">Sample listing</span>
-        <span className="absolute bottom-3 left-3 inline-flex items-center rounded-full bg-white/95 px-2 py-1 text-xs font-semibold text-navy shadow">{joinedLabel()}</span>
       </div>
       <div className="px-1 pt-3">
         <h2 className="font-display text-lg font-extrabold">{title}</h2>

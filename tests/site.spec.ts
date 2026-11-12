@@ -4,21 +4,24 @@ import { boot, noOverflow } from './helpers';
 
 test('home is a real directory pitch with no fictional attorneys', async ({ page }) => {
   await boot(page);
-  await expect(page.getByRole('heading', { level: 1 })).toContainText('Fresh out of law school.');
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText('Find a lawyer for your business.');
+  await expect(page.locator('main')).toContainText('Fresh out of law school. Licensed near you.');
   await expect(page.getByTestId('attorney-announcement')).toHaveCount(0);
   await expect(page.getByTestId('home-how')).toContainText('Browse attorneys near you');
   const joined = `Joined ${new Date().getFullYear()}`;
   await expect(page.getByTestId('nav-claim')).toHaveText('Claim your free profile');
   await expect(page.getByTestId('nav-claim')).toHaveAttribute('href', '/claim/');
   await expect(page.locator('header')).not.toContainText('Sign in');
-  await expect(page.getByTestId('home-attorney-cta')).toHaveText('Attorneys: join free');
-  await expect(page.locator('h1')).toContainText('Licensed near you.');
+  await expect(page.getByTestId('home-attorney-cta')).toHaveText('Attorneys: claim your free profile');
+  await expect(page.getByTestId('home-find')).toHaveText('Find an attorney');
   await expect(page.locator('main')).not.toContainText(/\bHire\b|Ready to work for you/);
   await expect(page.locator('footer')).not.toContainText('Referral disclosure');
   await expect(page.locator('footer a[href="/pricing/"]')).toHaveCount(0);
   await expect(page.locator('footer a[href="/free-listing-promise/"]')).toHaveCount(1);
   await expect(page.locator('footer')).toContainText('Directory disclosure');
-  await expect(page.getByTestId('home-attorney-cta')).toHaveAttribute('href', '/join/');
+  await expect(page.getByTestId('home-attorney-cta')).toHaveAttribute('href', '/claim/');
+  await expect(page.getByTestId('hero-sample-note')).toHaveText('Sample previews, not real attorneys');
+  expect(await page.locator('main').innerText()).not.toMatch(/Real lawyers|\u2728/);
   const forAttorneys = page.getByTestId('home-for-attorneys');
   await expect(forAttorneys).toContainText(joined);
   await expect(forAttorneys).not.toContainText('Early Attorney');
@@ -47,27 +50,22 @@ test('home is a real directory pitch with no fictional attorneys', async ({ page
   await page.getByTestId('waitlist-submit').click();
   await expect(page.getByTestId('waitlist-mailto')).toHaveAttribute('href', /mailto:ryan@legalgrads.com/);
   await expect(page.getByTestId('waitlist-mailto')).toHaveAttribute('href', /reader%40example.com/);
+  const updatesTop = await page.getByTestId('home-updates').evaluate((el) => el.getBoundingClientRect().top + window.scrollY);
+  const browseTop = await page.getByTestId('home-browse').evaluate((el) => el.getBoundingClientRect().top + window.scrollY);
+  expect(updatesTop).toBeGreaterThan(browseTop);
 });
 
-test('home email pill fits and focus ring follows the pill on small phones', async ({ page }) => {
-  for (const [width, height] of [[360, 740], [390, 844], [412, 500]]) {
+test('home hero searches the directory by state and city', async ({ page }) => {
+  for (const [width, height] of [[320, 700], [390, 844], [1440, 900]]) {
     await page.setViewportSize({ width, height });
-    await page.goto('/');
-    const input = page.getByTestId('waitlist-email');
-    await expect(input).toHaveAttribute('placeholder', 'Your email');
-    const fits = await input.evaluate((el: HTMLInputElement) => {
-      const ctx = document.createElement('canvas').getContext('2d')!;
-      const cs = getComputedStyle(el);
-      ctx.font = `${cs.fontSize} ${cs.fontFamily}`;
-      return ctx.measureText(el.placeholder).width <= el.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
-    });
-    expect(fits).toBe(true);
-    await input.focus();
-    const outline = await input.evaluate((el) => { const cs = getComputedStyle(el); return cs.outlineStyle === 'none' || cs.outlineColor === 'rgba(0, 0, 0, 0)'; });
-    expect(outline).toBe(true);
-    expect(await page.locator('.waitlist-pill').evaluate((el) => getComputedStyle(el).boxShadow)).toContain('rgb(113, 0, 200)');
-    const banner = page.getByTestId('cookie-banner');
-    if (await banner.count()) await expect(banner).toBeHidden();
+    await boot(page);
+    await noOverflow(page);
+    await page.getByTestId('home-state').selectOption('CA');
+    await expect(page.locator('#home-city-options option[value="Los Angeles"]')).toHaveCount(1);
+    await page.getByTestId('home-city').fill('San Diego');
+    await page.getByTestId('home-find').click();
+    await expect(page).toHaveURL(/\/find-lawyer\/\?state=CA&city=San\+Diego/);
+    await expect(page.getByTestId('filter-state')).toHaveValue('CA');
   }
 });
 
@@ -78,11 +76,32 @@ test('directory lists unclaimed State Bar profiles and keeps the waitlist', asyn
   await expect(page.getByTestId('public-record-index').locator('a[href="/attorneys/ca/"]')).toHaveCount(1);
   await expect(page.getByTestId('public-record-index').locator('a[href="/attorneys/ca/los-angeles/"]')).toHaveCount(0);
   await expect(page.getByLabel('Practice area')).toHaveValue('contracts');
+  await expect(page.getByTestId('clear-all')).toBeVisible();
   await page.getByTestId('directory-email').fill('casey@example.com');
   await page.getByTestId('directory-waitlist').click();
   await expect(page.getByTestId('directory-mailto')).toHaveAttribute('href', /casey%40example.com/);
   const body = await page.locator('body').innerText();
   expect(body).not.toMatch(/Maya|Jordan Example|fictional review/i);
+});
+
+test('empty practice-area search keeps the location and offers the broader results', async ({ page }) => {
+  await boot(page, '/find-lawyer/?state=CA&specialty=contracts&city=San+Diego');
+  const empty = page.getByTestId('empty-recovery');
+  await expect(empty).toContainText('We do not yet have a claimed profile listing Contracts in San Diego.');
+  await expect(empty).toContainText('their services have not been confirmed');
+  const recover = page.getByTestId('recover-specialty');
+  await expect(recover).toHaveText(/^View all San Diego profiles \([\d,]+\)$/);
+  const count = Number(((await recover.innerText()).match(/\(([\d,]+)\)/)![1]).replace(/,/g, ''));
+  expect(count).toBeGreaterThan(100);
+  const recoverTop = await recover.evaluate((el) => el.getBoundingClientRect().top);
+  const emailTop = await page.getByTestId('directory-email').evaluate((el) => el.getBoundingClientRect().top);
+  expect(emailTop).toBeGreaterThan(recoverTop);
+  await recover.click();
+  await expect(page).toHaveURL(/state=CA/);
+  await expect(page).toHaveURL(/city=San\+Diego/);
+  await expect(page).not.toHaveURL(/specialty=/);
+  await expect(page.getByTestId('filter-state')).toHaveValue('CA');
+  await expect(page.getByTestId('empty-recovery')).toHaveCount(0);
 });
 
 test('free listing application keeps every field in the email fallback', async ({ page }) => {
