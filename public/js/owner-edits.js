@@ -320,10 +320,46 @@
   // Clearly labeled example of a finished profile. Same markup on every page, so it lives here
   // instead of in 55k HTML files. Nothing in it is about the attorney on the page.
   var EXAMPLE = "<section class=\"card example\" id=\"example-profile\" aria-labelledby=\"example-h\"><div class=\"ex-top\"><h2 id=\"example-h\">See what your free profile can include</h2><span class=\"ex-tag\">Example profile</span></div><p class=\"small ex-note\">This is a made-up example to show the layout. It is not this attorney and not a real LegalGrads lawyer.</p><div class=\"ex-card\"><div class=\"ex-id\"><img class=\"ex-photo\" src=\"/images/examples/example-profile-headshot-v3-192.webp\" srcset=\"/images/examples/example-profile-headshot-v3-192.webp 1x, /images/examples/example-profile-headshot-v3-384.webp 2x\" width=\"96\" height=\"96\" loading=\"lazy\" alt=\"Example profile photo (stock model)\"><div><p class=\"ex-name\">Jordan Example</p><p class=\"ex-head\">Business and contracts attorney \u00b7 Example City</p><span class=\"ex-pill\">Taking new clients</span></div></div><div class=\"ex-grid\"><div><h3>About</h3><p>I help small business owners set up their companies and get contracts right the first time. Plain English, quick replies, and clear prices.</p></div><div><h3>Services</h3><ul class=\"ex-list\"><li>LLC formation and operating agreements</li><li>Contract review before you sign</li><li>Demand and collection letters</li></ul></div><div><h3>Consultation and fees</h3><ul class=\"ex-list\"><li>Free 15-minute consultation by phone or video</li><li>Fixed fee: LLC setup $650</li><li>Fixed fee: contract review $300</li></ul></div><div><h3>Contact options</h3><div class=\"ex-btns\" aria-hidden=\"true\"><span class=\"ex-btn pink\">Request a consultation</span><span class=\"ex-btn\">Call</span><span class=\"ex-btn\">Visit website</span></div><p class=\"small\">Clients reach you directly. LegalGrads takes no fee.</p></div></div></div><p class=\"ex-credit\">Example photo: Mikhail Nilov on <a href=\"https://www.pexels.com/photo/a-man-in-blue-suit-smiling-while-holding-his-notebook-7582898/\" target=\"_blank\" rel=\"nofollow noopener\">Pexels</a> (stock model).</p></section>";
+  // The example photo follows the first name on the page: a clearly female or male name (90%+
+  // one sex in SSA baby-name data, see scripts/build_example_names.py) gets a matching photo,
+  // anything else gets the neutral one.
+  var EXAMPLE_PHOTOS = {
+    m: { file: 'v3', name: 'Michael Example', by: 'Mikhail Nilov', href: 'https://www.pexels.com/photo/a-man-in-blue-suit-smiling-while-holding-his-notebook-7582898/' },
+    f: { file: 'f1', name: 'Sarah Example', by: 'RDNE Stock project', href: 'https://www.pexels.com/photo/a-portrait-of-a-woman-wearing-a-blazer-7648247/' },
+    n: { file: 'n1', name: 'Jordan Example', by: 'MART PRODUCTION', href: 'https://www.pexels.com/photo/serious-woman-wearing-a-blazer-7223011/' },
+  };
+  function firstName() {
+    var h = document.querySelector('.who h1') || document.querySelector('h1');
+    var parts = ((h && h.textContent) || '').trim().split(/\s+/);
+    for (var i = 0; i < parts.length; i++) {
+      var t = parts[i].normalize ? parts[i].normalize('NFKD').replace(/[\u0300-\u036f]/g, '') : parts[i];
+      t = t.toLowerCase().replace(/[^a-z'-]/g, '');
+      if (t.length > 1 && !/\.$/.test(parts[i])) return t.split('-')[0];
+    }
+    return '';
+  }
+  function exampleFor(kind) {
+    var ph = EXAMPLE_PHOTOS[kind] || EXAMPLE_PHOTOS.n;
+    return EXAMPLE
+      .split('example-profile-headshot-v3-').join('example-profile-headshot-' + ph.file + '-')
+      .replace('>Jordan Example<', '>' + ph.name + '<')
+      .replace(/Example photo: [^<]* on <a href="[^"]*"/, 'Example photo: ' + ph.by + ' on <a href="' + ph.href + '"');
+  }
   function drawExample() {
     var slot = document.getElementById('example-slot');
     if (!slot || document.getElementById('example-profile')) return;
-    slot.innerHTML = EXAMPLE;
+    var name = firstName();
+    var done = false;
+    function draw(kind) {
+      if (done || document.getElementById('example-profile')) return;
+      done = true;
+      slot.innerHTML = exampleFor(kind);
+    }
+    if (!name || !window.fetch) { draw('n'); return; }
+    fetch('/data/example-names.json').then(function (r) { return r.json(); }).then(function (lists) {
+      var pad = ',' + name + ',';
+      draw((',' + lists.f + ',').indexOf(pad) >= 0 ? 'f' : (',' + lists.m + ',').indexOf(pad) >= 0 ? 'm' : 'n');
+    }).catch(function () { draw('n'); });
   }
   drawExample();
 
