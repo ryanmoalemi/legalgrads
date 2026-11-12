@@ -15,7 +15,7 @@ test('home is a real directory pitch with no fictional attorneys', async ({ page
   await expect(page.locator('h1')).toContainText('Licensed near you.');
   await expect(page.locator('main')).not.toContainText(/\bHire\b|Ready to work for you/);
   await expect(page.locator('footer')).not.toContainText('Referral disclosure');
-  await expect(page.locator('footer a[href="/pricing/"]')).toHaveCount(1);
+  await expect(page.locator('footer a[href="/pricing/"]')).toHaveCount(0);
   await expect(page.locator('footer a[href="/free-listing-promise/"]')).toHaveCount(1);
   await expect(page.locator('footer')).toContainText('Directory disclosure');
   await expect(page.getByTestId('home-attorney-cta')).toHaveAttribute('href', '/join/');

@@ -212,6 +212,9 @@ test('unverified or unclaimed profiles never show the request form', async ({ pa
   await boot(page, CALLIE);
   await expect(page.locator('.chip.solid')).toHaveText('Claim pending review');
   await expect(page.locator('#inquiry')).toHaveCount(0);
+  await expect(page.getByTestId('claim-pending')).toContainText('Claim pending review');
+  await expect(page.locator('.card.claim')).toBeHidden();
+  await expect(page.locator('#report-claim a')).toBeVisible();
 });
 
 test('private dashboard shows honest zeros with definitions', async ({ page }) => {
