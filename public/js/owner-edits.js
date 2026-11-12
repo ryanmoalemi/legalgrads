@@ -17,6 +17,7 @@
   var MODES = { phone: 'Phone', video: 'Video', 'in-person': 'In person' };
   var AVAIL = { accepting: 'Taking new clients', limited: 'Limited availability', not: 'Not taking new clients' };
   var NOTICE = 'Send a brief description only. Do not include confidential details or documents. Sending a request does not by itself hire a lawyer. The lawyer must confirm availability, check for conflicts, and agree to represent you.';
+  var UNCLAIMED = /unclaimed|not yet claimed/i;
   var BOT = /bot|crawl|spider|slurp|headless|lighthouse|preview|facebookexternalhit|embedly/i;
   var path = location.pathname.endsWith('/') ? location.pathname : location.pathname + '/';
   var FIELDS = ['bio', 'services', 'phone', 'contactLink', 'photoDataUrl', 'consultFee', 'consultPrice', 'availability', 'availabilityUpdatedAt', 'contactPref'];
@@ -97,13 +98,15 @@
 
   function markClaimed(verified) {
     var chip = document.querySelector('.lgp .chip.solid');
-    if (chip && /unclaimed/i.test(chip.textContent || '')) chip.textContent = verified ? 'Claimed profile' : 'Claim pending review';
+    if (chip && UNCLAIMED.test(chip.textContent || '')) chip.textContent = verified ? 'Claimed profile' : 'Claim pending review';
     setClaimState(verified ? 'Yes' : 'Pending review', verified
       ? 'The attorney has claimed this profile on LegalGrads.'
       : 'A claim for this profile is pending review.');
     if (verified) {
-      var claimCard = document.querySelector('.lgp .card.claim');
-      if (claimCard) claimCard.hidden = true;
+      ['.lgp .card.claim', '#example-slot', '#claim-benefits'].forEach(function (selector) {
+        var node = document.querySelector(selector);
+        if (node) node.hidden = true;
+      });
     }
     var host = document.querySelector('.lgp aside');
     if (!host || document.getElementById('report-claim')) return;
@@ -228,7 +231,7 @@
     var verified = Boolean(opts && opts.verified);
     var chip = document.querySelector('.lgp .chip.solid');
     if (!verified) {
-      if (chip && /unclaimed/i.test(chip.textContent || '')) chip.textContent = 'Claimed on this device';
+      if (chip && UNCLAIMED.test(chip.textContent || '')) chip.textContent = 'Claimed on this device';
       setClaimState('On this device', '');
     }
     var host = document.querySelector('.lgp .grid > div');
@@ -259,8 +262,8 @@
     }
     host.insertBefore(card, host.firstChild);
     var billing = (claim.billing || []).map(function (value) { return BILLING[value]; }).filter(Boolean);
-    var feeState = document.getElementById('fees-state');
-    if (feeState) feeState.textContent = billing.length ? billing.join(', ') : 'Ask about fees';
+    // Fees show only when the attorney supplied them.
+    if (billing.length) setFact('fees-state', 'Fees', billing.join(', '));
     var modes = (claim.consultModes || []).map(function (value) { return MODES[value]; }).filter(Boolean);
     var fee = claim.consultFee === 'free' ? 'Free' : claim.consultFee === 'paid' ? ('Paid' + (claim.consultPrice ? ' (' + claim.consultPrice + ')' : '')) : '';
     if (modes.length || fee) setFact('fact-consult', 'Consultations', [fee, modes.join(', ')].filter(Boolean).join(' · '));
@@ -303,6 +306,16 @@
       apply(local);
     });
   }
+
+  // Clearly labeled example of a finished profile. Same markup on every page, so it lives here
+  // instead of in 55k HTML files. Nothing in it is about the attorney on the page.
+  var EXAMPLE = "<section class=\"card example\" id=\"example-profile\" aria-labelledby=\"example-h\"><div class=\"ex-top\"><h2 id=\"example-h\">See what your free profile can include</h2><span class=\"ex-tag\">Example profile</span></div><p class=\"small ex-note\">This is a made-up example to show the layout. It is not this attorney and not a real LegalGrads lawyer.</p><div class=\"ex-card\"><div class=\"ex-id\"><img class=\"ex-photo\" src=\"/images/examples/example-profile-headshot-192.webp\" srcset=\"/images/examples/example-profile-headshot-192.webp 1x, /images/examples/example-profile-headshot-384.webp 2x\" width=\"96\" height=\"96\" loading=\"lazy\" alt=\"Example profile photo (stock model)\"><div><p class=\"ex-name\">Jordan Example</p><p class=\"ex-head\">Business and contracts attorney \u00b7 Example City</p><span class=\"ex-pill\">Taking new clients</span></div></div><div class=\"ex-grid\"><div><h3>About</h3><p>I help small business owners set up their companies and get contracts right the first time. Plain English, quick replies, and clear prices.</p></div><div><h3>Services</h3><ul class=\"ex-list\"><li>LLC formation and operating agreements</li><li>Contract review before you sign</li><li>Demand and collection letters</li></ul></div><div><h3>Consultation and fees</h3><ul class=\"ex-list\"><li>Free 15-minute consultation by phone or video</li><li>Fixed fee: LLC setup $650</li><li>Fixed fee: contract review $300</li></ul></div><div><h3>Contact options</h3><div class=\"ex-btns\" aria-hidden=\"true\"><span class=\"ex-btn pink\">Request a consultation</span><span class=\"ex-btn\">Call</span><span class=\"ex-btn\">Visit website</span></div><p class=\"small\">Clients reach you directly. LegalGrads takes no fee.</p></div></div></div><p class=\"ex-credit\">Example photo: Tran Nhu Tuan on <a href=\"https://www.pexels.com/photo/professional-businesswoman-in-black-suit-portrait-29995739/\" target=\"_blank\" rel=\"nofollow noopener\">Pexels</a> (stock model).</p></section>";
+  function drawExample() {
+    var slot = document.getElementById('example-slot');
+    if (!slot || document.getElementById('example-profile')) return;
+    slot.innerHTML = EXAMPLE;
+  }
+  drawExample();
 
   var local = readLocal();
   if (window.LEGALGRADS_SUPABASE) {

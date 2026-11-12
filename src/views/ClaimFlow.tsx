@@ -5,7 +5,8 @@ import { useSearchParams } from 'next/navigation';
 import {
   type DirectoryListing,
   type ClaimOptions,
-  ATTESTATION,
+  IDENTITY_NOTE,
+  attestationFor,
   confirmClaimCode,
   fetchClaimOptions,
   reportWrongClaim,
@@ -18,6 +19,7 @@ import {
 import { ProfileEditorView } from '@/views/Phase2';
 import { OwnerEditorView } from '@/views/OwnerEditor';
 import { stateName } from '@/lib/states';
+import { knownCity } from '@/lib/places';
 import { PageIntro } from '@/components/ui';
 
 export function ClaimView() {
@@ -156,7 +158,7 @@ export function ClaimView() {
       <PageIntro
         kicker="Attorneys"
         title={reportMode ? 'Report a wrong claim' : 'Make this profile yours.'}
-        body={reportMode ? 'Tell us if this profile was claimed by the wrong person.' : 'Show local business owners what you offer and how to contact you.'}
+        body={reportMode ? 'Tell us if this profile was claimed by the wrong person.' : 'Show small business owners what you do and how to contact you.'}
       />
       {!reportMode ? (
         <ol className="mt-4 flex flex-wrap gap-2 text-xs font-semibold" aria-label="Steps">
@@ -171,9 +173,9 @@ export function ClaimView() {
       {listing ? (
         <div data-testid="claim-listing" className="mt-6 rounded-3xl bg-white p-4 text-sm">
           <p className="font-display text-2xl font-extrabold text-navy">{listing.name}</p>
-          <p>{listing.city} · {stateName(listing.stateCode) || listing.stateCode}</p>
+          <p data-testid="claim-place">{knownCity(listing.city, listing.stateCode) ? `${listing.city} · Licensed in ${stateName(listing.stateCode) || listing.stateCode}` : `Licensed in ${stateName(listing.stateCode) || listing.stateCode}`}</p>
           <p>Bar number {listing.barNumber}{listing.admitted ? ` · admitted ${listing.admitted}` : ''}</p>
-          {reportMode ? null : <p data-testid="claim-free" className="mt-3 font-semibold text-navy">Your standard listing is free. Always. <a className="font-semibold text-purple underline" href="/free-listing-promise/">Our free listing promise</a></p>}
+          {reportMode ? null : <p data-testid="claim-free" className="mt-3 font-semibold text-navy">Your standard listing is free. Always. <a className="font-semibold text-purple underline" href={`/free-listing-promise/?profile=${encodeURIComponent(listing.profilePath)}`}>Our free listing promise</a></p>}
         </div>
       ) : null}
       {listing && reportMode && !reported ? (
@@ -193,8 +195,9 @@ export function ClaimView() {
         <form className="mt-6 grid gap-3" onSubmit={(event) => void sendCode(event)}>
           <label className="flex items-start gap-3 rounded-2xl bg-white p-3 text-sm">
             <input data-testid="claim-attest" type="checkbox" required checked={attest} onChange={(event) => setAttest(event.target.checked)} className="mt-1 h-5 w-5 flex-none" />
-            <span>{ATTESTATION}</span>
+            <span>{attestationFor(listing.name)}</span>
           </label>
+          <p data-testid="claim-identity" className="text-sm">{IDENTITY_NOTE} Misuse rules are in the <a className="font-semibold text-purple underline" href="/attorney-terms/">Attorney Terms</a>.</p>
           {useBar ? (
             <>
               <p data-testid="claim-bar-email" className="text-sm">We will send a confirmation code to the email address in your State Bar record: <b>{options?.barEmailMasked}</b>.</p>

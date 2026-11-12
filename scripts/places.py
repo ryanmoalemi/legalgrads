@@ -95,3 +95,49 @@ def present_profile(profile):
         hub_new = f"/attorneys/{profile['state']}/{new_city}/"
         return profile, (old, new, hub_old, hub_new)
     return profile, None
+
+
+UNKNOWN_CITY_SLUGS = {"office-unlisted", "location-not-listed", "international-offices"}
+# New York, NY is a real city. Any other "city" equal to its state name means the record had no office city.
+REAL_STATE_NAMED_CITIES = {"NY:new york"}
+
+
+STATE_NAMES = {
+    "AL": "Alabama", "AK": "Alaska", "AZ": "Arizona", "AR": "Arkansas", "CA": "California", "CO": "Colorado",
+    "CT": "Connecticut", "DE": "Delaware", "DC": "District of Columbia", "FL": "Florida", "GA": "Georgia",
+    "HI": "Hawaii", "ID": "Idaho", "IL": "Illinois", "IN": "Indiana", "IA": "Iowa", "KS": "Kansas",
+    "KY": "Kentucky", "LA": "Louisiana", "ME": "Maine", "MD": "Maryland", "MA": "Massachusetts",
+    "MI": "Michigan", "MN": "Minnesota", "MS": "Mississippi", "MO": "Missouri", "MT": "Montana",
+    "NE": "Nebraska", "NV": "Nevada", "NH": "New Hampshire", "NJ": "New Jersey", "NM": "New Mexico",
+    "NY": "New York", "NC": "North Carolina", "ND": "North Dakota", "OH": "Ohio", "OK": "Oklahoma",
+    "OR": "Oregon", "PA": "Pennsylvania", "RI": "Rhode Island", "SC": "South Carolina", "SD": "South Dakota",
+    "TN": "Tennessee", "TX": "Texas", "UT": "Utah", "VT": "Vermont", "VA": "Virginia", "WA": "Washington",
+    "WV": "West Virginia", "WI": "Wisconsin", "WY": "Wyoming",
+}
+
+
+def display_city(name):
+    """"Columbus, Ohio" -> "Columbus" so labels never read "Columbus, Ohio, OH"."""
+    text = (name or "").strip()
+    for state in STATE_NAMES.values():
+        suffix = ", " + state
+        if text.endswith(suffix) and len(text) > len(suffix):
+            return text[: -len(suffix)]
+    return text
+
+
+def city_unknown(profile):
+    """Same rule as cityUnknown() in src/lib/profiles.ts."""
+    if profile.get("city") in UNKNOWN_CITY_SLUGS:
+        return True
+    if re.search(r"not listed", profile.get("locationLabel") or "", re.I):
+        return True
+    city = (profile.get("cityName") or "").strip().lower()
+    if not city:
+        return True
+    if city == "washington" and profile.get("officeState") == "DC":
+        return False
+    for code in {profile.get("stateCode"), profile.get("officeState")}:
+        if code and city == STATE_NAMES.get(code, "").lower() and f"{code}:{city}" not in REAL_STATE_NAMED_CITIES:
+            return True
+    return city == (profile.get("stateName") or "").lower() and f"{profile.get('stateCode')}:{city}" not in REAL_STATE_NAMED_CITIES

@@ -1,5 +1,25 @@
+'use client';
+
 import Link from 'next/link';
+import { useEffect, useState } from 'react';
 import { PageIntro } from '@/components/ui';
+import { claimHref, normalizeProfilePath } from '@/lib/claim';
+
+const PROFILE_KEY = 'legalgrads-claim-profile';
+
+/** Keeps the attorney's own claim when they read the promise from their profile (?profile=, or this tab's last profile). */
+function useClaimTarget(): string {
+  const [href, setHref] = useState('/join/');
+  useEffect(() => {
+    let path = normalizeProfilePath(new URLSearchParams(window.location.search).get('profile'));
+    try {
+      if (path) sessionStorage.setItem(PROFILE_KEY, path);
+      else path = normalizeProfilePath(sessionStorage.getItem(PROFILE_KEY));
+    } catch { /* storage off: fall back to the query only */ }
+    if (path) setHref(claimHref(path));
+  }, []);
+  return href;
+}
 
 const button = 'inline-flex min-h-12 items-center rounded-full bg-pinkdark px-6 font-display text-base font-semibold text-white';
 
@@ -13,10 +33,11 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 }
 
 export function FreeListingPromiseView() {
+  const claim = useClaimTarget();
   return (
     <div className="mx-auto max-w-3xl px-4 py-10">
       <PageIntro kicker="Our free listing promise" title="Your listing is free. Always." body="You will never have to pay to claim, publish, or maintain your standard LegalGrads profile." />
-      <Link href="/join/" data-testid="promise-claim" className={`mt-6 ${button}`}>Claim my free profile</Link>
+      <Link href={claim} data-testid="promise-claim" className={`mt-6 ${button}`}>Claim my free profile</Link>
       <Section title="What your free listing includes">
         <p>Your free listing includes your photo, biography, services, fee and consultation information, and contact options. You can update that information and receive and respond to inquiries through the standard contact features without a listing subscription or per-inquiry fee.</p>
         <p>There is no trial to expire and no renewal fee. Your listing does not become a paid product as your practice grows.</p>
@@ -31,7 +52,7 @@ export function FreeListingPromiseView() {
         <p>The free listing promise concerns LegalGrads’ charges to attorneys. Attorneys set their own legal fees and consultation terms.</p>
       </Section>
       <div className="mt-8 flex flex-wrap items-center gap-4">
-        <Link href="/join/" className={button}>Claim my free profile</Link>
+        <Link href={claim} data-testid="promise-claim-bottom" className={button}>Claim my free profile</Link>
         <Link className="font-semibold text-purple underline" href="/attorney-terms/">Attorney Terms</Link>
         <a className="font-semibold text-purple underline" href="mailto:ryan@legalgrads.com">ryan@legalgrads.com</a>
       </div>

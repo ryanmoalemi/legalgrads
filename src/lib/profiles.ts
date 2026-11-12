@@ -145,7 +145,7 @@ export function cityGroups(): CityGroup[] {
   const m = new Map<string, CityGroup>();
   for (const p of REAL_PROFILES) {
     const k = `${p.state}/${p.city}`;
-    if (!m.has(k)) m.set(k, { state: p.state, stateName: p.stateName, stateCode: p.stateCode, city: p.city, cityName: p.cityName, profiles: [] });
+    if (!m.has(k)) m.set(k, { state: p.state, stateName: p.stateName, stateCode: p.stateCode, city: p.city, cityName: displayCity(p.cityName), profiles: [] });
     m.get(k)!.profiles.push(p);
   }
   for (const g of m.values()) g.profiles.sort((a, b) => a.name.localeCompare(b.name));
@@ -184,20 +184,50 @@ export const cityPath = (state: string, city: string) => `/attorneys/${state}/${
 
 export const calbarUrl = (n: string) => `https://apps.calbar.ca.gov/attorney/Licensee/Detail/${n}`;
 
-/** Visible place. Existing pages have no locationLabel, so they stay "City, ST". */
+const UNKNOWN_CITY_SLUGS = new Set(['office-unlisted', 'location-not-listed', 'international-offices']);
+// New York, NY is a real city. Any other "city" equal to its state name means the record had no office city.
+const REAL_STATE_NAMED_CITIES = new Set(['NY:new york']);
+
+/** True when the record has no verified office city (missing, unlisted, or filled with the state name). */
+export function cityUnknown(p: Pick<AttorneyProfile, 'city' | 'cityName' | 'stateName' | 'stateCode' | 'locationLabel' | 'officeState'>): boolean {
+  if (UNKNOWN_CITY_SLUGS.has(p.city)) return true;
+  if (p.locationLabel && /not listed/i.test(p.locationLabel)) return true;
+  const city = (p.cityName || '').trim().toLowerCase();
+  if (!city) return true;
+  if (city === 'washington' && p.officeState === 'DC') return false;
+  for (const code of [p.stateCode, p.officeState]) {
+    const name = code ? US_STATES.find((s) => s.code === code)?.name.toLowerCase() : '';
+    if (name && city === name && !REAL_STATE_NAMED_CITIES.has(`${code}:${city}`)) return true;
+  }
+  return city === p.stateName.toLowerCase() && !REAL_STATE_NAMED_CITIES.has(`${p.stateCode}:${city}`);
+}
+
+/** "Columbus, Ohio" becomes "Columbus" so labels never read "Columbus, Ohio, OH". */
+export function displayCity(name: string): string {
+  const text = (name || '').trim();
+  for (const s of US_STATES) {
+    const suffix = `, ${s.name}`;
+    if (text.endsWith(suffix) && text.length > suffix.length) return text.slice(0, -suffix.length);
+  }
+  return text;
+}
+
+/** Visible place. Unknown cities read "Licensed in State"; existing pages stay "City, ST". */
 export function placeLabel(p: AttorneyProfile): string {
-  if (p.city === 'office-unlisted') return 'Office unlisted';
-  if (p.locationLabel) return p.locationLabel;
-  return `${p.cityName}, ${p.stateCode}`;
+  if (cityUnknown(p)) return `Licensed in ${p.stateName}`;
+  const city = displayCity(p.cityName);
+  if (p.locationLabel) return city !== p.cityName ? p.locationLabel.replace(`${p.cityName},`, `${city},`) : p.locationLabel;
+  return `${city}, ${p.stateCode}`;
 }
 
 /** State-index label. Existing California cities keep the city name already published. */
 export function cityListLabel(g: CityGroup): string {
   if (g.city === 'office-unlisted') return 'Office unlisted';
+  if (g.profiles.length && g.profiles.every((p) => cityUnknown(p))) return 'Office city not listed';
   const officeStates = new Set(g.profiles.map((p) => p.officeState).filter(Boolean));
   const labels = new Set(g.profiles.map((p) => p.locationLabel).filter(Boolean));
   const outOfState = g.profiles.every((p) => p.officeState) && officeStates.size === 1 && [...officeStates][0] !== g.stateCode;
-  if (outOfState && labels.size === 1) return [...labels][0] as string;
+  if (outOfState && labels.size === 1) return placeLabel(g.profiles[0]);
   return g.cityName;
 }
 
@@ -225,7 +255,7 @@ export function officialLinkLabel(p: AttorneyProfile): string {
 export const profilePath = (p: AttorneyProfile) => `/attorneys/${p.state}/${p.city}/${p.slug}/`;
 export const firstName = (p: AttorneyProfile) => p.name.split(' ')[0];
 export const initials = (p: AttorneyProfile) => p.name.split(' ').map((w) => w[0]).slice(0, 2).join('').toUpperCase();
-export const seoTitle = (p: AttorneyProfile) => `${p.name}, ${p.claimed ? 'Business ' : ''}Attorney in ${p.city === 'office-unlisted' ? p.stateName : placeLabel(p)} | LegalGrads`;
+export const seoTitle = (p: AttorneyProfile) => `${p.name}, ${p.claimed ? 'Business ' : ''}Attorney in ${cityUnknown(p) ? p.stateName : placeLabel(p)} | LegalGrads`;
 export const seoDescription = (p: AttorneyProfile) => {
   if (p.claimed) return `${p.name} helps small businesses with contracts, formation and advice. Licensed in ${p.stateName} since ${p.admittedYear}.`;
   const school = p.lawSchool && p.lawSchool !== 'Not listed' ? ` (${p.lawSchool})` : '';
@@ -233,11 +263,14 @@ export const seoDescription = (p: AttorneyProfile) => {
   if ((!p.recordLinkType || caInState) && p.officeState && p.officeState !== p.stateCode) {
     return `${p.name} is licensed in ${p.stateName} and was admitted in ${p.admitted}${school}. Office: ${placeLabel(p)}. License #${p.barNumber} from State Bar records.`;
   }
+  if ((!p.recordLinkType || caInState) && cityUnknown(p)) {
+    return `${p.name} is an attorney licensed in ${p.stateName}, admitted in ${p.admitted}${school}. License #${p.barNumber} from State Bar records.`;
+  }
   if (!p.recordLinkType || caInState) {
-    return `${p.name} is a ${p.cityName}, ${p.stateCode} attorney admitted in ${p.admitted}${school}. License #${p.barNumber} from State Bar records.`;
+    return `${p.name} is a ${displayCity(p.cityName)}, ${p.stateCode} attorney admitted in ${p.admitted}${school}. License #${p.barNumber} from State Bar records.`;
   }
   const authority = p.sourceAuthority || `${p.stateName} licensing authority`;
-  if (p.city === 'office-unlisted') {
+  if (cityUnknown(p)) {
     return `${p.name} is licensed in ${p.stateName} and was admitted in ${p.admitted}${school}. No office city was published. License #${p.barNumber} from ${authority} records.`;
   }
   return `${p.name} is licensed in ${p.stateName} and was admitted in ${p.admitted}${school}. Office: ${placeLabel(p)}. License #${p.barNumber} from ${authority} records.`;
@@ -249,7 +282,7 @@ export function profileJsonLd(p: AttorneyProfile) {
   const person: Record<string, unknown> = !p.recordLinkType
     ? {
       '@type': 'Person', '@id': `${url}#p`, name: p.name, jobTitle: 'Attorney', url,
-      address: { '@type': 'PostalAddress', addressLocality: p.cityName, addressRegion: p.stateCode, addressCountry: 'US', ...(p.officeZip ? { postalCode: p.officeZip } : {}) },
+      address: { '@type': 'PostalAddress', ...(cityUnknown(p) ? {} : { addressLocality: p.cityName }), addressRegion: p.stateCode, addressCountry: 'US', ...(p.officeZip ? { postalCode: p.officeZip } : {}) },
       alumniOf: { '@type': 'CollegeOrUniversity', name: p.lawSchool },
       hasCredential: {
         '@type': 'EducationalOccupationalCredential', credentialCategory: 'license',
@@ -261,7 +294,7 @@ export function profileJsonLd(p: AttorneyProfile) {
       '@type': 'Person', '@id': `${url}#p`, name: p.name, jobTitle: 'Attorney', url,
       address: {
         '@type': 'PostalAddress', addressCountry: 'US',
-        ...(p.city === 'office-unlisted' ? {} : { addressLocality: p.cityName }),
+        ...(cityUnknown(p) ? {} : { addressLocality: p.cityName }),
         ...(p.officeState ? { addressRegion: p.officeState } : p.city === 'office-unlisted' ? {} : { addressRegion: p.stateCode }),
         ...(p.officeZip ? { postalCode: p.officeZip } : {}),
       },
@@ -288,7 +321,7 @@ export function profileJsonLd(p: AttorneyProfile) {
     itemListElement: [
       { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://legalgrads.com/' },
       { '@type': 'ListItem', position: 2, name: p.stateName, item: `https://legalgrads.com/attorneys/${p.state}/` },
-      { '@type': 'ListItem', position: 3, name: p.cityName, item: `https://legalgrads.com${cityPath(p.state, p.city)}` },
+      { '@type': 'ListItem', position: 3, name: cityUnknown(p) ? 'Office city not listed' : p.cityName, item: `https://legalgrads.com${cityPath(p.state, p.city)}` },
       { '@type': 'ListItem', position: 4, name: p.name, item: url },
     ],
   });

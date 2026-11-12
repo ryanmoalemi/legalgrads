@@ -136,10 +136,10 @@ test('editor: checklists, consultations, fees, availability, progress, and live 
   await expect(edit).toContainText('Contract review');
   await expect(edit).toContainText('Works with: Startups');
   await expect(page.getByTestId('owner-fixed-fees')).toContainText('LLC formation: $900');
-  await expect(page.locator('#fees-state')).toHaveText('Fixed fee');
+  await expect(page.locator('#fees-state span').last()).toHaveText('Fixed fee');
   await expect(page.locator('#fact-consult')).toContainText('Free');
   await expect(page.locator('#fact-availability')).toContainText('Taking new clients (updated');
-  await expect(page.locator('#claim-state')).toHaveText('On this device');
+  await expect(page.locator('.chip.solid')).toHaveText('Claimed on this device');
 });
 
 test('pending claims submit for review', async ({ page }) => {
@@ -161,8 +161,10 @@ test('verified claimed profile shows the request form with the notice, honeypot,
   });
   await boot(page, CALLIE);
   await expect(page.locator('.chip.solid')).toHaveText('Claimed profile');
-  await expect(page.locator('#claim-state')).toHaveText('Yes');
+  await expect(page.locator('#about-claim')).toHaveText('The attorney has claimed this profile on LegalGrads.');
   await expect(page.locator('.card.claim')).toBeHidden();
+  await expect(page.locator('#example-profile')).toBeHidden();
+  await expect(page.locator('#claim-benefits')).toBeHidden();
   const card = page.locator('#inquiry');
   await expect(card.getByRole('heading', { name: 'Ask about your legal needs' })).toBeVisible();
   await expect(page.getByTestId('inquiry-notice')).toHaveText(NOTICE);
@@ -174,7 +176,7 @@ test('verified claimed profile shows the request form with the notice, honeypot,
   const trapBox = await page.locator('#inquiry input[name="website"]').boundingBox();
   expect(trapBox!.x).toBeLessThan(0);
   await expect(page.locator('#inquiry input[name="website"]')).toHaveAttribute('tabindex', '-1');
-  await expect(page.locator('#fees-state')).toHaveText('Hourly');
+  await expect(page.locator('#fees-state span').last()).toHaveText('Hourly');
   await expect(page.locator('.sticky a')).toHaveText('Ask about your legal needs');
   await card.getByRole('button', { name: 'Send request' }).click();
   await expect(page.getByTestId('inquiry-status')).toContainText('Add your name');
@@ -261,12 +263,16 @@ test('no public view counter, promise page, and sitemap entry', async ({ page, r
     await boot(page, '/free-listing-promise/');
     await expect(page.getByRole('heading', { level: 1 })).toHaveText('Your listing is free. Always.');
     await expect(page.getByTestId('promise-claim')).toHaveText('Claim my free profile');
+    await expect(page.getByTestId('promise-claim')).toHaveAttribute('href', /^\/join\/?$/);
     await expect(page.getByRole('heading', { level: 2, name: 'Optional: sponsored upgrade for more visibility' })).toBeVisible();
     await expect(page.locator('main')).toContainText('Sponsored placements will be clearly labeled as sponsored advertisements.');
     await expect(page.locator('main')).not.toContainText('What might cost money');
     await expect(page.locator('main')).not.toContainText(/\u2014|\u2013/);
     await noOverflow(page);
   }
+  await boot(page, `/free-listing-promise/?profile=${encodeURIComponent(CALLIE)}`);
+  await expect(page.getByTestId('promise-claim')).toHaveAttribute('href', `/claim/?profile=${encodeURIComponent(CALLIE)}`);
+  await expect(page.getByTestId('promise-claim-bottom')).toHaveAttribute('href', `/claim/?profile=${encodeURIComponent(CALLIE)}`);
   const index = await (await request.get('/sitemap.xml')).text();
   const parts = [...index.matchAll(/<loc>([^<]+)<\/loc>/g)].map((match) => new URL(match[1]).pathname);
   let found = false;

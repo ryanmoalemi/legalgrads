@@ -151,8 +151,8 @@ export function DirectoryView() {
     <div className="mx-auto max-w-6xl px-4 py-8">
       <PageIntro
         kicker="Find an attorney"
-        title="Unclaimed rosters and Claimed profiles"
-        body="Unclaimed public profiles are live from official licensing rosters, on the state and city pages below. Claimed profiles are the ones an attorney verified with an email code and a manual bar review. This search filters Claimed listings. A waitlist note is optional."
+        title="Search claimed and unclaimed profiles"
+        body="This search covers every listed attorney. Claimed profiles, where the attorney confirmed their details with an email code and a bar record check, come first. Unclaimed profiles come from official licensing records and are marked Unclaimed. They do not list practice areas yet, so the practice area filter shows claimed profiles only. A waitlist note is optional."
       />
       <form className="mt-6 grid gap-3 rounded-3xl bg-white p-4 sm:grid-cols-3" aria-label="Filters" onSubmit={(event) => event.preventDefault()}>
         <label className="text-sm font-medium">State
@@ -197,7 +197,7 @@ export function DirectoryView() {
         </div>
       ) : null}
       {rows && rows.length > 0 && filtered.length === 0 ? (
-        <p className="mt-6 text-sm text-ink">No Claimed listings match those filters. Unclaimed public profiles do not list a practice area. Open a state or city page in Public-record listings.</p>
+        <p className="mt-6 text-sm text-ink">No profiles match those filters. Unclaimed profiles do not list a practice area yet, so try Any practice area, or open a state or city page in Public-record listings.</p>
       ) : null}
       {filtered.length > 0 ? (
         <ul className="mt-6 space-y-4">

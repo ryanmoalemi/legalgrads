@@ -92,7 +92,10 @@ export interface ClaimOptions {
   claimed: boolean;
 }
 
-export const ATTESTATION = 'I am this attorney, and a false claim may be reported to the state bar.';
+export const ATTESTATION = 'I confirm that I am this attorney.';
+/** Checkbox text on the claim screen. Misuse rules live in the Attorney Terms. */
+export const attestationFor = (name: string) => (name.trim() ? `I confirm that I am ${name.trim()}.` : ATTESTATION);
+export const IDENTITY_NOTE = 'How we check: your confirmation code goes to your email, and we match the claim to the official bar record before your edits go public. If the email does not match, a person reviews the claim first.';
 
 /** Bar numbers compare without case, hyphens, spaces, or leading zeros, matching the server rule. */
 export function normalizeBarNumber(value: string): string {
