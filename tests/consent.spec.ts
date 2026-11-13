@@ -84,6 +84,21 @@ test.describe('EU timezone visitors', () => {
     await page.reload();
     await expect(page.getByTestId('cookie-banner')).toHaveCount(0);
   });
+
+  test('stacks short text above equal-width buttons on a 390px screen', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto('/');
+    const banner = page.getByTestId('cookie-banner');
+    await expect(banner).toBeVisible();
+    const text = await banner.locator('.cookie-join-short').boundingBox();
+    const accept = await page.getByTestId('cookie-accept').boundingBox();
+    const reject = await page.getByTestId('cookie-reject').boundingBox();
+    expect(text && accept && reject).toBeTruthy();
+    expect(text!.y + text!.height).toBeLessThanOrEqual(accept!.y + 1);
+    expect(text!.width).toBeGreaterThan(300);
+    expect(Math.abs(accept!.width - reject!.width)).toBeLessThanOrEqual(2);
+    expect(Math.abs(accept!.y - reject!.y)).toBeLessThanOrEqual(2);
+  });
 });
 
 test('privacy and cookie pages describe regional analytics defaults', async ({ page }) => {
