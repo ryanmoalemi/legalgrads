@@ -2,7 +2,7 @@
 
 import { FormEvent, useEffect, useRef, useState, type ReactNode } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { analyticsLog, readConsent, track, writeConsent } from '@/lib/consent';
+import { analyticsLog, hasAnalyticsConsent, hasMarketingConsent, readConsent, track, writeConsent } from '@/lib/consent';
 import { mailtoHref } from '@/lib/mailto';
 import { validEmail } from '@/lib/format';
 import { normalizeProfilePath } from '@/lib/claim';
@@ -19,12 +19,15 @@ export function CookieSettingsView() {
     if (existing) {
       setAnalytics(existing.analytics);
       setMarketing(existing.marketing);
+    } else {
+      setAnalytics(hasAnalyticsConsent());
+      setMarketing(hasMarketingConsent());
     }
     setLog(analyticsLog());
   }, []);
   return (
     <div className="mx-auto max-w-xl px-4 py-10">
-      <PageIntro title="Cookie settings" body="Necessary storage stays on. Optional categories start off. Google Analytics runs without cookies until you turn analytics on." />
+      <PageIntro title="Cookie settings" body="Necessary storage stays on. Marketing stays off unless you opt in. Analytics is on by default outside the European Union, the European Economic Area, the United Kingdom, and Switzerland. In those regions it stays off until you accept. A choice you save on this page overrides the default." />
       <form className="mt-6 grid gap-3" onSubmit={(event) => {
         event.preventDefault();
         writeConsent({ analytics, marketing });

@@ -334,6 +334,9 @@ test('phase 2 tools are not linked', async ({ page }) => {
   await expect(page.getByRole('heading', { level: 1 })).toHaveText('Not public yet');
 });
 
+test.describe('cookie banner in a consent region', () => {
+  test.use({ timezoneId: 'Europe/Berlin' });
+
 test('cookie banner does not cover Continue', async ({ page }) => {
   function overlaps(
     a: { x: number; y: number; width: number; height: number },
@@ -366,6 +369,8 @@ test('cookie choice persists', async ({ page }) => {
   await page.getByTestId('cookie-reject').click();
   await page.reload();
   await expect(page.getByTestId('cookie-banner')).toHaveCount(0);
+});
+
 });
 
 test('layout holds at 375px', async ({ page }) => {

@@ -1,3 +1,5 @@
+import { needsAnalyticsConsent } from '@/lib/consent-region';
+
 export interface ConsentRecord {
   necessary: true;
   analytics: boolean;
@@ -39,9 +41,19 @@ export function writeConsent(next: Omit<ConsentRecord, 'necessary' | 'updatedAt'
   return record;
 }
 
-export function track(channel: 'analytics' | 'marketing', name: string): { permitted: boolean; reason: string } {
+export function hasAnalyticsConsent(): boolean {
   const consent = readConsent();
-  const permitted = !!consent && consent[channel];
+  if (consent) return consent.analytics;
+  return !needsAnalyticsConsent();
+}
+
+export function hasMarketingConsent(): boolean {
+  const consent = readConsent();
+  return !!consent && consent.marketing;
+}
+
+export function track(channel: 'analytics' | 'marketing', name: string): { permitted: boolean; reason: string } {
+  const permitted = channel === 'analytics' ? hasAnalyticsConsent() : hasMarketingConsent();
   if (!permitted) {
     return { permitted: false, reason: `${channel} is off, so “${name}” was blocked.` };
   }

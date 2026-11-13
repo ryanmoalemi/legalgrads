@@ -96,6 +96,8 @@ test('capture launch screenshots', async ({ page }) => {
   await page.getByTestId('sample-listing').screenshot({ path: `${dir}/message-link-error-mobile.png` });
 });
 
+test.describe('cookie banner screenshot', () => {
+  test.use({ timezoneId: 'Europe/Berlin' });
 test('capture desktop step 3 with the cookie banner', async ({ page }) => {
   test.skip(!process.env.SCREENSHOTS, 'set SCREENSHOTS=1');
   const dir = '/opt/cursor/artifacts/screenshots';
@@ -107,3 +109,5 @@ test('capture desktop step 3 with the cookie banner', async ({ page }) => {
   await page.waitForTimeout(300);
   await page.screenshot({ path: `${dir}/apply-3-areas-desktop-cookie.png` });
 });
+});
+

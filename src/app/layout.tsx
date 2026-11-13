@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { consentDefaultScript } from '@/lib/consent-region';
 import localFont from 'next/font/local';
 import './globals.css';
 import '@/styles/lg-system.css';
@@ -68,16 +69,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en" suppressHydrationWarning className={`${jakarta.variable} ${inter.variable} ${caveat.variable}`}>
       <head>
         <script dangerouslySetInnerHTML={{ __html: "document.documentElement.classList.add('lg-js')" }} />
-        <script async src="https://www.googletagmanager.com/gtag/js?id=G-CHX0PZJH8W" />
         <script
           dangerouslySetInnerHTML={{
-            __html: `window.dataLayer = window.dataLayer || [];
-function gtag(){dataLayer.push(arguments);}
-var lgc={};try{lgc=JSON.parse(localStorage.getItem('legalgrads-consent')||'{}')||{}}catch(e){}gtag('consent','default',{analytics_storage:lgc.analytics?'granted':'denied',ad_storage:lgc.marketing?'granted':'denied',ad_user_data:lgc.marketing?'granted':'denied',ad_personalization:lgc.marketing?'granted':'denied'});
-gtag('js', new Date());
-gtag('config', 'G-CHX0PZJH8W');`,
+            __html: consentDefaultScript(),
           }}
         />
+        <script async src="https://www.googletagmanager.com/gtag/js?id=G-CHX0PZJH8W" />
       </head>
       <body className="font-sans antialiased">
         <a className="skip-link" href="#main">Skip to content</a>
