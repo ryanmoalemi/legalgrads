@@ -559,3 +559,13 @@ test('Virginia tracker cites the State Bar email for dues and a free A&O ceremon
   await expect(ceremony).toContainText('Fee: $0');
   await expect(page.locator('main')).toContainText('Dues are waived for anyone admitted or licensed in April, May or June.');
 });
+
+test('South Dakota tracker cites the Board email for the 2026 swearing-in', async ({ page }) => {
+  await page.goto('/resources/post-bar-licensing-tracker/south-dakota/');
+  const ceremony = page.getByTestId('ceremony-table');
+  await expect(ceremony).toContainText('Annual swearing-in ceremony');
+  await expect(ceremony).toContainText('Sept 25, 2026');
+  await expect(ceremony).toContainText('Fee: $0');
+  await expect(page.locator('main')).toContainText('anyone who passed the February or July exam that year may take part');
+  await expect(page.locator('main')).toContainText('South Dakota Board of Bar Examiners, email reply, Nov 13, 2026');
+});
