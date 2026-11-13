@@ -569,3 +569,15 @@ test('South Dakota tracker cites the Board email for the 2026 swearing-in', asyn
   await expect(page.locator('main')).toContainText('anyone who passed the February or July exam that year may take part');
   await expect(page.locator('main')).toContainText('South Dakota Board of Bar Examiners, email reply, Nov 13, 2026');
 });
+
+test('Missouri tracker cites the Board email for swearing-in ceremonies', async ({ page }) => {
+  await page.goto('/resources/post-bar-licensing-tracker/missouri/');
+  const ceremony = page.getByTestId('ceremony-table');
+  await expect(ceremony).toContainText('Swearing-in ceremony for February 2027 examinees');
+  await expect(ceremony).toContainText('May 21, 2027');
+  await expect(ceremony).toContainText('Oct 22, 2027');
+  await expect(ceremony).toContainText('Oct 16, 2026');
+  await expect(ceremony).toContainText('Fee: $0');
+  await expect(page.locator('main')).toContainText('no fee assessed to attorneys who passed the bar examination');
+  await expect(page.locator('main')).toContainText('Missouri Board of Law Examiners, email to LegalGrads, Nov 13, 2026');
+});

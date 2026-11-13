@@ -333,6 +333,10 @@ const SD_EMAIL: Src = {
   label: 'South Dakota Board of Bar Examiners, email reply, Nov 13, 2026',
   url: '',
 };
+const MO_EMAIL: Src = {
+  label: 'Missouri Board of Law Examiners, email to LegalGrads, Nov 13, 2026',
+  url: '',
+};
 
 /** Official replies to LegalGrads' questions. Each fact is limited to what the office wrote. */
 function applyOfficialReplies(rows: NationalState[]) {
@@ -416,6 +420,21 @@ function applyOfficialReplies(rows: NationalState[]) {
     ];
     s.gaps = [...(s.gaps ?? []), { field: 'New-admittee license fee or dues', detail: 'The South Dakota Board of Bar Examiners Nov 13, 2026 reply directed licensure fee questions to the South Dakota State Bar and did not state the amounts.' }];
     first(s, SD_EMAIL);
+  });
+
+  patch(rows, 'MO', (s) => {
+    s.lastVerified = '2026-11-13';
+    s.ceremonies = [
+      { name: 'Swearing-in ceremony for July 2026 examinees', when: 'Oct 16, 2026 (already held)', fee: '$0', href: null },
+      { name: 'Swearing-in ceremony for February 2027 examinees', when: 'May 21, 2027', fee: '$0', href: null },
+      { name: 'Swearing-in ceremony for July 2027 examinees', when: 'Oct 22, 2027', fee: '$0', href: null },
+    ];
+    s.faqs = [
+      ...s.faqs,
+      { q: 'When are the Missouri swearing-in ceremonies, and is there a fee?', a: 'The Missouri Board of Law Examiners says the next swearing-in ceremonies are May 21, 2027, for those taking and passing the February 2027 Missouri bar examination, and October 22, 2027, for those taking and passing the July 2027 Missouri bar examination. The swearing-in ceremony for those who took the July 2026 bar examination was held October 16, 2026. There is no fee assessed to attorneys who passed the bar examination for the swearing-in ceremony.' },
+    ];
+    s.gaps = [...(s.gaps ?? []), { field: 'New-admittee license fee or dues', detail: 'The Missouri Board of Law Examiners Nov 13, 2026 reply said annual license fees are not within its purview and did not state the amounts.' }];
+    first(s, MO_EMAIL);
   });
 }
 
