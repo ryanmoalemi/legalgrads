@@ -329,6 +329,10 @@ const AZ_EMAIL: Src = {
   label: 'Arizona Supreme Court, Clerk\'s Office, email reply, Nov 12, 2026',
   url: '',
 };
+const SD_EMAIL: Src = {
+  label: 'South Dakota Board of Bar Examiners, email reply, Nov 13, 2026',
+  url: '',
+};
 
 /** Official replies to LegalGrads' questions. Each fact is limited to what the office wrote. */
 function applyOfficialReplies(rows: NationalState[]) {
@@ -399,6 +403,19 @@ function applyOfficialReplies(rows: NationalState[]) {
       ? { ...f, a: `${f.a} In a Nov 12, 2026 reply, the Bar added that newly licensed attorneys pay half the membership dues for the first year (Rules and Regulations, section IV, part 6, paragraph 11) and that there is no fee for the newly licensed to attend the ceremony.` }
       : f);
     addSource(s, VA_EMAIL_2);
+  });
+
+  patch(rows, 'SD', (s) => {
+    s.lastVerified = '2026-11-13';
+    s.ceremonies = [
+      { name: 'Annual swearing-in ceremony', when: 'Sept 25, 2026 (already held). One a year, open to anyone who passed the February or July exam that year.', fee: '$0', href: null },
+    ];
+    s.faqs = [
+      ...s.faqs,
+      { q: 'When is the South Dakota swearing-in ceremony, and is there a fee?', a: 'The Board of Bar Examiners says it holds one swearing-in ceremony a year. The 2026 ceremony was held September 25, 2026, and anyone who passed the February or July exam that year may take part. There is no ceremony fee.' },
+    ];
+    s.gaps = [...(s.gaps ?? []), { field: 'New-admittee license fee or dues', detail: 'The South Dakota Board of Bar Examiners Nov 13, 2026 reply directed licensure fee questions to the South Dakota State Bar and did not state the amounts.' }];
+    first(s, SD_EMAIL);
   });
 }
 
