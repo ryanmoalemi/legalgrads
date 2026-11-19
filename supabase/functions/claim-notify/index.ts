@@ -352,9 +352,12 @@ Deno.serve(async (request) => {
       return json({ ok: false, reason: 'bad-code' });
     }
     const contact = await contactFor(supabase);
-    const method = claimMethod(email, contact);
-    const approved = method !== 'manual';
-    const { data: current } = await supabase.from('profile_owner_edits').select('email, approved, disputed').eq('profile_path', profilePath).maybeSingle();
+    const { data: current } = await supabase.from('profile_owner_edits').select('email, approved, approved_at, disputed, method').eq('profile_path', profilePath).maybeSingle();
+    // A returning owner who was already approved (same email, not disputed) stays approved when signing in on a new device.
+    const returningApproved = Boolean(current && current.email === email && current.approved && !current.disputed);
+    const matchedMethod = claimMethod(email, contact);
+    const method = returningApproved && matchedMethod === 'manual' ? (current!.method || matchedMethod) : matchedMethod;
+    const approved = returningApproved || matchedMethod !== 'manual';
     const takeover = Boolean(current && current.email !== email);
     if (takeover && !approved) {
       await supabase.from('profile_claim_reports').insert({ profile_path: profilePath, kind: 'competing-claim', reporter_email: email, claimed_email: current!.email });
@@ -379,7 +382,7 @@ Deno.serve(async (request) => {
       city: String(payload.city || '').slice(0, 120),
       method,
       approved,
-      approved_at: approved ? new Date().toISOString() : null,
+      approved_at: approved ? (returningApproved && current!.approved_at ? current!.approved_at : new Date().toISOString()) : null,
       disputed: false,
       ...(takeover ? { pending_bio: null, pending_services: null, edits_submitted_at: null, bio: '', services: '', phone: '', contact_link: '', practice_areas: [], photo_data_url: '' } : {}),
       updated_at: new Date().toISOString(),
