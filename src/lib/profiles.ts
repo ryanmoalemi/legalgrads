@@ -272,7 +272,13 @@ export function officialLinkLabel(p: AttorneyProfile): string {
 export const profilePath = (p: AttorneyProfile) => `/attorneys/${p.state}/${p.city}/${p.slug}/`;
 export const firstName = (p: AttorneyProfile) => p.name.split(' ')[0];
 export const initials = (p: AttorneyProfile) => p.name.split(' ').map((w) => w[0]).slice(0, 2).join('').toUpperCase();
-export const seoTitle = (p: AttorneyProfile) => `${p.name}, ${p.claimed ? 'Business ' : ''}Attorney in ${cityUnknown(p) ? p.stateName : placeLabel(p)} | LegalGrads`;
+export const seoTitle = (p: AttorneyProfile) => {
+  const where = cityUnknown(p) ? p.stateName : placeLabel(p);
+  const role = `${p.claimed ? 'Business ' : ''}Attorney`;
+  const year = p.admittedYear;
+  if (year && /^\d{4}$/.test(year)) return `${p.name}, ${role} in ${where} | admitted ${year}`;
+  return `${p.name}, ${role} in ${where} | LegalGrads`;
+};
 export const seoDescription = (p: AttorneyProfile) => {
   if (p.claimed) return `${p.name} helps small businesses with contracts, formation and advice. Licensed in ${p.stateName} since ${p.admittedYear}.`;
   const school = p.lawSchool && p.lawSchool !== 'Not listed' ? ` (${p.lawSchool})` : '';

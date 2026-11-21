@@ -181,8 +181,16 @@ def link_label(p):
     return "official profile"
 
 
+def admitted_year(p):
+    year = str(p.get("admittedYear") or "")
+    return year if year.isdigit() and len(year) == 4 else ""
+
+
 def seo_title(p):
     where = place_label(p) or p["stateName"]
+    year = admitted_year(p)
+    if year:
+        return f"{p['name']}, Attorney in {where} | admitted {year}"
     return f"{p['name']}, Attorney in {where} | LegalGrads"
 
 
