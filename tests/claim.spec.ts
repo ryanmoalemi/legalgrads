@@ -180,7 +180,7 @@ test('unknown city reads Licensed in California on the profile and claim screen'
   const nadine = '/attorneys/ca/california/nadine-barbara-kramer-354279/';
   await page.setViewportSize({ width: 390, height: 844 });
   await boot(page, nadine);
-  await expect(page).toHaveTitle('Nadine Barbara Kramer, Attorney in California | LegalGrads');
+  await expect(page).toHaveTitle('Nadine Barbara Kramer, Attorney in California | admitted 2024');
   await expect(page.locator('.where')).toHaveText('Licensed in California');
   await expect(page.locator('body')).not.toContainText('California, CA');
   await expect(page.locator('body')).not.toContainText('Foreign Law School');
@@ -203,7 +203,7 @@ test('a real city stays on the profile', async ({ page }) => {
   await boot(page, CALLIE);
   await expect(page.locator('.where')).toHaveText('Licensed in California');
   await expect(page.locator('.office')).toHaveText('Office: Escondido, CA');
-  await expect(page).toHaveTitle('Callie Yahyavi, Attorney in Escondido, CA | LegalGrads');
+  await expect(page).toHaveTitle('Callie Yahyavi, Attorney in Escondido, CA | admitted 2026');
 });
 
 test('generic claim entry looks up the exact profile instead of an error', async ({ page }) => {

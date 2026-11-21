@@ -21,8 +21,32 @@ export function generateStaticParams() {
 }
 
 type Props = { params: Promise<{ state: string }> };
+function trackerMeta(title: string, description: string, path: string): Metadata {
+  return {
+    title: { absolute: title },
+    description,
+    alternates: { canonical: path },
+    openGraph: { title, description, url: path },
+    twitter: { title, description },
+  };
+}
+
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const slug = (await params).state;
+  if (slug === 'california') {
+    return trackerMeta(
+      'California bar fees, dues, moral character | LegalGrads',
+      '2026 California bar fees include a $900 moral character application, a first license fee of $0, $299 or $598, and $598 annual dues due March 30.',
+      `${TRACKER_PATH}california/`,
+    );
+  }
+  if (slug === 'new-york') {
+    return trackerMeta(
+      'New York CLE hours and $375 registration | LegalGrads',
+      'Newly admitted NY attorneys need 16 CLE hours in year 1 and 32 over two years. Registration is $375 every two years. A 266 UBE score transfers for three years.',
+      `${TRACKER_PATH}new-york/`,
+    );
+  }
   if (slug !== 'california') {
     const national = nationalBySlug(slug);
     if (national) {
