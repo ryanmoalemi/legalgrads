@@ -29,8 +29,9 @@ def needles(rules):
         compiled.append((email, re.compile(re.escape(email), re.I)))
     for key in sorted(rules["keys"]):
         compiled.append((key, re.compile(re.escape(key), re.I)))
-        bar = key.split("-", 1)[1]
-        compiled.append((bar, re.compile(rf"(?<![0-9A-Za-z]){re.escape(bar)}(?![0-9A-Za-z])")))
+        # Do not scan bare bar numbers. Those collide with ZIP codes and
+        # other attorneys' office zips (for example Idaho bar 13152).
+        # Roster rows are still caught by structured_hit / is_suppressed.
     for name in rules["display_names"]:
         parts = [re.escape(part) for part in name.split()]
         compiled.append((name, re.compile(r"\b" + r"\W+".join(parts) + r"\b", re.I)))
