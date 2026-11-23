@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { claimedBadgeCopy } from '@/lib/claimed-badge';
 import { claimHref, removalHref } from '@/lib/claim';
 import { type AttorneyProfile, calbarUrl, cityPath, cityUnknown, firstName, initials, officialHref, officialLinkLabel, placeLabel, profileJsonLd, profilePath } from '@/lib/profiles';
 import '@/app/(site)/attorneys/profile-template.css';
@@ -70,6 +71,50 @@ function LicenseDetails({ p }: { p: AttorneyProfile }) {
 const correctionHref = (path: string) => `mailto:ryan@legalgrads.com?subject=${encodeURIComponent(`Correction for ${path}`)}`;
 const promiseHref = (path: string) => `/free-listing-promise/?profile=${encodeURIComponent(path)}`;
 
+const SHIELD_CHECK = (
+  <svg className="lg-claimed__icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <path d="M12 3 19 6v5c0 4.5-2.9 7.7-7 9.5C7.9 18.7 5 15.5 5 11V6Z" />
+    <path d="m9 12 2 2 4-4" />
+  </svg>
+);
+
+function ClaimedIdentity({ p }: { p: AttorneyProfile }) {
+  const copy = claimedBadgeCopy({
+    barValue: p.barNumber ? barValue(p) : '',
+    barLabel: legacy(p) ? `${p.stateName} Bar Number` : 'License number',
+    status: p.status || '',
+    stateName: p.stateName || '',
+    authority: legacy(p) ? `State Bar of ${p.stateName}` : (p.sourceAuthority || ''),
+  });
+  return (
+    <>
+      <div className="lg-claimed-title">
+        <h1>{p.name}</h1>
+        <span className="lg-claimed lg-claimed--pill" title="This attorney claimed and manages this profile on LegalGrads." data-testid="claimed-badge">
+          {SHIELD_CHECK}
+          <span className="lg-claimed__label">Claimed by attorney</span>
+        </span>
+      </div>
+      <div className="lg-claimed-meta">
+        <p className="lg-claimed__sub" data-testid="claimed-subline">
+          {copy.head && copy.match ? (
+            <>
+              {copy.head}
+              <span className="lg-claimed__dot"> · </span>
+              <br className="lg-claimed__br" />
+              <span className="lg-claimed__match">{copy.match}</span>
+            </>
+          ) : (copy.head || copy.match)}
+        </p>
+        <details className="lg-claimed__help">
+          <summary>What does this mean?</summary>
+          <p data-testid="claimed-help">{copy.disclosure}</p>
+        </details>
+      </div>
+    </>
+  );
+}
+
 export function AttorneyProfilePage({ p }: { p: AttorneyProfile }) {
   const c = p.claimed;
   const fn = firstName(p);
@@ -83,9 +128,9 @@ export function AttorneyProfilePage({ p }: { p: AttorneyProfile }) {
         <nav className="crumbs" aria-label="Breadcrumb"><Link href="/">Home</Link> › <Link href={`/attorneys/${p.state}/`}>{p.stateName}</Link> › <Link href={cityPath(p.state, p.city)}>{crumbCity}</Link> › {c ? <><Link href="/specialties/">Business &amp; contracts</Link> › </> : null}<span>{p.name}</span></nav>
         <div className="band-row">
           {c ? <img className="avatar" src={c.photo} alt={p.name} /> : <div className="avatar" aria-hidden="true">{initials(p)}</div>}
-          <div className="who"><h1>{p.name}</h1><p className="where"><span>Licensed in {p.stateName}</span></p><p className="office">{c ? `${c.headline} · ` : ''}{place ? `Office: ${place}` : 'Office location not listed.'}</p></div>
+          <div className="who">{c ? <ClaimedIdentity p={p} /> : <h1>{p.name}</h1>}<p className="where"><span>Licensed in {p.stateName}</span></p><p className="office">{c ? `${c.headline} · ` : ''}{place ? `Office: ${place}` : 'Office location not listed.'}</p></div>
           <div className="meta">
-            <span className="chip solid">{c ? 'Claimed profile' : 'Profile not yet claimed'}</span>
+            {c ? null : <span className="chip solid">Profile not yet claimed</span>}
             <p className="barline">{barValue(p)} <span aria-hidden="true">|</span> Admitted {p.admitted}</p>
           </div>
         </div>

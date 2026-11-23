@@ -158,6 +158,7 @@ test('test inbox can claim, edit, and see the edit on the public page', async ({
   await expect(page.locator('#owner-edit')).toContainText('Contract review');
   await expect(page.locator('#owner-edit')).toContainText('Contracts');
   await expect(page.locator('.chip.solid')).toHaveText('Claimed on this device');
+  await expect(page.locator('.lg-claimed')).toHaveCount(0);
   await page.locator('#main').getByRole('link', { name: 'Request removal' }).click();
   await expect(page).toHaveURL(/\/data-deletion\/\?profile=/);
   await expect(page.getByTestId('removal-profile')).toContainText(CALLIE);

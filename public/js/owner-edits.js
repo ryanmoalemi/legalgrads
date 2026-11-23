@@ -96,9 +96,152 @@
     } catch (error) { /* counting never blocks the page */ }
   }
 
+  // Same rules as claimedBadgeCopy in src/lib/claimed-badge.ts.
+  function tidy(value) {
+    return String(value || '').replace(/\s+/g, ' ').trim();
+  }
+
+  function visibleText(node) {
+    if (!node) return '';
+    var clone = node.cloneNode(true);
+    var smalls = clone.querySelectorAll('small');
+    for (var i = 0; i < smalls.length; i++) smalls[i].parentNode.removeChild(smalls[i]);
+    return tidy(clone.textContent);
+  }
+
+  function readClaimFacts() {
+    var rows = document.querySelectorAll('.lgp .lic li');
+    var status = '';
+    var barValue = '';
+    var barLabel = '';
+    var regulator = '';
+    for (var i = 0; i < rows.length; i++) {
+      var label = tidy((rows[i].querySelector('.k') || {}).textContent);
+      var value = visibleText(rows[i].querySelector('.v'));
+      if (/^license status$/i.test(label)) status = value;
+      else if (/bar number$/i.test(label) || /^license number$/i.test(label)) {
+        barLabel = label;
+        barValue = value;
+      } else if (/^regulator$/i.test(label) || /^state bar$/i.test(label)) regulator = value;
+    }
+    if (!barValue) {
+      var line = document.querySelector('.lgp .barline');
+      barValue = tidy((line && line.textContent) || '').split('|')[0];
+      barValue = tidy(barValue);
+    }
+    var whereText = tidy((document.querySelector('.lgp .where') || {}).textContent);
+    var stateMatch = whereText.match(/Licensed in\s+(.+)$/i);
+    var stateName = stateMatch ? tidy(stateMatch[1]) : '';
+    if (!stateName) {
+      var crumb = document.querySelector('.lgp .crumbs a[href^="/attorneys/"]');
+      stateName = tidy((crumb && crumb.textContent) || '');
+    }
+    var verifiedText = tidy((document.querySelector('.lgp .verified') || {}).textContent);
+    var authMatch = verifiedText.match(/\bfrom\s+(.+?)\s+records\.?$/i);
+    return {
+      barValue: barValue,
+      barLabel: barLabel,
+      status: status,
+      stateName: stateName,
+      authority: authMatch ? tidy(authMatch[1]) : regulator,
+    };
+  }
+
+  function claimedBadgeCopy(facts) {
+    var barValue = tidy(facts.barValue);
+    var barLabel = tidy(facts.barLabel);
+    var status = tidy(facts.status);
+    var stateName = tidy(facts.stateName);
+    var authority = tidy(facts.authority);
+    var numberMatch = barValue.match(/#\s*(\S+)/);
+    var number = numberMatch ? numberMatch[1] : '';
+    var isBar = /bar/i.test(barLabel) || /bar\s*#/i.test(barValue);
+    var shortId = number ? (isBar ? 'Bar #' + number : 'License #' + number) : '';
+    var fullId = number ? (isBar ? barValue : 'License #' + number) : '';
+    var shortRecord = '';
+    var official = '';
+    if (authority === 'State Bar of California') {
+      shortRecord = 'State Bar record';
+      official = authority;
+    } else if (authority && authority !== stateName) {
+      shortRecord = authority + ' record';
+      official = authority;
+    } else if (stateName) {
+      shortRecord = stateName + ' state bar record';
+      official = stateName + ' state bar';
+    } else {
+      shortRecord = 'official state bar record';
+      official = 'state bar';
+    }
+    var head = [shortId, status].filter(Boolean).join(' · ');
+    var match = 'matched to ' + shortRecord;
+    var matched = 'matched to the official ' + official + ' record';
+    var detail = fullId && status
+      ? 'The listing shows ' + fullId + ' with ' + status + ' status, ' + matched + '.'
+      : fullId
+        ? 'The listing shows ' + fullId + ', ' + matched + '.'
+        : status
+          ? 'The listing shows ' + status + ' status, ' + matched + '.'
+          : 'The listing is ' + matched + '.';
+    return {
+      head: head,
+      match: match,
+      disclosure: 'This attorney claimed and manages this profile on LegalGrads. ' + detail,
+    };
+  }
+
+  var SHIELD_SVG = '<svg class="lg-claimed__icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3 19 6v5c0 4.5-2.9 7.7-7 9.5C7.9 18.7 5 15.5 5 11V6Z"/><path d="m9 12 2 2 4-4"/></svg>';
+
+  function badgeSubline(copy) {
+    var p = el('p', { class: 'lg-claimed__sub', 'data-testid': 'claimed-subline' });
+    if (copy.head && copy.match) {
+      p.appendChild(document.createTextNode(copy.head));
+      p.appendChild(el('span', { class: 'lg-claimed__dot' }, ' · '));
+      p.appendChild(el('br', { class: 'lg-claimed__br' }));
+      p.appendChild(el('span', { class: 'lg-claimed__match' }, copy.match));
+    } else {
+      p.textContent = copy.head || copy.match;
+    }
+    return p;
+  }
+
+  function installClaimedBadge() {
+    var chip = document.querySelector('.lgp .chip.solid');
+    if (document.querySelector('.lgp .lg-claimed')) {
+      if (chip) chip.hidden = true;
+      return true;
+    }
+    var who = document.querySelector('.lgp .who');
+    var h1 = who && who.querySelector('h1');
+    if (!who || !h1) return false;
+    var copy = claimedBadgeCopy(readClaimFacts());
+    var title = el('div', { class: 'lg-claimed-title' });
+    h1.parentNode.insertBefore(title, h1);
+    title.appendChild(h1);
+    var pill = el('span', {
+      class: 'lg-claimed lg-claimed--pill',
+      title: 'This attorney claimed and manages this profile on LegalGrads.',
+      'data-testid': 'claimed-badge',
+    });
+    pill.insertAdjacentHTML('beforeend', SHIELD_SVG);
+    pill.appendChild(el('span', { class: 'lg-claimed__label' }, 'Claimed by attorney'));
+    title.appendChild(pill);
+    var meta = el('div', { class: 'lg-claimed-meta' });
+    meta.appendChild(badgeSubline(copy));
+    var help = el('details', { class: 'lg-claimed__help' });
+    help.appendChild(el('summary', {}, 'What does this mean?'));
+    help.appendChild(el('p', { 'data-testid': 'claimed-help' }, copy.disclosure));
+    meta.appendChild(help);
+    title.insertAdjacentElement('afterend', meta);
+    if (chip) chip.hidden = true;
+    return true;
+  }
+
   function markClaimed(verified) {
     var chip = document.querySelector('.lgp .chip.solid');
-    if (chip && UNCLAIMED.test(chip.textContent || '')) chip.textContent = verified ? 'Claimed profile' : 'Claim pending review';
+    if (verified) {
+      if (!installClaimedBadge() && chip && UNCLAIMED.test(chip.textContent || '')) chip.textContent = 'Claimed profile';
+    } else if (chip && UNCLAIMED.test(chip.textContent || '')) chip.textContent = 'Claim pending review';
     setClaimState(verified ? 'Yes' : 'Pending review', verified
       ? 'The attorney has claimed this profile on LegalGrads.'
       : 'A claim for this profile is pending review.');
