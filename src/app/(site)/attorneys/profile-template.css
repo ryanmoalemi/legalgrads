@@ -28,6 +28,8 @@
 .lgp .meta{display:grid;gap:10px;justify-items:start}
 .lgp .chip{display:inline-block;padding:4px 14px;border-radius:999px;font-size:14px;font-weight:700;border:2px solid #fff;color:#fff;background:transparent}
 .lgp .barline{font-size:16px;color:var(--lg-on-dark-muted)}
+.lgp .band .request-removal{color:#fff;font-size:14px;font-weight:600;text-decoration:underline;text-underline-offset:.18em}
+.lgp .band .request-removal:hover{color:#fff}
 /* Claimed credibility badge. Present only after a profile is claimed. Unclaimed pages do not use these classes. */
 .lgp .lg-claimed-title{display:flex;flex-wrap:wrap;align-items:center;column-gap:12px;row-gap:8px}
 .lgp .lg-claimed-title h1{min-width:0}

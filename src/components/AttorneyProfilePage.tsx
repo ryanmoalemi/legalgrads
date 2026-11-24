@@ -132,6 +132,7 @@ export function AttorneyProfilePage({ p }: { p: AttorneyProfile }) {
           <div className="meta">
             {c ? null : <span className="chip solid">Profile not yet claimed</span>}
             <p className="barline">{barValue(p)} <span aria-hidden="true">|</span> Admitted {p.admitted}</p>
+            <p className="small"><Link className="request-removal" href={removalHref(path)}>Request removal</Link></p>
           </div>
         </div>
       </div></section>
@@ -193,7 +194,7 @@ export function AttorneyProfilePage({ p }: { p: AttorneyProfile }) {
             <div id="example-slot" data-example="1" />
             <p className="browse">Looking for legal help? <Link href="/find-lawyer/">Browse attorneys</Link></p>
             {legacy(p) ? <LegacyDisclaimer /> : <NeutralDisclaimer />}
-            <p className="small fixes">Something wrong? <a href={correctionHref(path)}>Suggest a correction</a>. Want this listing taken down? <Link href={removalHref(path)}>Request removal</Link></p>
+            <p className="small fixes">Something wrong? <a href={correctionHref(path)}>Suggest a correction</a></p>
           </>
         )}
         <script src="/js/owner-edits.js" defer />

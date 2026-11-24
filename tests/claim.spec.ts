@@ -63,8 +63,10 @@ test('both claim buttons and removal links resolve for every sample state', asyn
     const html = await response.text();
     const claimHits = [`/claim/?profile=${encodeURIComponent(path)}`, `/claim/?profile=${path}`]
       .map((href) => html.split(href).length - 1);
-    const removalHits = [`/data-deletion/?profile=${encodeURIComponent(path)}`, `/data-deletion/?profile=${path}`]
-      .some((href) => html.includes(href));
+    const removalHrefEncoded = `/data-deletion/?profile=${encodeURIComponent(path)}`;
+    const removalHrefRaw = `/data-deletion/?profile=${path}`;
+    const removalHits = html.includes(removalHrefEncoded) || html.includes(removalHrefRaw);
+    expect(html, path).toContain('class="request-removal"');
     expect(Math.max(...claimHits), path).toBeGreaterThanOrEqual(1);
     expect(html, path).not.toContain('class="sticky"');
     expect(html, path).not.toContain('/attorney/login/');
@@ -159,7 +161,10 @@ test('test inbox can claim, edit, and see the edit on the public page', async ({
   await expect(page.locator('#owner-edit')).toContainText('Contracts');
   await expect(page.locator('.chip.solid')).toHaveText('Claimed on this device');
   await expect(page.locator('.lg-claimed')).toHaveCount(0);
-  await page.locator('#main').getByRole('link', { name: 'Request removal' }).click();
+  const topRemoval = page.locator('a.request-removal');
+  await expect(topRemoval).toBeVisible();
+  await expect(topRemoval).toHaveAttribute('href', `/data-deletion/?profile=${encodeURIComponent(CALLIE)}`);
+  await topRemoval.click();
   await expect(page).toHaveURL(/\/data-deletion\/\?profile=/);
   await expect(page.getByTestId('removal-profile')).toContainText(CALLIE);
   await expect(page.locator('textarea[name="details"]')).toHaveValue(new RegExp(CALLIE.replace(/\//g, '\\/')));
