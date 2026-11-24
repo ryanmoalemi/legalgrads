@@ -108,6 +108,8 @@ def assert_claim_links(html_text, path, profile):
         raise SystemExit(f"Claim buttons missing on {path}")
     if f'href="{removal}"' not in html_text:
         raise SystemExit(f"Removal link missing on {path}")
+    if 'class="request-removal"' not in html_text:
+        raise SystemExit(f"Top Request removal link missing on {path}")
     if "mailed to your State Bar" in html_text or "\u2014" in html_text or "\u2013" in html_text:
         raise SystemExit(f"Bad copy on {path}")
     if "/js/owner-edits.js" not in html_text:
@@ -456,7 +458,8 @@ def page_html(p):
         f'<div class="who"><h1>{esc(p["name"])}</h1><p class="where"><span>Licensed in {esc(p["stateName"])}</span></p>'
         f'<p class="office">{esc(office_line(p))}</p></div>'
         f'<div class="meta"><span class="chip solid">Profile not yet claimed</span>'
-        f'<p class="barline">{esc(bar_value)} <span aria-hidden="true">|</span> Admitted {esc(p["admitted"])}</p></div></div>'
+        f'<p class="barline">{esc(bar_value)} <span aria-hidden="true">|</span> Admitted {esc(p["admitted"])}</p>'
+        f'<p class="small"><a class="request-removal" href="{removal_href(path)}">Request removal</a></p></div></div>'
         f"</div></section>"
         f'<main class="wrap" id="main"><div class="grid">'
         f'<aside aria-label="Claim this profile"><div class="card claim" id="claim"><span class="pill">{esc(greeting(p))}</span>'
@@ -471,7 +474,7 @@ def page_html(p):
         f"{steps_html()}{EXAMPLE_SLOT}"
         f'<p class="browse">Looking for legal help? <a href="/find-lawyer/">Browse attorneys</a> <span aria-hidden="true">·</span> <a href="{city_href}">{more_label}</a></p>'
         f"{disc}"
-        f'<p class="small fixes">Something wrong? <a href="{correction_href(path)}">Suggest a correction</a>. Want this listing taken down? <a href="{removal_href(path)}">Request removal</a></p>'
+        f'<p class="small fixes">Something wrong? <a href="{correction_href(path)}">Suggest a correction</a></p>'
         f"</main></div>{footer_html()}"
     )
     return (
