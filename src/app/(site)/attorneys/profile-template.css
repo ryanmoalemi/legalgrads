@@ -28,6 +28,27 @@
 .lgp .meta{display:grid;gap:10px;justify-items:start}
 .lgp .chip{display:inline-block;padding:4px 14px;border-radius:999px;font-size:14px;font-weight:700;border:2px solid #fff;color:#fff;background:transparent}
 .lgp .barline{font-size:16px;color:var(--lg-on-dark-muted)}
+/* Claimed credibility badge. Present only after a profile is claimed. Unclaimed pages do not use these classes. */
+.lgp .lg-claimed-title{display:flex;flex-wrap:wrap;align-items:center;column-gap:12px;row-gap:8px}
+.lgp .lg-claimed-title h1{min-width:0}
+.lgp .lg-claimed{display:inline-flex;align-items:center;gap:6px;flex:none;max-width:100%;padding:4px 12px 4px 8px;border-radius:999px;background:var(--lg-success-bg);color:var(--lg-success);font-size:14px;font-weight:700;line-height:1.2;white-space:nowrap}
+.lgp .lg-claimed__icon{width:16px;height:16px;flex:none}
+.lgp .lg-claimed-meta{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 14px;margin-top:6px}
+.lgp .lg-claimed__sub{font-size:15px;line-height:1.45;color:var(--lg-on-dark-muted);overflow-wrap:break-word}
+.lgp .lg-claimed__br{display:none}
+.lgp .lg-claimed__help{font-size:15px;line-height:1.45}
+.lgp .lg-claimed__help summary{display:inline-block;color:var(--lg-on-dark-muted);text-decoration:underline;text-underline-offset:.18em;cursor:pointer;font-weight:600;list-style:none}
+.lgp .lg-claimed__help summary::-webkit-details-marker{display:none}
+.lgp .lg-claimed__help summary::marker{content:""}
+.lgp .lg-claimed__help p{margin-top:8px;padding:10px 12px;border-radius:12px;background:#fff;color:var(--lg-text);font-size:14px;font-weight:400;line-height:1.5;max-width:36rem;box-shadow:var(--lg-shadow-card)}
+.lgp .lg-claimed__help[open]{flex-basis:100%}
+@media(max-width:767px){
+.lgp .lg-claimed-title{flex-direction:column;align-items:flex-start}
+.lgp .lg-claimed-meta{flex-direction:column;align-items:flex-start;gap:2px}
+.lgp .lg-claimed__dot{display:none}
+.lgp .lg-claimed__match{display:block}
+.lgp .lg-claimed__help[open]{flex-basis:auto;width:100%}
+}
 /* Main grid: the claim column is first in the document, so phones read identity, claim, then record. */
 .lgp .grid{display:grid;grid-template-columns:minmax(0,1.08fr) minmax(0,1fr);grid-template-areas:"about claim";gap:24px;align-items:start}
 .lgp .grid>aside{grid-area:claim}

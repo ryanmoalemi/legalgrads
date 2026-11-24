@@ -140,6 +140,7 @@ test('editor: checklists, consultations, fees, availability, progress, and live 
   await expect(page.locator('#fact-consult')).toContainText('Free');
   await expect(page.locator('#fact-availability')).toContainText('Taking new clients (updated');
   await expect(page.locator('.chip.solid')).toHaveText('Claimed on this device');
+  await expect(page.locator('.lg-claimed')).toHaveCount(0);
 });
 
 test('pending claims submit for review', async ({ page }) => {
@@ -160,7 +161,9 @@ test('verified claimed profile shows the request form with the notice, honeypot,
     return { ok: false };
   });
   await boot(page, CALLIE);
-  await expect(page.locator('.chip.solid')).toHaveText('Claimed profile');
+  await expect(page.getByTestId('claimed-badge')).toContainText('Claimed by attorney');
+  await expect(page.locator('.chip.solid')).toBeHidden();
+  await expect(page.getByTestId('claimed-subline')).toHaveText('Bar #369241 · Active · matched to State Bar record');
   await expect(page.locator('#about-claim')).toHaveText('The attorney has claimed this profile on LegalGrads.');
   await expect(page.locator('.card.claim')).toBeHidden();
   await expect(page.locator('#example-profile')).toBeHidden();
@@ -211,6 +214,7 @@ test('unverified or unclaimed profiles never show the request form', async ({ pa
   await mockSupabase(page, (_name, body) => (body.action === 'public' ? { ok: true, claimed: true, verified: false, edit: null } : { ok: false }));
   await boot(page, CALLIE);
   await expect(page.locator('.chip.solid')).toHaveText('Claim pending review');
+  await expect(page.locator('.lg-claimed')).toHaveCount(0);
   await expect(page.locator('#inquiry')).toHaveCount(0);
   await expect(page.getByTestId('claim-pending')).toContainText('Claim pending review');
   await expect(page.locator('.card.claim')).toBeHidden();
