@@ -32,6 +32,26 @@ CSS_OUT = OUT / "css/attorney-profile.css"
 SITE = "https://legalgrads.com"
 GA = "G-CHX0PZJH8W"
 
+# Same Consent Mode defaults as src/lib/consent-region.ts (consentDefaultScript):
+# analytics granted by default, denied in the EU, EEA, UK and Switzerland until the
+# visitor chooses, ads always denied, and a saved legalgrads-consent choice wins.
+CONSENT_REGION_CODES = [
+    "AT", "BE", "BG", "HR", "CY", "CZ", "DK", "EE", "FI", "FR", "DE", "GR", "HU", "IE", "IT", "LV",
+    "LT", "LU", "MT", "NL", "PL", "PT", "RO", "SK", "SI", "ES", "SE", "IS", "LI", "NO", "GB", "CH",
+]
+CONSENT_DEFAULT_JS = (
+    "window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}"
+    "var lgc={};try{lgc=JSON.parse(localStorage.getItem('legalgrads-consent')||'{}')||{}}catch(e){}"
+    "var hasChoice=typeof lgc.analytics==='boolean';var ads=lgc.marketing?'granted':'denied';"
+    "if(hasChoice){gtag('consent','default',{analytics_storage:lgc.analytics?'granted':'denied',ad_storage:ads,ad_user_data:ads,ad_personalization:ads});}"
+    "else{gtag('consent','default',{analytics_storage:'granted',ad_storage:'denied',ad_user_data:'denied',ad_personalization:'denied'});"
+    "gtag('consent','default',{analytics_storage:'denied',ad_storage:'denied',ad_user_data:'denied',ad_personalization:'denied',region:"
+    + json.dumps(CONSENT_REGION_CODES, separators=(",", ":"))
+    + ",wait_for_update:500});}"
+    "gtag('js',new Date());"
+    f"gtag('config','{GA}');"
+)
+
 # Same favicon tags the Next.js root layout emits for the rest of the site.
 FAVICON_HEAD = (
     '<link rel="icon" href="/favicon.svg" type="image/svg+xml">'
@@ -490,8 +510,7 @@ def page_html(p):
         "<link rel=\"stylesheet\" href=\"/css/attorney-profile.css\">"
         "<script>document.documentElement.classList.add('lg-js')</script>"
         f"<script async src=\"https://www.googletagmanager.com/gtag/js?id={GA}\"></script>"
-        "<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}var lgc={};try{lgc=JSON.parse(localStorage.getItem('legalgrads-consent')||'{}')||{}}catch(e){}gtag('consent','default',{analytics_storage:lgc.analytics?'granted':'denied',ad_storage:lgc.marketing?'granted':'denied',ad_user_data:lgc.marketing?'granted':'denied',ad_personalization:lgc.marketing?'granted':'denied'});gtag('js',new Date());"
-        f"gtag('config','{GA}');</script>"
+        f"<script>{CONSENT_DEFAULT_JS}</script>"
         f'<script type="application/ld+json">{json_ld(p)}</script></head><body><a class="lg-skip" href="#main">Skip to content</a>{body}'
         '<script src="/js/site-nav.js" defer></script><script src="/js/owner-edits.js" defer></script></body></html>'
     )
